@@ -96,22 +96,10 @@
     <Compile Include="DAL\UserRepository.vb" />
     <Compile Include="Factory\RepositoryFactory.vb" />
     <Compile Include="Factory\ServiceFactory.vb" />
-    <Compile Include="GUI\CategoryManagementForm.Designer.vb">
-      <DependentUpon>CategoryManagementForm.vb</DependentUpon>
-    </Compile>
-    <Compile Include="GUI\CategoryManagementForm.vb">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="GUI\LoginForm.Designer.vb">
       <DependentUpon>LoginForm.vb</DependentUpon>
     </Compile>
     <Compile Include="GUI\LoginForm.vb">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="GUI\MainForm.Designer.vb">
-      <DependentUpon>MainForm.vb</DependentUpon>
-    </Compile>
-    <Compile Include="GUI\MainForm.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GUI\ProductManagementForm.Designer.vb">
@@ -143,14 +131,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="GUI\CategoryManagementForm.resx">
-      <DependentUpon>CategoryManagementForm.vb</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="GUI\LoginForm.resx">
       <DependentUpon>LoginForm.vb</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GUI\MainForm.resx">
-      <DependentUpon>MainForm.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\ProductManagementForm.resx">
       <DependentUpon>ProductManagementForm.vb</DependentUpon>

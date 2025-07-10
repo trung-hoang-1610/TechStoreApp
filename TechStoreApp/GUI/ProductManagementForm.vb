@@ -1,5 +1,5 @@
-﻿' GUI/ProductManagementForm.vb
-Imports System.Data.Odbc
+﻿Imports System.Data.Odbc
+Imports System.Collections.Generic
 
 Public Class ProductManagementForm
     Inherits Form
@@ -7,9 +7,10 @@ Public Class ProductManagementForm
     Private ReadOnly _productService As IProductService
     Private ReadOnly _categoryService As ICategoryService
     Private ReadOnly _userId As Integer
-
+    Private isEditing As Boolean = False
+    Private isAdding As Boolean = False
     Private currentPage As Integer = 0
-    Private pageSize As Integer = 3
+    Private pageSize As Integer = 7
     Private totalPages As Integer = 0
     Private categoryLookup As Dictionary(Of String, Integer)
 
@@ -38,6 +39,7 @@ Public Class ProductManagementForm
                 btnAdd.Visible = False
                 btnUpdate.Visible = False
                 btnDelete.Visible = False
+                btnCancel.Visible = False
 
                 txtProductName.Enabled = False
                 txtDescription.Enabled = False
@@ -45,11 +47,12 @@ Public Class ProductManagementForm
                 txtQuantity.Enabled = False
                 cboCategory.Enabled = False
             End If
+        Catch ex As OdbcException
+            lblError.Text = "Lỗi cơ sở dữ liệu: " & ex.Message
         Catch ex As Exception
             lblError.Text = "Không thể xác định quyền: " & ex.Message
         End Try
     End Sub
-
 
     ''' <summary>
     ''' Tải danh sách danh mục vào ComboBox
@@ -68,6 +71,8 @@ Public Class ProductManagementForm
             End If
         Catch ex As OdbcException
             lblError.Text = "Lỗi khi tải danh mục: " & ex.Message
+        Catch ex As Exception
+            lblError.Text = "Lỗi hệ thống khi tải danh mục: " & ex.Message
         End Try
     End Sub
 
@@ -90,6 +95,8 @@ Public Class ProductManagementForm
             btnNext.Enabled = (currentPage < totalPages - 1)
         Catch ex As OdbcException
             lblError.Text = "Lỗi khi tải sản phẩm: " & ex.Message
+        Catch ex As Exception
+            lblError.Text = "Lỗi hệ thống khi tải sản phẩm: " & ex.Message
         End Try
     End Sub
 
@@ -110,35 +117,58 @@ Public Class ProductManagementForm
     End Sub
 
     ''' <summary>
+    ''' Validate dữ liệu đầu vào
+    ''' </summary>
+    ''' <returns>Danh sách lỗi nếu có</returns>
+    Private Function ValidateInputs() As Boolean
+        Dim errors As New List(Of String)
+
+        If String.IsNullOrEmpty(txtProductName.Text) Then
+            errors.Add("Tên sản phẩm không được để trống.")
+        End If
+
+        Dim categoryName = cboCategory.SelectedItem?.ToString()
+        If String.IsNullOrEmpty(categoryName) OrElse Not categoryLookup.ContainsKey(categoryName) Then
+            errors.Add("Vui lòng chọn danh mục hợp lệ.")
+        End If
+
+        Dim price As Decimal
+        If Not Decimal.TryParse(txtPrice.Text, price) OrElse price < 0 Then
+            errors.Add("Giá sản phẩm phải là số hợp lệ và không âm.")
+        End If
+
+        Dim quantity As Integer
+        If Not Integer.TryParse(txtQuantity.Text, quantity) OrElse quantity < 0 Then
+            errors.Add("Số lượng phải là số nguyên hợp lệ và không âm.")
+        End If
+        If errors.Count > 0 Then
+            MessageBox.Show(String.Join(Environment.NewLine, errors.ToArray()), "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Return False
+        End If
+        Return True
+    End Function
+
+    ''' <summary>
     ''' Xử lý sự kiện nhấn nút Thêm
     ''' </summary>
     Private Sub btnAdd_Click(sender As Object, e As EventArgs) Handles btnAdd.Click
+        If Not isEditing Then
+            ClearInputs()
+            SetEditingMode(True, True)
+            Return
+        End If
+
         Try
-            lblError.Text = String.Empty
-            Dim categoryName = cboCategory.SelectedItem?.ToString()
-            If String.IsNullOrEmpty(categoryName) OrElse Not categoryLookup.ContainsKey(categoryName) Then
-                lblError.Text = "Vui lòng chọn danh mục hợp lệ."
-                Return
-            End If
-
-            Dim price As Decimal
-            If Not Decimal.TryParse(txtPrice.Text, price) Then
-                lblError.Text = "Giá sản phẩm phải là số hợp lệ."
-                Return
-            End If
-
-            Dim quantity As Integer
-            If Not Integer.TryParse(txtQuantity.Text, quantity) Then
-                lblError.Text = "Số lượng phải là số nguyên hợp lệ."
+            If Not ValidateInputs() Then
                 Return
             End If
 
             Dim product As New Product With {
                 .ProductName = txtProductName.Text.Trim(),
                 .Description = txtDescription.Text.Trim(),
-                .Price = price,
-                .Quantity = quantity,
-                .CategoryId = categoryLookup(categoryName),
+                .Price = Decimal.Parse(txtPrice.Text),
+                .Quantity = Integer.Parse(txtQuantity.Text),
+                .CategoryId = categoryLookup(cboCategory.SelectedItem.ToString()),
                 .CreatedBy = _userId
             }
 
@@ -146,6 +176,8 @@ Public Class ProductManagementForm
             If result.Success Then
                 LoadProducts()
                 ClearInputs()
+                SetEditingMode(False, False)
+                MessageBox.Show("Thêm sản phẩm thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information)
             Else
                 lblError.Text = "Lỗi: " & String.Join("; ", result.Errors.ToArray())
             End If
@@ -154,7 +186,7 @@ Public Class ProductManagementForm
         Catch ex As FormatException
             lblError.Text = "Dữ liệu nhập không đúng định dạng."
         Catch ex As Exception
-            lblError.Text = "Lỗi khi thêm: " & ex.Message
+            lblError.Text = "Lỗi hệ thống khi thêm: " & ex.Message
         End Try
     End Sub
 
@@ -162,47 +194,44 @@ Public Class ProductManagementForm
     ''' Xử lý sự kiện nhấn nút Cập nhật
     ''' </summary>
     Private Sub btnUpdate_Click(sender As Object, e As EventArgs) Handles btnUpdate.Click
-        Try
-            lblError.Text = String.Empty
+        If Not isEditing Then
             If dgvProducts.SelectedRows.Count = 0 Then
                 lblError.Text = "Vui lòng chọn một sản phẩm để cập nhật."
+                Return
+            End If
+            SetEditingMode(True, False)
+            Return
+        End If
+
+        Try
+            Dim errors = ValidateInputs()
+            If Not ValidateInputs() Then
                 Return
             End If
 
             Dim row = dgvProducts.SelectedRows(0)
             Dim productId = Convert.ToInt32(row.Cells("ProductId").Value)
-            Dim categoryName = cboCategory.SelectedItem?.ToString()
-            If String.IsNullOrEmpty(categoryName) OrElse Not categoryLookup.ContainsKey(categoryName) Then
-                lblError.Text = "Vui lòng chọn danh mục hợp lệ."
-                Return
-            End If
-
-            Dim price As Decimal
-            If Not Decimal.TryParse(txtPrice.Text, price) Then
-                lblError.Text = "Giá sản phẩm phải là số hợp lệ."
-                Return
-            End If
-
-            Dim quantity As Integer
-            If Not Integer.TryParse(txtQuantity.Text, quantity) Then
-                lblError.Text = "Số lượng phải là số nguyên hợp lệ."
-                Return
-            End If
 
             Dim product As New Product With {
                 .ProductName = txtProductName.Text.Trim(),
                 .Description = txtDescription.Text.Trim(),
-                .Price = price,
-                .Quantity = quantity,
-                .CategoryId = categoryLookup(categoryName),
+                .Price = Decimal.Parse(txtPrice.Text),
+                .Quantity = Integer.Parse(txtQuantity.Text),
+                .CategoryId = categoryLookup(cboCategory.SelectedItem.ToString()),
                 .CreatedBy = _userId
             }
             product.GetType().GetField("_productId", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).SetValue(product, productId)
+
+            If MessageBox.Show("Bạn có chắc chắn muốn cập nhật sản phẩm này?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.No Then
+                Return
+            End If
 
             Dim result = _productService.UpdateProduct(product)
             If result.Success Then
                 LoadProducts()
                 ClearInputs()
+                SetEditingMode(False, False)
+                MessageBox.Show("Cập nhật thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information)
             Else
                 lblError.Text = "Lỗi: " & String.Join("; ", result.Errors.ToArray())
             End If
@@ -211,7 +240,7 @@ Public Class ProductManagementForm
         Catch ex As FormatException
             lblError.Text = "Dữ liệu nhập không đúng định dạng."
         Catch ex As Exception
-            lblError.Text = "Lỗi khi cập nhật: " & ex.Message
+            lblError.Text = "Lỗi hệ thống khi cập nhật: " & ex.Message
         End Try
     End Sub
 
@@ -220,23 +249,30 @@ Public Class ProductManagementForm
     ''' </summary>
     Private Sub btnDelete_Click(sender As Object, e As EventArgs) Handles btnDelete.Click
         Try
-            lblError.Text = String.Empty
             If dgvProducts.SelectedRows.Count = 0 Then
                 lblError.Text = "Vui lòng chọn một sản phẩm để xóa."
                 Return
             End If
 
             Dim productId = Convert.ToInt32(dgvProducts.SelectedRows(0).Cells("ProductId").Value)
-            If _productService.DeleteProduct(productId) Then
+            If MessageBox.Show("Bạn có chắc chắn muốn xóa sản phẩm này?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) = DialogResult.No Then
+                Return
+            End If
+
+            Dim result = _productService.DeleteProduct(productId)
+            If result Then
                 LoadProducts()
                 ClearInputs()
+                SetEditingMode(False, False)
+                MessageBox.Show("Xóa sản phẩm thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information)
             Else
                 lblError.Text = "Xóa sản phẩm thất bại."
+                MessageBox.Show("Xóa sản phẩm thất bại!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
             End If
         Catch ex As OdbcException
             lblError.Text = "Lỗi cơ sở dữ liệu: " & ex.Message
         Catch ex As Exception
-            lblError.Text = "Lỗi khi xóa: " & ex.Message
+            lblError.Text = "Lỗi hệ thống khi xóa: " & ex.Message
         End Try
     End Sub
 
@@ -257,6 +293,15 @@ Public Class ProductManagementForm
         Catch ex As Exception
             lblError.Text = "Lỗi khi chọn sản phẩm: " & ex.Message
         End Try
+    End Sub
+
+    Private Sub btnCancel_Click(sender As Object, e As EventArgs) Handles btnCancel.Click
+        If isAdding Then
+            ClearInputs()
+        ElseIf dgvProducts.SelectedRows.Count > 0 Then
+            dgvProducts_Click(Nothing, Nothing)
+        End If
+        SetEditingMode(False, False)
     End Sub
 
     ''' <summary>
@@ -282,4 +327,33 @@ Public Class ProductManagementForm
     Private Sub ProductManagementForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
     End Sub
+
+    Private Sub SetEditingMode(editing As Boolean, adding As Boolean)
+        isEditing = editing
+        isAdding = adding
+
+        ' Các field nhập liệu
+        txtProductName.Enabled = editing
+        txtDescription.Enabled = editing
+        txtPrice.Enabled = editing
+        txtQuantity.Enabled = editing
+        cboCategory.Enabled = editing
+
+        ' Nút chính
+        btnAdd.Text = If(adding, "Lưu", "Thêm")
+        btnUpdate.Text = If(Not adding AndAlso editing, "Lưu", "Cập nhật")
+
+        ' Nút phụ
+        btnAdd.Enabled = Not editing OrElse adding
+        btnUpdate.Enabled = Not editing OrElse Not adding
+        btnDelete.Enabled = Not editing
+        btnPrev.Enabled = Not editing
+        btnNext.Enabled = Not editing
+        btnCancel.Enabled = editing
+        dgvProducts.Enabled = Not editing
+
+        ' Nút Hủy
+        btnCancel.Visible = editing
+    End Sub
+
 End Class
