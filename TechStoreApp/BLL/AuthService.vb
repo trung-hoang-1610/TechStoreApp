@@ -1,6 +1,7 @@
 ﻿' BLL/AuthService.vb
 Imports System.Security.Cryptography
 Imports System.Text
+Imports System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel
 Public Class AuthService
     Implements IAuthService
 
@@ -50,10 +51,15 @@ Public Class AuthService
         End If
 
         Dim errors As New List(Of String)
-        ValidationHelper.ValidateString(user.Username, "Tên đăng nhập", errors, True, 50)
-        ValidationHelper.ValidateString(user.PasswordHash, "Mật khẩu", errors, True, 255)
-        ValidationHelper.ValidateString(user.Email, "Email", errors, False, 100)
+        ValidationHelper.ValidateUsername(user.Username, errors)
+        ValidationHelper.ValidatePassword(user.PasswordHash, errors)
+        ValidationHelper.ValidateEmail(user.Email, errors)
         ValidationHelper.ValidateInteger(user.RoleId, "Mã vai trò", errors, 1)
+
+
+        If errors.Count > 0 Then
+            Return New OperationResult(False, errors)
+        End If
 
         If errors.Count > 0 Then
             Return New OperationResult(False, errors)

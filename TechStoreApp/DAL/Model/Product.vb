@@ -1,141 +1,163 @@
-﻿' Model/Product.vb
+﻿''' <summary>
+''' Đại diện cho sản phẩm trong hệ thống.
+''' </summary>
 Public Class Product
-    ''' <summary>
-    ''' Trường riêng lưu mã định danh duy nhất của sản phẩm
-    ''' </summary>
     Private _productId As Integer
-
-    ''' <summary>
-    ''' Trường riêng lưu tên sản phẩm
-    ''' </summary>
     Private _productName As String
-
-    ''' <summary>
-    ''' Trường riêng lưu mô tả sản phẩm
-    ''' </summary>
     Private _description As String
-
-    ''' <summary>
-    ''' Trường riêng lưu giá sản phẩm
-    ''' </summary>
+    Private _unit As String
     Private _price As Decimal
-
-    ''' <summary>
-    ''' Trường riêng lưu số lượng sản phẩm
-    ''' </summary>
     Private _quantity As Integer
-
-    ''' <summary>
-    ''' Trường riêng lưu mã danh mục
-    ''' </summary>
+    Private _minStockLevel As Integer
     Private _categoryId As Integer
-
-    ''' <summary>
-    ''' Trường riêng lưu mã người tạo
-    ''' </summary>
+    Private _supplierId As Integer
     Private _createdBy As Integer
-
-    ''' <summary>
-    ''' Trường riêng lưu thời điểm tạo
-    ''' </summary>
     Private _createdAt As DateTime
+    Private _isActive As Boolean
+
 
     ''' <summary>
-    ''' Lấy mã định danh duy nhất của sản phẩm
+    ''' Mã định danh duy nhất của sản phẩm.
     ''' </summary>
-    ''' <returns>Mã sản phẩm (ProductId)</returns>
-    Public ReadOnly Property ProductId As Integer
+    Public ReadOnly Property ProductId() As Integer
         Get
             Return _productId
         End Get
     End Property
 
     ''' <summary>
-    ''' Lấy hoặc đặt tên sản phẩm
+    ''' Gán mã định danh cho sản phẩm (chỉ sử dụng nội bộ từ DAL).
     ''' </summary>
-    ''' <returns>Tên sản phẩm (ProductName)</returns>
-    Public Property ProductName As String
+    ''' <param name="id">ID sản phẩm</param>
+    Friend Sub SetProductId(ByVal id As Integer)
+        _productId = id
+    End Sub
+    ''' <summary>
+    ''' Tên sản phẩm.
+    ''' </summary>
+    Public Property ProductName() As String
         Get
             Return _productName
         End Get
-        Set(value As String)
+        Set(ByVal value As String)
             _productName = value
         End Set
     End Property
 
     ''' <summary>
-    ''' Lấy hoặc đặt mô tả chi tiết của sản phẩm
+    ''' Mô tả chi tiết sản phẩm.
     ''' </summary>
-    ''' <returns>Mô tả (Description)</returns>
-    Public Property Description As String
+    Public Property Description() As String
         Get
             Return _description
         End Get
-        Set(value As String)
+        Set(ByVal value As String)
             _description = value
         End Set
     End Property
 
     ''' <summary>
-    ''' Lấy hoặc đặt giá sản phẩm
+    ''' Đơn vị tính (Chiếc, Hộp, ...).
     ''' </summary>
-    ''' <returns>Giá sản phẩm (Price)</returns>
-    Public Property Price As Decimal
+    Public Property Unit() As String
+        Get
+            Return _unit
+        End Get
+        Set(ByVal value As String)
+            _unit = value
+        End Set
+    End Property
+
+    ''' <summary>
+    ''' Giá sản phẩm.
+    ''' </summary>
+    Public Property Price() As Decimal
         Get
             Return _price
         End Get
-        Set(value As Decimal)
+        Set(ByVal value As Decimal)
             _price = value
         End Set
     End Property
 
     ''' <summary>
-    ''' Lấy hoặc đặt số lượng sản phẩm
+    ''' Số lượng tồn kho.
     ''' </summary>
-    ''' <returns>Số lượng (Quantity)</returns>
-    Public Property Quantity As Integer
+    Public Property Quantity() As Integer
         Get
             Return _quantity
         End Get
-        Set(value As Integer)
+        Set(ByVal value As Integer)
             _quantity = value
         End Set
     End Property
 
     ''' <summary>
-    ''' Lấy hoặc đặt mã danh mục của sản phẩm
+    ''' Ngưỡng cảnh báo tồn kho thấp.
     ''' </summary>
-    ''' <returns>Mã danh mục (CategoryId)</returns>
-    Public Property CategoryId As Integer
+    Public Property MinStockLevel() As Integer
+        Get
+            Return _minStockLevel
+        End Get
+        Set(ByVal value As Integer)
+            _minStockLevel = value
+        End Set
+    End Property
+
+    ''' <summary>
+    ''' Mã danh mục chứa sản phẩm.
+    ''' </summary>
+    Public Property CategoryId() As Integer
         Get
             Return _categoryId
         End Get
-        Set(value As Integer)
+        Set(ByVal value As Integer)
             _categoryId = value
         End Set
     End Property
 
+    Public Property SupplierId() As Integer
+        Get
+            Return _supplierId
+        End Get
+        Set(ByVal value As Integer)
+            _supplierId = value
+        End Set
+    End Property
 
     ''' <summary>
-    ''' Lấy hoặc đặt mã người tạo sản phẩm
+    ''' Mã người dùng tạo sản phẩm.
     ''' </summary>
-    ''' <returns>Mã người tạo (CreatedBy)</returns>
-    Public Property CreatedBy As Integer
+    Public Property CreatedBy() As Integer
         Get
             Return _createdBy
         End Get
-        Set(value As Integer)
+        Set(ByVal value As Integer)
             _createdBy = value
         End Set
     End Property
 
     ''' <summary>
-    ''' Lấy thời điểm tạo sản phẩm
+    ''' Ngày tạo sản phẩm.
     ''' </summary>
-    ''' <returns>Thời điểm tạo (CreatedAt)</returns>
-    Public ReadOnly Property CreatedAt As DateTime
+    Public Property CreatedAt() As DateTime
         Get
             Return _createdAt
         End Get
+        Set(ByVal value As DateTime)
+            _createdAt = value
+        End Set
+    End Property
+
+    ''' <summary>
+    ''' Trạng thái hoạt động của sản phẩm (True: đang hoạt động).
+    ''' </summary>
+    Public Property IsActive() As Boolean
+        Get
+            Return _isActive
+        End Get
+        Set(ByVal value As Boolean)
+            _isActive = value
+        End Set
     End Property
 End Class

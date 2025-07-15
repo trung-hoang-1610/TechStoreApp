@@ -1,11 +1,4 @@
-﻿' BLL/CategoryService.vb
-Imports Common
-Imports Common.Utilities
-Imports Model
-Imports DAL.Interfaces
-Imports BLL.Interfaces
-
-Public Class CategoryService
+﻿Public Class CategoryService
     Implements ICategoryService
 
     Private ReadOnly _categoryRepository As ICategoryRepository

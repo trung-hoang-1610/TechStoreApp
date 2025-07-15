@@ -28,7 +28,7 @@ Partial Class RegisterForm
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(8.0!, 16.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(1020, 548)
+        Me.ClientSize = New System.Drawing.Size(953, 497)
         Me.Name = "RegisterForm"
         Me.Text = "RegisterForm"
         Me.ResumeLayout(False)

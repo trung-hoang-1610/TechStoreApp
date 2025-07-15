@@ -1,5 +1,6 @@
 ﻿' Common/Utilities/ValidationHelper.vb
 Imports System.Collections.Generic
+Imports System.Text.RegularExpressions
 
 Public Class ValidationHelper
     ''' <summary>
@@ -56,6 +57,90 @@ Public Class ValidationHelper
 
         If value < minValue Then
             errors.Add(fieldName & " phải lớn hơn hoặc bằng " & minValue & ".")
+        End If
+    End Sub
+
+    ''' <summary>
+    ''' Kiểm tra tên đăng nhập theo định dạng và yêu cầu bắt buộc
+    ''' </summary>
+    ''' <param name="username">Tên đăng nhập cần kiểm tra</param>
+    ''' <param name="errors">Danh sách lỗi để thêm vào</param>
+    ''' <param name="isRequired">Xác định trường này có bắt buộc không</param>
+    ''' <param name="maxLength">Độ dài tối đa cho phép</param>
+    Public Shared Sub ValidateUsername(ByVal username As String, ByVal errors As List(Of String), Optional ByVal isRequired As Boolean = True, Optional ByVal maxLength As Integer = 50)
+        If errors Is Nothing Then
+            Throw New ArgumentNullException(NameOf(errors), "Danh sách lỗi không được là Nothing.")
+        End If
+
+        If isRequired AndAlso String.IsNullOrEmpty(username) Then
+            errors.Add("Tên đăng nhập không được để trống.")
+            Return
+        End If
+
+        If maxLength > 0 AndAlso Not String.IsNullOrEmpty(username) AndAlso username.Length > maxLength Then
+            errors.Add("Tên đăng nhập không được dài quá " & maxLength & " ký tự.")
+        End If
+
+        ' Chỉ cho phép chữ cái, số, gạch dưới, không khoảng trắng
+        If Not Regex.IsMatch(username, "^[a-zA-Z0-9_]+$") Then
+            errors.Add("Tên đăng nhập chỉ được chứa chữ cái, số và dấu gạch dưới.")
+        End If
+    End Sub
+
+    ''' <summary>
+    ''' Kiểm tra mật khẩu theo yêu cầu bảo mật cơ bản
+    ''' </summary>
+    ''' <param name="password">Mật khẩu cần kiểm tra</param>
+    ''' <param name="errors">Danh sách lỗi để thêm vào</param>
+    ''' <param name="isRequired">Xác định trường này có bắt buộc không</param>
+    ''' <param name="minLength">Độ dài tối thiểu</param>
+    ''' <param name="maxLength">Độ dài tối đa</param>
+    Public Shared Sub ValidatePassword(ByVal password As String, ByVal errors As List(Of String), Optional ByVal isRequired As Boolean = True, Optional ByVal minLength As Integer = 6, Optional ByVal maxLength As Integer = 100)
+        If errors Is Nothing Then
+            Throw New ArgumentNullException(NameOf(errors), "Danh sách lỗi không được là Nothing.")
+        End If
+
+        If isRequired AndAlso String.IsNullOrEmpty(password) Then
+            errors.Add("Mật khẩu không được để trống.")
+            Return
+        End If
+
+        If Not String.IsNullOrEmpty(password) Then
+            If password.Length < minLength Then
+                errors.Add("Mật khẩu phải có ít nhất " & minLength & " ký tự.")
+            End If
+            If maxLength > 0 AndAlso password.Length > maxLength Then
+                errors.Add("Mật khẩu không được dài quá " & maxLength & " ký tự.")
+            End If
+        End If
+    End Sub
+
+    ''' <summary>
+    ''' Kiểm tra định dạng email
+    ''' </summary>
+    ''' <param name="email">Email cần kiểm tra</param>
+    ''' <param name="errors">Danh sách lỗi để thêm vào</param>
+    ''' <param name="isRequired">Xác định trường này có bắt buộc không</param>
+    ''' <param name="maxLength">Độ dài tối đa của email</param>
+    Public Shared Sub ValidateEmail(ByVal email As String, ByVal errors As List(Of String), Optional ByVal isRequired As Boolean = True, Optional ByVal maxLength As Integer = 100)
+        If errors Is Nothing Then
+            Throw New ArgumentNullException(NameOf(errors), "Danh sách lỗi không được là Nothing.")
+        End If
+
+        If isRequired AndAlso String.IsNullOrEmpty(email) Then
+            errors.Add("Email không được để trống.")
+            Return
+        End If
+
+        If Not String.IsNullOrEmpty(email) Then
+            If maxLength > 0 AndAlso email.Length > maxLength Then
+                errors.Add("Email không được dài quá " & maxLength & " ký tự.")
+            End If
+
+            Dim emailPattern As String = "^[^@\s]+@[^@\s]+\.[^@\s]+$"
+            If Not Regex.IsMatch(email, emailPattern) Then
+                errors.Add("Email không đúng định dạng.")
+            End If
         End If
     End Sub
 End Class

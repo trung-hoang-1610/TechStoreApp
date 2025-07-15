@@ -1,8 +1,6 @@
 ﻿' DAL/CategoryRepository.vb
 Imports System.Data.Odbc
-Imports Common.DAL
-Imports Model
-Imports DAL.Interfaces
+
 
 Public Class CategoryRepository
     Implements ICategoryRepository

@@ -122,6 +122,7 @@ Public Class UserRepository
         Return Nothing
     End Function
 
-
-
+    Public Function GetUserByUsername(username As String) As User Implements IUserRepository.GetUserByUsername
+        Throw New NotImplementedException()
+    End Function
 End Class

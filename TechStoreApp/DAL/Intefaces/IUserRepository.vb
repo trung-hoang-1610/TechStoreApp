@@ -1,5 +1,8 @@
 ﻿' DAL/Interfaces/IUserRepository.vb
 Public Interface IUserRepository
+
+    Function GetUserByUsername(ByVal username As String) As User
+
     ''' <summary>
     ''' Lấy người dùng theo mã định danh
     ''' </summary>

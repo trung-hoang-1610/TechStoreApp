@@ -55,4 +55,12 @@ Public Interface IProductRepository
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
     Function GetTotalProductCount() As Integer
 
+
+    ''' <summary>
+    ''' Tìm kiếm sản phẩm theo các tiêu chí
+    ''' </summary>
+    ''' <param name="criteria">Tiêu chí tìm kiếm (tên, danh mục, giá, trạng thái, phân trang, sắp xếp)</param>
+    ''' <returns>Danh sách sản phẩm phù hợp với tiêu chí</returns>
+    ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
+    Function SearchProducts(ByVal criteria As ProductSearchCriteria) As List(Of Product)
 End Interface

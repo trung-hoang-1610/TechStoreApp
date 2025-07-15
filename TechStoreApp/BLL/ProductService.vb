@@ -6,7 +6,9 @@ Public Class ProductService
 
     Private ReadOnly _productRepository As IProductRepository
     Private ReadOnly _categoryRepository As ICategoryRepository
+    Private ReadOnly _supplierRepository As ISupplierRepository
     Private ReadOnly _categoryCache As Dictionary(Of Integer, Category)
+    Private ReadOnly _supplierCache As Dictionary(Of Integer, Supplier)
 
     ''' <summary>
     ''' Khởi tạo ProductService với repository tương ứng
@@ -14,7 +16,7 @@ Public Class ProductService
     ''' <param name="productRepository">Đối tượng IProductRepository</param>
     ''' <param name="categoryRepository">Đối tượng ICategoryRepository</param>
     ''' <exception cref="ArgumentNullException">Ném ra nếu productRepository hoặc categoryRepository là Nothing</exception>
-    Public Sub New(ByVal productRepository As IProductRepository, ByVal categoryRepository As ICategoryRepository)
+    Public Sub New(ByVal productRepository As IProductRepository, ByVal categoryRepository As ICategoryRepository, ByVal supplierRepository As ISupplierRepository)
         If productRepository Is Nothing Then
             Throw New ArgumentNullException(NameOf(productRepository), "ProductRepository không được là Nothing.")
         End If
@@ -23,7 +25,9 @@ Public Class ProductService
         End If
         _productRepository = productRepository
         _categoryRepository = categoryRepository
+        _supplierRepository = supplierRepository
         _categoryCache = LoadCategoryCache()
+        _supplierCache = LoadSupplierCache()
     End Sub
 
     ''' <summary>
@@ -33,7 +37,14 @@ Public Class ProductService
     Private Function LoadCategoryCache() As Dictionary(Of Integer, Category)
 
         Dim categories = _categoryRepository.GetAllCategories()
-            Return categories.ToDictionary(Function(c) c.CategoryId, Function(c) c)
+        Return categories.ToDictionary(Function(c) c.CategoryId, Function(c) c)
+
+    End Function
+
+    Private Function LoadSupplierCache() As Dictionary(Of Integer, Supplier)
+
+        Dim suppliers = _supplierRepository.GetAllSuppliers()
+        Return suppliers.ToDictionary(Function(s) s.SupplierId, Function(s) s)
 
     End Function
 
@@ -96,7 +107,7 @@ Public Class ProductService
     ''' <exception cref="ArgumentNullException">Ném ra nếu product là Nothing</exception>
     Public Function AddProduct(product As Product) As OperationResult Implements IProductService.AddProduct
         If product Is Nothing Then
-            Throw New ArgumentNullException(NameOf(product), "Đối tượng Product không được là Nothing.")
+            Throw New ArgumentNullException(NameOf(product), "Đối tượng Product rỗng.")
         End If
 
         Dim errors As New List(Of String)
@@ -106,12 +117,17 @@ Public Class ProductService
         ValidationHelper.ValidateInteger(product.Quantity, "Số lượng", errors, 0)
         ValidationHelper.ValidateInteger(product.CategoryId, "Mã danh mục", errors, 1)
         ValidationHelper.ValidateInteger(product.CreatedBy, "Mã người tạo", errors, 0)
+        ValidationHelper.ValidateInteger(product.MinStockLevel, "Mức tồn tối thiểu", errors, 0)
+        ValidationHelper.ValidateString(product.Unit, "Đơn vị", errors, False, 50)
+
 
         ' Kiểm tra CategoryId tồn tại
         If Not _categoryCache.ContainsKey(product.CategoryId) Then
             errors.Add("Danh mục không tồn tại.")
         End If
-
+        If Not _supplierCache.ContainsKey(product.SupplierId) Then
+            errors.Add("Nhà cung cấp không tồn tại.")
+        End If
         If errors.Count > 0 Then
             Return New OperationResult(False, errors)
         End If
@@ -140,10 +156,17 @@ Public Class ProductService
         ValidationHelper.ValidateInteger(product.CategoryId, "Mã danh mục", errors, 1)
         ValidationHelper.ValidateInteger(product.CreatedBy, "Mã người tạo", errors, 0)
         ValidationHelper.ValidateInteger(product.ProductId, "Mã sản phẩm", errors, 1)
+        ValidationHelper.ValidateInteger(product.MinStockLevel, "Mức tồn tối thiểu", errors, 0)
+        ValidationHelper.ValidateString(product.Unit, "Đơn vị", errors, False, 50)
+
 
         ' Kiểm tra CategoryId tồn tại
         If Not _categoryCache.ContainsKey(product.CategoryId) Then
             errors.Add("Danh mục không tồn tại.")
+        End If
+
+        If Not _supplierCache.ContainsKey(product.SupplierId) Then
+            errors.Add("Nhà cung cấp không tồn tại.")
         End If
 
         If errors.Count > 0 Then
@@ -164,11 +187,25 @@ Public Class ProductService
         Return _productRepository.DeleteProduct(id)
     End Function
 
+
+    Public Function SearchProducts(ByVal criteria As ProductSearchCriteria) As List(Of ProductDTO) Implements IProductService.SearchProducts
+        If criteria Is Nothing Then
+            Throw New ArgumentNullException(NameOf(criteria), "Tiêu chí tìm kiếm không được null.")
+        End If
+        Dim userRoleId = SessionManager.GetCurrentUser.RoleId
+
+        If userRoleId <> 3 Then
+            criteria.IsActive = 1 ' Chỉ lấy sản phẩm IsActive = TRUE
+        End If
+        Dim products = _productRepository.SearchProducts(criteria)
+        Return MapToDTOList(products)
+    End Function
     ''' <summary>
     ''' Chuyển đổi đối tượng Product sang ProductDTO
     ''' </summary>
     Private Function MapToDTO(p As Product) As ProductDTO
         Dim category As Category = Nothing
+        Dim supplier As Supplier = Nothing
 
         If Not _categoryCache.TryGetValue(p.CategoryId, category) Then
             category = _categoryRepository.GetCategoryById(p.CategoryId)
@@ -176,14 +213,27 @@ Public Class ProductService
                 _categoryCache(p.CategoryId) = category
             End If
         End If
+
+        If Not _supplierCache.TryGetValue(p.SupplierId, supplier) Then
+            supplier = _supplierRepository.GetSupplierById(p.SupplierId)
+            If category IsNot Nothing Then
+                _supplierCache(p.SupplierId) = supplier
+            End If
+        End If
         Console.WriteLine("categoryID: " & p.CategoryId)
         Return New ProductDTO With {
         .ProductId = p.ProductId,
         .ProductName = p.ProductName,
         .Description = p.Description,
+        .Unit = p.Unit,
+        .MinStockLevel = p.MinStockLevel,
+        .CreatedBy = p.CreatedBy,
+        .CreatedAt = p.CreatedAt,
+        .IsActive = p.IsActive,
         .Price = p.Price,
         .Quantity = p.Quantity,
-        .CategoryName = If(category IsNot Nothing, category.CategoryName, "Không xác định")
+        .CategoryName = If(category IsNot Nothing, category.CategoryName, "Không xác định"),
+        .SupplierName = If(supplier IsNot Nothing, supplier.SupplierName, "Không xác định")
     }
     End Function
 

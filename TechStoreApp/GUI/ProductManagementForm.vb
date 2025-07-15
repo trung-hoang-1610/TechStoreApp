@@ -6,6 +6,7 @@ Public Class ProductManagementForm
 
     Private ReadOnly _productService As IProductService
     Private ReadOnly _categoryService As ICategoryService
+    Private ReadOnly _supplierService As ISupplierService
     Private ReadOnly _userId As Integer
     Private isEditing As Boolean = False
     Private isAdding As Boolean = False
@@ -13,19 +14,26 @@ Public Class ProductManagementForm
     Private pageSize As Integer = 7
     Private totalPages As Integer = 0
     Private categoryLookup As Dictionary(Of String, Integer)
+    Private supplierLookup As Dictionary(Of String, Integer)
+    Private searchCriteria As ProductSearchCriteria
 
-    ''' <summary>
-    ''' Khởi tạo ProductManagementForm với ID người dùng
-    ''' </summary>
-    ''' <param name="userId">Mã định danh của người dùng</param>
     Public Sub New(ByVal userId As Integer)
         InitializeComponent()
         _productService = ServiceFactory.CreateProductService()
         _categoryService = ServiceFactory.CreateCategoryService()
+        _supplierService = ServiceFactory.CreateSupplierService
         _userId = userId
         categoryLookup = New Dictionary(Of String, Integer)
+        supplierLookup = New Dictionary(Of String, Integer)
+        searchCriteria = New ProductSearchCriteria With {
+            .PageSize = pageSize,
+            .PageIndex = currentPage
+        }
         ApplyRolePermissions()
         LoadCategories()
+        LoadSuppliers()
+        LoadSortByOptions()
+        LoadStatusOptions()
         LoadProducts()
     End Sub
 
@@ -40,11 +48,12 @@ Public Class ProductManagementForm
                 btnUpdate.Visible = False
                 btnDelete.Visible = False
                 btnCancel.Visible = False
-
                 txtProductName.Enabled = False
                 txtDescription.Enabled = False
                 txtPrice.Enabled = False
                 txtQuantity.Enabled = False
+                txtUnit.Enabled = False
+                txtMinStockLevel.Enabled = False
                 cboCategory.Enabled = False
             End If
         Catch ex As OdbcException
@@ -54,20 +63,20 @@ Public Class ProductManagementForm
         End Try
     End Sub
 
-    ''' <summary>
-    ''' Tải danh sách danh mục vào ComboBox
-    ''' </summary>
     Private Sub LoadCategories()
         Try
             cboCategory.Items.Clear()
+            cboCategorySort.Items.Clear()
             categoryLookup.Clear()
             Dim categories = _categoryService.GetAllCategories()
             For Each cat In categories
                 cboCategory.Items.Add(cat.CategoryName)
+                cboCategorySort.Items.Add(cat.CategoryName)
                 categoryLookup.Add(cat.CategoryName, cat.CategoryId)
             Next
             If cboCategory.Items.Count > 0 Then
                 cboCategory.SelectedIndex = 0
+                cboCategorySort.SelectedIndex = 0
             End If
         Catch ex As OdbcException
             lblError.Text = "Lỗi khi tải danh mục: " & ex.Message
@@ -76,18 +85,45 @@ Public Class ProductManagementForm
         End Try
     End Sub
 
-    ''' <summary>
-    ''' Tải danh sách sản phẩm vào DataGridView
-    ''' </summary>
+    Private Sub LoadSuppliers()
+        Try
+            cboSupplier.Items.Clear()
+            SupplierLookup.Clear()
+            Dim suppliers = _supplierService.GetAllSuppliers()
+            For Each sup In suppliers
+                cboSupplier.Items.Add(sup.SupplierName)
+                supplierLookup.Add(sup.SupplierName, sup.SupplierId)
+            Next
+            If cboSupplier.Items.Count > 0 Then
+                cboSupplier.SelectedIndex = 0
+            End If
+        Catch ex As OdbcException
+            lblError.Text = "Lỗi khi tải danh mục: " & ex.Message
+        Catch ex As Exception
+            lblError.Text = "Lỗi hệ thống khi tải danh mục: " & ex.Message
+        End Try
+    End Sub
+
+    Private Sub LoadSortByOptions()
+        cboSortBy.Items.Clear()
+        cboSortBy.Items.AddRange({"Tên (A-Z)", "Giá (Thấp đến Cao)", "Giá (Cao đến Thấp)"})
+        cboSortBy.SelectedIndex = 0
+    End Sub
+
+    Private Sub LoadStatusOptions()
+        cboStatus.Items.Clear()
+        cboStatus.Items.AddRange({"Tất cả", "Đang hoạt động", "Ngưng hoạt động"})
+        cboStatus.SelectedIndex = 0
+    End Sub
+
     Private Sub LoadProducts()
         Try
-            Dim totalCount = _productService.GetTotalProductCount()
-            totalPages = If(pageSize > 0, CInt(Math.Ceiling(totalCount / pageSize)), 1)
-
-            Dim products = _productService.GetProductsByPage(currentPage, pageSize)
+            searchCriteria.PageIndex = currentPage
+            Dim products = _productService.SearchProducts(searchCriteria)
+            totalPages = If(searchCriteria.PageSize > 0, CInt(Math.Ceiling(searchCriteria.TotalCount / searchCriteria.PageSize)), 1)
             dgvProducts.Rows.Clear()
             For Each p In products
-                dgvProducts.Rows.Add(p.ProductId, p.ProductName, p.Description, p.Price, p.Quantity, p.CategoryName)
+                dgvProducts.Rows.Add(p.ProductId, p.ProductName, p.Description, p.Unit, p.Price, p.Quantity, p.MinStockLevel, p.CategoryName, p.SupplierName, p.CreatedBy, p.CreatedAt, p.IsActive)
             Next
 
             lblPage.Text = $"Trang {currentPage + 1}/{totalPages}"
@@ -100,14 +136,13 @@ Public Class ProductManagementForm
         End Try
     End Sub
 
-    ''' <summary>
-    ''' Xóa các trường nhập liệu
-    ''' </summary>
     Private Sub ClearInputs()
         txtProductName.Text = String.Empty
         txtDescription.Text = String.Empty
         txtPrice.Text = String.Empty
         txtQuantity.Text = String.Empty
+        txtUnit.Text = String.Empty
+        txtMinStockLevel.Text = String.Empty
         If cboCategory.Items.Count > 0 Then
             cboCategory.SelectedIndex = 0
         Else
@@ -116,10 +151,6 @@ Public Class ProductManagementForm
         lblError.Text = String.Empty
     End Sub
 
-    ''' <summary>
-    ''' Validate dữ liệu đầu vào
-    ''' </summary>
-    ''' <returns>Danh sách lỗi nếu có</returns>
     Private Function ValidateInputs() As Boolean
         Dim errors As New List(Of String)
 
@@ -141,6 +172,12 @@ Public Class ProductManagementForm
         If Not Integer.TryParse(txtQuantity.Text, quantity) OrElse quantity < 0 Then
             errors.Add("Số lượng phải là số nguyên hợp lệ và không âm.")
         End If
+
+        Dim minStockLevel As Integer
+        If Not Integer.TryParse(txtMinStockLevel.Text, minStockLevel) OrElse minStockLevel < 0 Then
+            errors.Add("Mức tồn tối thiểu phải là số nguyên hợp lệ và không âm.")
+        End If
+
         If errors.Count > 0 Then
             MessageBox.Show(String.Join(Environment.NewLine, errors.ToArray()), "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning)
             Return False
@@ -148,9 +185,6 @@ Public Class ProductManagementForm
         Return True
     End Function
 
-    ''' <summary>
-    ''' Xử lý sự kiện nhấn nút Thêm
-    ''' </summary>
     Private Sub btnAdd_Click(sender As Object, e As EventArgs) Handles btnAdd.Click
         If Not isEditing Then
             ClearInputs()
@@ -166,10 +200,14 @@ Public Class ProductManagementForm
             Dim product As New Product With {
                 .ProductName = txtProductName.Text.Trim(),
                 .Description = txtDescription.Text.Trim(),
+                .Unit = txtUnit.Text.Trim(),
                 .Price = Decimal.Parse(txtPrice.Text),
                 .Quantity = Integer.Parse(txtQuantity.Text),
+                .MinStockLevel = Integer.Parse(txtMinStockLevel.Text),
                 .CategoryId = categoryLookup(cboCategory.SelectedItem.ToString()),
-                .CreatedBy = _userId
+                .CreatedBy = _userId,
+                .CreatedAt = DateTime.Now(),
+                .IsActive = True
             }
 
             Dim result = _productService.AddProduct(product)
@@ -190,9 +228,6 @@ Public Class ProductManagementForm
         End Try
     End Sub
 
-    ''' <summary>
-    ''' Xử lý sự kiện nhấn nút Cập nhật
-    ''' </summary>
     Private Sub btnUpdate_Click(sender As Object, e As EventArgs) Handles btnUpdate.Click
         If Not isEditing Then
             If dgvProducts.SelectedRows.Count = 0 Then
@@ -204,7 +239,6 @@ Public Class ProductManagementForm
         End If
 
         Try
-            Dim errors = ValidateInputs()
             If Not ValidateInputs() Then
                 Return
             End If
@@ -215,11 +249,14 @@ Public Class ProductManagementForm
             Dim product As New Product With {
                 .ProductName = txtProductName.Text.Trim(),
                 .Description = txtDescription.Text.Trim(),
+                .Unit = txtUnit.Text.Trim(),
                 .Price = Decimal.Parse(txtPrice.Text),
                 .Quantity = Integer.Parse(txtQuantity.Text),
+                .MinStockLevel = Integer.Parse(txtMinStockLevel.Text),
                 .CategoryId = categoryLookup(cboCategory.SelectedItem.ToString()),
                 .CreatedBy = _userId
             }
+
             product.GetType().GetField("_productId", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).SetValue(product, productId)
 
             If MessageBox.Show("Bạn có chắc chắn muốn cập nhật sản phẩm này?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.No Then
@@ -244,9 +281,6 @@ Public Class ProductManagementForm
         End Try
     End Sub
 
-    ''' <summary>
-    ''' Xử lý sự kiện nhấn nút Xóa
-    ''' </summary>
     Private Sub btnDelete_Click(sender As Object, e As EventArgs) Handles btnDelete.Click
         Try
             If dgvProducts.SelectedRows.Count = 0 Then
@@ -276,23 +310,99 @@ Public Class ProductManagementForm
         End Try
     End Sub
 
-    ''' <summary>
-    ''' Xử lý sự kiện chọn dòng trong DataGridView
-    ''' </summary>
     Private Sub dgvProducts_Click(sender As Object, e As EventArgs) Handles dgvProducts.Click
         Try
             If dgvProducts.SelectedRows.Count > 0 Then
                 Dim row = dgvProducts.SelectedRows(0)
-                txtProductName.Text = If(row.Cells("ProductName").Value?.ToString(), String.Empty)
-                txtDescription.Text = If(row.Cells("Description").Value?.ToString(), String.Empty)
-                txtPrice.Text = If(row.Cells("Price").Value?.ToString(), String.Empty)
-                txtQuantity.Text = If(row.Cells("Quantity").Value?.ToString(), String.Empty)
-                Dim catName = If(row.Cells("CategoryName").Value?.ToString(), String.Empty)
+                txtProductName.Text = If(row.Cells("ProductName").Value IsNot Nothing, row.Cells("ProductName").Value.ToString(), String.Empty)
+                txtDescription.Text = If(row.Cells("Description").Value IsNot Nothing, row.Cells("Description").Value.ToString(), String.Empty)
+                txtUnit.Text = If(row.Cells("Unit").Value IsNot Nothing, row.Cells("Unit").Value.ToString(), String.Empty)
+                txtPrice.Text = If(row.Cells("Price").Value IsNot Nothing, row.Cells("Price").Value.ToString(), String.Empty)
+                txtQuantity.Text = If(row.Cells("Quantity").Value IsNot Nothing, row.Cells("Quantity").Value.ToString(), String.Empty)
+                txtMinStockLevel.Text = If(row.Cells("MinStockLevel").Value IsNot Nothing, row.Cells("MinStockLevel").Value.ToString(), String.Empty)
+                Dim catName = If(row.Cells("CategoryName").Value IsNot Nothing, row.Cells("CategoryName").Value.ToString(), String.Empty)
                 cboCategory.SelectedIndex = If(cboCategory.Items.Contains(catName), cboCategory.Items.IndexOf(catName), -1)
             End If
         Catch ex As Exception
             lblError.Text = "Lỗi khi chọn sản phẩm: " & ex.Message
         End Try
+    End Sub
+
+    Private Sub btnSearch_Click(sender As Object, e As EventArgs) Handles btnSearch.Click
+        Try
+            Dim nameValue = If(String.IsNullOrEmpty(txtSearchName.Text.Trim()), Nothing, txtSearchName.Text.Trim())
+            Dim categoryIdValue = If(cboCategorySort.SelectedIndex >= 0 AndAlso cboCategorySort.SelectedItem IsNot Nothing, categoryLookup(cboCategorySort.SelectedItem.ToString()), Nothing)
+            Dim isActiveValue As Boolean? = Nothing
+
+            Select Case cboStatus.SelectedIndex
+                Case 0 ' Tất cả
+                    isActiveValue = Nothing
+                Case 1 ' Đang hoạt động
+                    isActiveValue = True
+                Case 2 ' Ngưng hoạt động
+                    isActiveValue = False
+            End Select
+
+            Dim sortByValue = If(cboSortBy.SelectedIndex >= 0 AndAlso cboSortBy.SelectedItem IsNot Nothing,
+                               If(cboSortBy.SelectedItem.ToString() = "Tên (A-Z)", "Name",
+                                  If(cboSortBy.SelectedItem.ToString() = "Giá (Thấp đến Cao)", "PriceAsc", "PriceDesc")),
+                               "Name")
+
+            searchCriteria = New ProductSearchCriteria With {
+                .Name = nameValue,
+                .CategoryId = categoryIdValue,
+                .IsActive = isActiveValue,
+                .PageIndex = 0,
+                .PageSize = pageSize,
+                .SortBy = sortByValue
+            }
+
+            currentPage = 0
+            LoadProducts()
+        Catch ex As OdbcException
+            lblError.Text = "Lỗi khi tìm kiếm sản phẩm: " & ex.Message
+        Catch ex As Exception
+            lblError.Text = "Lỗi hệ thống khi tìm kiếm: " & ex.Message
+        End Try
+    End Sub
+
+    Private Sub btnClearSearch_Click(sender As Object, e As EventArgs) Handles btnClearSearch.Click
+        Try
+            txtSearchName.Text = String.Empty
+            cboStatus.SelectedIndex = 0
+            cboSortBy.SelectedIndex = 0
+            If cboCategorySort.Items.Count > 0 Then
+                cboCategorySort.SelectedIndex = 0
+            Else
+                cboCategorySort.SelectedIndex = -1
+            End If
+
+            searchCriteria = New ProductSearchCriteria With {
+                .PageSize = pageSize,
+                .PageIndex = 0
+            }
+
+            currentPage = 0
+            LoadProducts()
+        Catch ex As OdbcException
+            lblError.Text = "Lỗi khi xóa tìm kiếm: " & ex.Message
+        Catch ex As Exception
+            lblError.Text = "Lỗi hệ thống khi xóa tìm kiếm: " & ex.Message
+        End Try
+    End Sub
+
+    Private Sub btnPrev_Click(sender As Object, e As EventArgs) Handles btnPrev.Click
+        If currentPage > 0 Then
+            currentPage -= 1
+            LoadProducts()
+        End If
+    End Sub
+
+    Private Sub btnNext_Click(sender As Object, e As EventArgs) Handles btnNext.Click
+        If currentPage < totalPages - 1 Then
+            currentPage += 1
+            LoadProducts()
+        End If
     End Sub
 
     Private Sub btnCancel_Click(sender As Object, e As EventArgs) Handles btnCancel.Click
@@ -304,56 +414,34 @@ Public Class ProductManagementForm
         SetEditingMode(False, False)
     End Sub
 
-    ''' <summary>
-    ''' Xử lý sự kiện nhấn nút Trang trước
-    ''' </summary>
-    Private Sub btnPrev_Click(sender As Object, e As EventArgs) Handles btnPrev.Click
-        If currentPage > 0 Then
-            currentPage -= 1
-            LoadProducts()
-        End If
-    End Sub
-
-    ''' <summary>
-    ''' Xử lý sự kiện nhấn nút Trang sau
-    ''' </summary>
-    Private Sub btnNext_Click(sender As Object, e As EventArgs) Handles btnNext.Click
-        If currentPage < totalPages - 1 Then
-            currentPage += 1
-            LoadProducts()
-        End If
-    End Sub
-
     Private Sub ProductManagementForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-
+        ' Optional: Initialize additional controls here if needed
     End Sub
 
     Private Sub SetEditingMode(editing As Boolean, adding As Boolean)
         isEditing = editing
         isAdding = adding
 
-        ' Các field nhập liệu
         txtProductName.Enabled = editing
         txtDescription.Enabled = editing
+        txtUnit.Enabled = editing
         txtPrice.Enabled = editing
         txtQuantity.Enabled = editing
+        txtMinStockLevel.Enabled = editing
         cboCategory.Enabled = editing
 
-        ' Nút chính
         btnAdd.Text = If(adding, "Lưu", "Thêm")
         btnUpdate.Text = If(Not adding AndAlso editing, "Lưu", "Cập nhật")
-
-        ' Nút phụ
         btnAdd.Enabled = Not editing OrElse adding
         btnUpdate.Enabled = Not editing OrElse Not adding
         btnDelete.Enabled = Not editing
         btnPrev.Enabled = Not editing
         btnNext.Enabled = Not editing
         btnCancel.Enabled = editing
+        btnSearch.Enabled = Not editing
+        btnClearSearch.Enabled = Not editing
         dgvProducts.Enabled = Not editing
 
-        ' Nút Hủy
         btnCancel.Visible = editing
     End Sub
-
 End Class

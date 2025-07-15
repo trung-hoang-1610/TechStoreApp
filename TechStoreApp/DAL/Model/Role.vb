@@ -1,35 +1,33 @@
-﻿' Model/Role.vb
+﻿''' <summary>
+''' Đại diện cho vai trò người dùng trong hệ thống (Admin / User)
+''' </summary>
 Public Class Role
-    ''' <summary>
-    ''' Trường riêng lưu mã định danh duy nhất của vai trò
-    ''' </summary>
-    Private _roleId As Integer
 
-    ''' <summary>
-    ''' Trường riêng lưu tên vai trò
-    ''' </summary>
+    Private _roleId As Integer
     Private _roleName As String
 
     ''' <summary>
-    ''' Lấy mã định danh duy nhất của vai trò
+    ''' Mã vai trò (RoleId)
     ''' </summary>
-    ''' <returns>Mã vai trò (RoleId)</returns>
-    Public ReadOnly Property RoleId As Integer
+    Public Property RoleId() As Integer
         Get
             Return _roleId
         End Get
+        Set(ByVal value As Integer)
+            _roleId = value
+        End Set
     End Property
 
     ''' <summary>
-    ''' Lấy hoặc đặt tên vai trò, không được trùng lặp
+    ''' Tên vai trò (Admin / User)
     ''' </summary>
-    ''' <returns>Tên vai trò (RoleName)</returns>
-    Public Property RoleName As String
+    Public Property RoleName() As String
         Get
             Return _roleName
         End Get
-        Set(value As String)
+        Set(ByVal value As String)
             _roleName = value
         End Set
     End Property
+
 End Class
