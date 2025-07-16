@@ -37,13 +37,6 @@ Public Class RepositoryFactory
         Return New ProductRepository()
     End Function
 
-    ''' <summary>
-    ''' Tạo và trả về một đối tượng IInventoryTransactionRepository.
-    ''' </summary>
-    ''' <returns>Đối tượng IInventoryTransactionRepository để quản lý giao dịch kho.</returns>
-    Public Shared Function CreateInventoryTransactionRepository() As IInventoryTransactionRepository
-        Return New InventoryTransactionRepository()
-    End Function
 
     ''' <summary>
     ''' Tạo và trả về một đối tượng ISupplierRepository.
@@ -51,5 +44,13 @@ Public Class RepositoryFactory
     ''' <returns>Đối tượng ISupplierRepository để quản lý nhà cung cấp.</returns>
     Public Shared Function CreateSupplierRepository() As ISupplierRepository
         Return New SupplierRepository()
+    End Function
+
+    Public Shared Function CreateStockTransactionRepository() As IStockTransactionDAL
+        Return New StockTransactionDAL()
+    End Function
+
+    Public Shared Function CreateStockTransactionDetailRepository() As IStockTransactionDetailDAL
+        Return New StockTransactionDetailDAL()
     End Function
 End Class

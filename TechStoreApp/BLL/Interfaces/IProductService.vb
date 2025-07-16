@@ -8,7 +8,7 @@ Public Interface IProductService
     ''' <returns>Danh sách các đối tượng Product</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
     Function GetAllProducts() As List(Of ProductDTO)
-
+    Function GetProductsBySupplierId() As List(Of ProductDTO)
     ''' <summary>
     ''' Lấy sản phẩm theo mã định danh
     ''' </summary>
@@ -67,4 +67,7 @@ Public Interface IProductService
     ''' <returns>Danh sách sản phẩm phù hợp với tiêu chí</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
     Function SearchProducts(ByVal criteria As ProductSearchCriteria) As List(Of ProductDTO)
+
+    Function GetProductStatistics(timeRange As String) As ProductStatistics
+
 End Interface

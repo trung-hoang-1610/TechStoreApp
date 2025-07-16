@@ -16,6 +16,15 @@ Public Interface IProductRepository
     Function GetProductById(ByVal id As Integer) As Product
 
     ''' <summary>
+    ''' Lấy sản phẩm theo tên
+    ''' </summary>
+    ''' <param name="name">Tên sản phẩm</param>
+    ''' <returns>Danh sách các đối tượng Product phù hợp với tên</returns>
+    ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
+
+    Function GetProductsBySupplierId(ByVal id As Integer) As List(Of Product)
+
+    ''' <summary>
     ''' Thêm sản phẩm mới vào cơ sở dữ liệu
     ''' </summary>
     ''' <param name="product">Đối tượng Product cần thêm</param>
@@ -63,4 +72,15 @@ Public Interface IProductRepository
     ''' <returns>Danh sách sản phẩm phù hợp với tiêu chí</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
     Function SearchProducts(ByVal criteria As ProductSearchCriteria) As List(Of Product)
+
+    Function GetProductStatistics(timeRange As String) As ProductStatistics
+
+    ''' <summary>
+    ''' Cập nhật số lượng tồn kho của sản phẩm.
+    ''' </summary>
+    ''' <param name="productId">Mã sản phẩm</param>
+    ''' <param name="quantityChange">Số lượng thay đổi (dương cho nhập, âm cho xuất)</param>
+    ''' <returns>True nếu cập nhật thành công, False nếu thất bại</returns>
+    Function UpdateProductQuantity(ByVal productId As Integer, ByVal quantityChange As Integer) As Boolean
+
 End Interface

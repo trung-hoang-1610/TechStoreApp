@@ -54,16 +54,6 @@ Public Class ServiceFactory
         Return New ProductService(productRepository, categoryRepository, supplierRepository)
     End Function
 
-    ''' <summary>
-    ''' Tạo và trả về một đối tượng IInventoryTransactionService.
-    ''' </summary>
-    ''' <returns>Đối tượng IInventoryTransactionService để quản lý giao dịch kho.</returns>
-    Public Shared Function CreateInventoryTransactionService() As IInventoryTransactionService
-        Dim transactionRepository As IInventoryTransactionRepository = RepositoryFactory.CreateInventoryTransactionRepository()
-        Dim productRepository As IProductRepository = RepositoryFactory.CreateProductRepository()
-        Dim userRepository As IUserRepository = RepositoryFactory.CreateUserRepository()
-        Return New InventoryTransactionService(transactionRepository, productRepository, userRepository)
-    End Function
 
     ''' <summary>
     ''' Tạo và trả về một đối tượng ISupplierService.
@@ -72,5 +62,13 @@ Public Class ServiceFactory
     Public Shared Function CreateSupplierService() As ISupplierService
         Dim supplierRepository As ISupplierRepository = RepositoryFactory.CreateSupplierRepository()
         Return New SupplierService(supplierRepository)
+    End Function
+
+    Public Shared Function CreateStockTransactionService() As IStockTransactionBLL
+        Dim stockTransactionRepository As IStockTransactionDAL = RepositoryFactory.CreateStockTransactionRepository()
+        Dim productRepository As IProductRepository = RepositoryFactory.CreateProductRepository()
+        Dim userRepository As IUserRepository = RepositoryFactory.CreateUserRepository()
+        Dim supplierRepository As ISupplierRepository = RepositoryFactory.CreateSupplierRepository()
+        Return New StockTransactionService(stockTransactionRepository, productRepository, userRepository, supplierRepository)
     End Function
 End Class

@@ -8,4 +8,5 @@
     Public Property PageSize As Integer
     Public Property SortBy As String
     Public Property TotalCount As Integer
+    Public Property LowStockOnly As Boolean?
 End Class

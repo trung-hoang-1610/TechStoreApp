@@ -9,14 +9,14 @@ Imports System.Text
 Public Class ProductRepository
     Implements IProductRepository
 
-    ''' <inheritdoc />
+
     Public Function GetAllProducts() As List(Of Product) Implements IProductRepository.GetAllProducts
         Dim products As New List(Of Product)
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
             Dim query As String = "SELECT ProductId, ProductName, Description, Price, Quantity, CategoryId, SupplierId, CreatedBy, CreatedAt FROM Products WHERE IsActive = FALSE ORDER BY ProductId DESC"
 
-            Try
-                If connection.State <> ConnectionState.Open Then
+
+            If connection.State <> ConnectionState.Open Then
                     connection.Open()
                 End If
 
@@ -29,15 +29,11 @@ Public Class ProductRepository
                         End While
                     End Using
                 End Using
-            Catch ex As OdbcException
-                Debug.WriteLine("Lỗi cơ sở dữ liệu: " & ex.Message & ", Query: " & query)
-                Throw
-            End Try
+
         End Using
         Return products
     End Function
 
-    ''' <inheritdoc />
     Public Function GetProductById(ByVal id As Integer) As Product Implements IProductRepository.GetProductById
         If id <= 0 Then
             Throw New ArgumentException("ID sản phẩm phải lớn hơn 0.", NameOf(id))
@@ -46,8 +42,8 @@ Public Class ProductRepository
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
             Dim query As String = "SELECT ProductId, ProductName, Description, Price, Quantity, CategoryId, SupplierId, CreatedBy, CreatedAt FROM Products WHERE ProductId = ? AND IsActive = FALSE"
 
-            Try
-                If connection.State <> ConnectionState.Open Then
+
+            If connection.State <> ConnectionState.Open Then
                     connection.Open()
                 End If
 
@@ -61,25 +57,21 @@ Public Class ProductRepository
                         End If
                     End Using
                 End Using
-            Catch ex As OdbcException
-                Debug.WriteLine("Lỗi cơ sở dữ liệu: " & ex.Message & ", Query: " & query)
-                Throw
-            End Try
+
         End Using
         Return Nothing
     End Function
 
-    ''' <inheritdoc />
     Public Function AddProduct(ByVal product As Product) As Integer Implements IProductRepository.AddProduct
         If product Is Nothing Then
             Throw New ArgumentNullException(NameOf(product), "Sản phẩm không được null.")
         End If
 
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
-            Dim query As String = "INSERT INTO Products (ProductName, Description, Unit, Price, Quantity, MinStockLevel, CategoryId, SupplierId, CreatedBy, IsActive) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);"
+            Dim query As String = "INSERT INTO Products (ProductName, Description, Unit, Price, Quantity, MinStockLevel, CategoryId, SupplierId, CreatedBy, IsActive) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
             Dim getIdQuery As String = "SELECT LAST_INSERT_ID()"
-            Try
-                If connection.State <> ConnectionState.Open Then
+
+            If connection.State <> ConnectionState.Open Then
                     connection.Open()
                 End If
 
@@ -103,14 +95,10 @@ Public Class ProductRepository
                     Dim lastId As Object = getIdCommand.ExecuteScalar()
                     Return If(lastId IsNot Nothing, Convert.ToInt32(lastId), 0)
                 End Using
-            Catch ex As OdbcException
-                Debug.WriteLine("Lỗi cơ sở dữ liệu: " & ex.Message & ", Query: " & query)
-                Throw
-            End Try
+
         End Using
     End Function
 
-    ''' <inheritdoc />
     Public Function UpdateProduct(ByVal product As Product) As Boolean Implements IProductRepository.UpdateProduct
         If product Is Nothing OrElse product.ProductId <= 0 Then
             Throw New ArgumentException("Sản phẩm và ID phải hợp lệ.", NameOf(product))
@@ -119,8 +107,8 @@ Public Class ProductRepository
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
             Dim query As String = "UPDATE Products SET ProductName = ?, Description = ?, Unit = ?, Price = ?, Quantity = ?, MinStockLevel = ?, CategoryId = ?, SupplierId = ? WHERE ProductId = ?"
 
-            Try
-                If connection.State <> ConnectionState.Open Then
+
+            If connection.State <> ConnectionState.Open Then
                     connection.Open()
                 End If
 
@@ -137,14 +125,10 @@ Public Class ProductRepository
 
                     Return command.ExecuteNonQuery() > 0
                 End Using
-            Catch ex As OdbcException
-                Debug.WriteLine("Lỗi cơ sở dữ liệu: " & ex.Message & ", Query: " & query)
-                Throw
-            End Try
+
         End Using
     End Function
 
-    ''' <inheritdoc />
     Public Function DeleteProduct(ByVal id As Integer) As Boolean Implements IProductRepository.DeleteProduct
         If id <= 0 Then
             Throw New ArgumentException("ID sản phẩm phải lớn hơn 0.", NameOf(id))
@@ -153,8 +137,8 @@ Public Class ProductRepository
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
             Dim query As String = $"UPDATE Products SET IsActive = FALSE WHERE ProductId = {id}"
 
-            Try
-                If connection.State <> ConnectionState.Open Then
+
+            If connection.State <> ConnectionState.Open Then
                     connection.Open()
                 End If
 
@@ -162,14 +146,10 @@ Public Class ProductRepository
                     command.Parameters.Add("", OdbcType.Int).Value = id
                     Return command.ExecuteNonQuery() > 0
                 End Using
-            Catch ex As OdbcException
-                Debug.WriteLine("Lỗi cơ sở dữ liệu: " & ex.Message & ", Query: " & query)
-                Throw
-            End Try
+
         End Using
     End Function
 
-    ''' <inheritdoc />
     Public Function GetProductsByPage(pageIndex As Integer, pageSize As Integer) As List(Of Product) Implements IProductRepository.GetProductsByPage
         If pageIndex < 0 Then
             Throw New ArgumentException("Chỉ số trang không được nhỏ hơn 0.", NameOf(pageIndex))
@@ -186,8 +166,8 @@ Public Class ProductRepository
                                     FROM Products WHERE IsActive = TRUE 
                                     ORDER BY ProductId 
                                     LIMIT {pageSize} OFFSET {offset}"
-            Try
-                If connection.State <> ConnectionState.Open Then
+
+            If connection.State <> ConnectionState.Open Then
                     connection.Open()
                 End If
 
@@ -201,15 +181,11 @@ Public Class ProductRepository
                         End While
                     End Using
                 End Using
-            Catch ex As OdbcException
-                Debug.WriteLine("Lỗi cơ sở dữ liệu: " & ex.Message & ", Query: " & query)
-                Throw
-            End Try
+
         End Using
         Return products
     End Function
 
-    ''' <inheritdoc />
     Public Function GetTotalProductCount() As Integer Implements IProductRepository.GetTotalProductCount
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
             Dim query As String = "SELECT COUNT(*) FROM Products WHERE IsActive = TRUE"
@@ -272,6 +248,11 @@ Public Class ProductRepository
             hasConditions = True
         End If
 
+        If criteria.LowStockOnly Then
+            queryBuilder.Append(If(hasConditions, " AND ", " WHERE ") & "Quantity < MinStockLevel")
+            countQuery.Append(If(hasConditions, " AND ", " WHERE ") & "Quantity < MinStockLevel")
+            hasConditions = True
+        End If
         ' ORDER BY
         Dim sortColumn As String = "ProductId"
         Dim sortDirection As String = "ASC"
@@ -408,4 +389,98 @@ Public Class ProductRepository
             Debug.WriteLine("❌ Lỗi tại IsActive: " & ex.Message)
         End Try
     End Sub
+
+    Public Function GetProductStatistics(timeRange As String) As ProductStatistics Implements IProductRepository.GetProductStatistics
+        Dim stats As New ProductStatistics
+        stats.ProductsByCategory = New Dictionary(Of String, Integer)
+        Try
+            Using conn As OdbcConnection = ConnectionHelper.GetConnection()
+                Dim query As String = "SELECT COUNT(*) AS Total, " &
+                                     "SUM(CASE WHEN IsActive = 1 THEN 1 ELSE 0 END) AS Active, " &
+                                     "SUM(CASE WHEN IsActive = 0 THEN 1 ELSE 0 END) AS Inactive, " &
+                                     "SUM(CASE WHEN Quantity < MinStockLevel THEN 1 ELSE 0 END) AS LowStock, " &
+                                     "SUM(Price * Quantity) AS InventoryValue " &
+                                     "FROM Products"
+                If timeRange = "7 ngày qua" Then
+                    query &= " WHERE CreatedAt >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)"
+                ElseIf timeRange = "30 ngày qua" Then
+                    query &= " WHERE CreatedAt >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)"
+                End If
+
+                Using cmd As New OdbcCommand(query, conn)
+                    Using reader As OdbcDataReader = cmd.ExecuteReader()
+                        If reader.Read() Then
+                            stats.TotalProducts = reader.GetInt32(0)
+                            stats.ActiveProducts = reader.GetInt32(1)
+                            stats.InactiveProducts = reader.GetInt32(2)
+                            stats.LowStockProducts = reader.GetInt32(3)
+                            stats.InventoryValue = If(reader.IsDBNull(4), 0, reader.GetDecimal(4))
+                        End If
+                    End Using
+                End Using
+
+                query = "SELECT c.CategoryName, COUNT(p.ProductId) " &
+                        "FROM Products p INNER JOIN Categories c ON p.CategoryId = c.CategoryId "
+                If timeRange = "7 ngày qua" Then
+                    query &= "WHERE p.CreatedAt >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) "
+                ElseIf timeRange = "30 ngày qua" Then
+                    query &= "WHERE p.CreatedAt >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) "
+                End If
+                query &= "GROUP BY c.CategoryName"
+
+                Using cmd As New OdbcCommand(query, conn)
+                    Using reader As OdbcDataReader = cmd.ExecuteReader()
+                        While reader.Read()
+                            stats.ProductsByCategory.Add(reader.GetString(0), reader.GetInt32(1))
+                        End While
+                    End Using
+                End Using
+            End Using
+        Catch ex As OdbcException
+            Throw ex
+        End Try
+        Return stats
+    End Function
+
+
+    ''' <summary>
+    ''' Cập nhật số lượng tồn kho của sản phẩm.
+    ''' </summary>
+    Public Function UpdateProductQuantity(ByVal productId As Integer, ByVal quantityChange As Integer) As Boolean Implements IProductRepository.UpdateProductQuantity
+        Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            connection.Open()
+            Dim query As String = "UPDATE Products SET Quantity = Quantity + ? WHERE ProductId = ?"
+            Using command As New OdbcCommand(query, connection)
+                command.Parameters.AddWithValue("?", quantityChange)
+                command.Parameters.AddWithValue("?", productId)
+                Return command.ExecuteNonQuery() > 0
+            End Using
+            ConnectionHelper.CloseConnection(connection)
+
+        End Using
+    End Function
+
+    Public Function GetProductsBySupplierId(id As Integer) As List(Of Product) Implements IProductRepository.GetProductsBySupplierId
+        Dim products As New List(Of Product)
+        Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            Dim query As String = $"SELECT ProductId, ProductName, Description, Price, Quantity, CategoryId, SupplierId, CreatedBy, CreatedAt FROM Products WHERE IsActive = TRUE AND Products.SupplierId = {id} ORDER BY ProductId DESC"
+
+
+            If connection.State <> ConnectionState.Open Then
+                connection.Open()
+            End If
+
+            Using command As New OdbcCommand(query, connection)
+                Using reader As OdbcDataReader = command.ExecuteReader()
+                    While reader.Read()
+                        Dim product As New Product
+                        MapProductFields(product, reader)
+                        products.Add(product)
+                    End While
+                End Using
+            End Using
+
+        End Using
+        Return products
+    End Function
 End Class

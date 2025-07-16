@@ -28,6 +28,7 @@ Public Class ProductService
         _supplierRepository = supplierRepository
         _categoryCache = LoadCategoryCache()
         _supplierCache = LoadSupplierCache()
+
     End Sub
 
     ''' <summary>
@@ -79,6 +80,7 @@ Public Class ProductService
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
     ''' <exception cref="ArgumentException">Ném ra nếu pageIndex hoặc pageSize không hợp lệ</exception>
     Public Function GetProductsByPage(pageIndex As Integer, pageSize As Integer) As List(Of ProductDTO) Implements IProductService.GetProductsByPage
+        Console.WriteLine("NCC: " + _supplierCache.ToList().ToString())
         If pageIndex < 0 Then
             Throw New ArgumentException("Chỉ số trang không được nhỏ hơn 0.", NameOf(pageIndex))
         End If
@@ -194,9 +196,6 @@ Public Class ProductService
         End If
         Dim userRoleId = SessionManager.GetCurrentUser.RoleId
 
-        If userRoleId <> 3 Then
-            criteria.IsActive = 1 ' Chỉ lấy sản phẩm IsActive = TRUE
-        End If
         Dim products = _productRepository.SearchProducts(criteria)
         Return MapToDTOList(products)
     End Function
@@ -221,6 +220,7 @@ Public Class ProductService
             End If
         End If
         Console.WriteLine("categoryID: " & p.CategoryId)
+        Console.WriteLine("supplierID: " & p.SupplierId)
         Return New ProductDTO With {
         .ProductId = p.ProductId,
         .ProductName = p.ProductName,
@@ -244,5 +244,14 @@ Public Class ProductService
     Private Function MapToDTOList(products As List(Of Product)) As List(Of ProductDTO)
         If products Is Nothing Then Return New List(Of ProductDTO)
         Return products.Select(Function(p) MapToDTO(p)).ToList()
+    End Function
+
+    Public Function GetProductStatistics(timeRange As String) As ProductStatistics Implements IProductService.GetProductStatistics
+        Return _productRepository.GetProductStatistics(timeRange)
+    End Function
+
+    Public Function GetProductsBySupplierId() As List(Of ProductDTO) Implements IProductService.GetProductsBySupplierId
+        Dim products = _productRepository.GetAllProducts()
+        Return MapToDTOList(products)
     End Function
 End Class

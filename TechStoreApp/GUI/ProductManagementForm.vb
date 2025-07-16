@@ -205,8 +205,8 @@ Public Class ProductManagementForm
                 .Quantity = Integer.Parse(txtQuantity.Text),
                 .MinStockLevel = Integer.Parse(txtMinStockLevel.Text),
                 .CategoryId = categoryLookup(cboCategory.SelectedItem.ToString()),
+                .SupplierId = supplierLookup(cboSupplier.SelectedItem.ToString()),
                 .CreatedBy = _userId,
-                .CreatedAt = DateTime.Now(),
                 .IsActive = True
             }
 
@@ -254,6 +254,7 @@ Public Class ProductManagementForm
                 .Quantity = Integer.Parse(txtQuantity.Text),
                 .MinStockLevel = Integer.Parse(txtMinStockLevel.Text),
                 .CategoryId = categoryLookup(cboCategory.SelectedItem.ToString()),
+                .SupplierId = supplierLookup(cboSupplier.SelectedItem.ToString()),
                 .CreatedBy = _userId
             }
 
@@ -322,6 +323,8 @@ Public Class ProductManagementForm
                 txtMinStockLevel.Text = If(row.Cells("MinStockLevel").Value IsNot Nothing, row.Cells("MinStockLevel").Value.ToString(), String.Empty)
                 Dim catName = If(row.Cells("CategoryName").Value IsNot Nothing, row.Cells("CategoryName").Value.ToString(), String.Empty)
                 cboCategory.SelectedIndex = If(cboCategory.Items.Contains(catName), cboCategory.Items.IndexOf(catName), -1)
+                Dim supName = If(row.Cells("SupplierName").Value IsNot Nothing, row.Cells("SupplierName").Value.ToString(), String.Empty)
+                cboSupplier.SelectedIndex = If(cboSupplier.Items.Contains(supName), cboSupplier.Items.IndexOf(supName), -1)
             End If
         Catch ex As Exception
             lblError.Text = "Lỗi khi chọn sản phẩm: " & ex.Message
@@ -354,7 +357,8 @@ Public Class ProductManagementForm
                 .IsActive = isActiveValue,
                 .PageIndex = 0,
                 .PageSize = pageSize,
-                .SortBy = sortByValue
+                .SortBy = sortByValue,
+                .LowStockOnly = chkLowStock.Checked
             }
 
             currentPage = 0
@@ -414,6 +418,14 @@ Public Class ProductManagementForm
         SetEditingMode(False, False)
     End Sub
 
+    Private Sub btnViewStats_Click(sender As Object, e As EventArgs) Handles btnViewStats.Click
+        Try
+            Dim statsForm As New StatisticsForm()
+            statsForm.ShowDialog()
+        Catch ex As Exception
+            lblError.Text = "Lỗi khi mở thống kê: " & ex.Message
+        End Try
+    End Sub
     Private Sub ProductManagementForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ' Optional: Initialize additional controls here if needed
     End Sub

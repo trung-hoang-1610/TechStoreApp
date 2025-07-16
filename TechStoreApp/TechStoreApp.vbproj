@@ -47,6 +47,12 @@
     <OptionInfer>On</OptionInfer>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ClosedXML, Version=0.76.0.0, Culture=neutral, PublicKeyToken=fd1eb21b62ae805b, processorArchitecture=MSIL">
+      <HintPath>..\packages\ClosedXML.0.76.0\lib\net35-client\ClosedXML.dll</HintPath>
+    </Reference>
+    <Reference Include="DocumentFormat.OpenXml, Version=2.0.5022.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\DocumentFormat.OpenXml.1.0\lib\DocumentFormat.OpenXml.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Data" />
@@ -77,16 +83,19 @@
     <Compile Include="BLL\DTOs\InventoryTransactionDto.vb" />
     <Compile Include="BLL\DTOs\InventoryTransactionInputDto.vb" />
     <Compile Include="BLL\DTOs\ProductDTO.vb" />
+    <Compile Include="BLL\DTOs\SearchCriteriaDTO.vb" />
+    <Compile Include="BLL\DTOs\StockTransactionDetailDTO.vb" />
+    <Compile Include="BLL\DTOs\StockTransactionDTO.vb" />
     <Compile Include="BLL\Interfaces\IAuthService.vb" />
     <Compile Include="BLL\Interfaces\ICategoryService.vb" />
-    <Compile Include="BLL\Interfaces\IInventoryTransactionService.vb" />
     <Compile Include="BLL\Interfaces\IProductService.vb" />
     <Compile Include="BLL\Interfaces\IRoleService.vb" />
+    <Compile Include="BLL\Interfaces\IStockTransactionBLL.vb" />
     <Compile Include="BLL\Interfaces\ISupplierService.vb" />
     <Compile Include="BLL\Interfaces\IUserService.vb" />
-    <Compile Include="BLL\InventoryTransactionService.vb" />
     <Compile Include="BLL\ProductService.vb" />
     <Compile Include="BLL\RoleService.vb" />
+    <Compile Include="BLL\StockTransactionBLL.vb" />
     <Compile Include="BLL\SupplierService.vb" />
     <Compile Include="BLL\UserService.vb" />
     <Compile Include="Common\DAL\ConnectionHelper.vb" />
@@ -95,17 +104,21 @@
     <Compile Include="Common\Utilities\ValidationHelper.vb" />
     <Compile Include="DAL\CategoryRepository.vb" />
     <Compile Include="DAL\Intefaces\ICategoryRepository.vb" />
-    <Compile Include="DAL\Intefaces\IInventoryTransactionRepository.vb" />
     <Compile Include="DAL\Intefaces\IProductRepository.vb" />
     <Compile Include="DAL\Intefaces\IRoleRepository.vb" />
+    <Compile Include="DAL\Intefaces\IStockTransactionDAL.vb" />
+    <Compile Include="DAL\Intefaces\IStockTransactionDetailDAL.vb" />
     <Compile Include="DAL\Intefaces\ISupplierRepository.vb" />
     <Compile Include="DAL\Intefaces\IUserRepository.vb" />
-    <Compile Include="DAL\InventoryTransactionRepository.vb" />
-    <Compile Include="DAL\Model\InventoryTransaction.vb" />
     <Compile Include="DAL\Model\ProductSearchCriteria.vb" />
+    <Compile Include="DAL\Model\ProductStatistics.vb" />
+    <Compile Include="DAL\Model\StockTransactionDetails.vb" />
+    <Compile Include="DAL\Model\StockTransactions.vb" />
     <Compile Include="DAL\Model\Supplier.vb" />
     <Compile Include="DAL\ProductRepository.vb" />
     <Compile Include="DAL\RoleRepository.vb" />
+    <Compile Include="DAL\StockTransactionDAL.vb" />
+    <Compile Include="DAL\StockTransactionDetailDAL.vb" />
     <Compile Include="DAL\SupplierRepository.vb" />
     <Compile Include="DAL\UserRepository.vb" />
     <Compile Include="Factory\RepositoryFactory.vb" />
@@ -114,6 +127,12 @@
       <DependentUpon>LoginForm.vb</DependentUpon>
     </Compile>
     <Compile Include="GUI\LoginForm.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Main.Designer.vb">
+      <DependentUpon>Main.vb</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Main.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GUI\ProductManagementForm.Designer.vb">
@@ -132,6 +151,30 @@
     <Compile Include="DAL\Model\Product.vb" />
     <Compile Include="DAL\Model\Role.vb" />
     <Compile Include="DAL\Model\User.vb" />
+    <Compile Include="GUI\StatisticsForm.Designer.vb">
+      <DependentUpon>StatisticsForm.vb</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\StatisticsForm.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\StockTransactionCreateForm.Designer.vb">
+      <DependentUpon>StockTransactionCreateForm.vb</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\StockTransactionCreateForm.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\StockTransactionDetailForm.Designer.vb">
+      <DependentUpon>StockTransactionDetailForm.vb</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\StockTransactionDetailForm.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\StockTransactionListForm.Designer.vb">
+      <DependentUpon>StockTransactionListForm.vb</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\StockTransactionListForm.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Resources.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -154,6 +197,12 @@
     <EmbeddedResource Include="GUI\RegisterForm.resx">
       <DependentUpon>RegisterForm.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GUI\StatisticsForm.resx">
+      <DependentUpon>StatisticsForm.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\StockTransactionListForm.resx">
+      <DependentUpon>StockTransactionListForm.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="My Project\Resources.resx">
       <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.vb</LastGenOutput>
@@ -171,6 +220,7 @@
       <CustomToolNamespace>My</CustomToolNamespace>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />

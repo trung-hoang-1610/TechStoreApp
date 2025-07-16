@@ -66,10 +66,10 @@ CREATE TABLE StockTransactions (
     Note TEXT,
     CreatedBy INT NOT NULL,
     CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    ApprovedBy INT NOT NULL,
+    ApprovedBy INT,
     ApprovedAt DATETIME,
     Status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
-    SupplierId INT NOT NULL,
+    SupplierId INT,
     FOREIGN KEY (CreatedBy) REFERENCES Users(UserId),
     FOREIGN KEY (ApprovedBy) REFERENCES Users(UserId),
     FOREIGN KEY (SupplierId) REFERENCES Suppliers(SupplierId)

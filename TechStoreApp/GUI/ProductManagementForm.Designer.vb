@@ -61,10 +61,13 @@ Partial Class ProductManagementForm
     Friend WithEvents CategoryId As System.Windows.Forms.DataGridViewTextBoxColumn
     Friend WithEvents cboSupplier As System.Windows.Forms.ComboBox
     Friend WithEvents lblSupplier As System.Windows.Forms.Label
+    Friend WithEvents btnViewStats As Button
+    Friend WithEvents chkLowStock As CheckBox
+
 
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle3 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Me.dgvProducts = New System.Windows.Forms.DataGridView()
         Me.ProductId = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.ProductName = New System.Windows.Forms.DataGridViewTextBoxColumn()
@@ -113,6 +116,9 @@ Partial Class ProductManagementForm
         Me.cboCategorySort = New System.Windows.Forms.ComboBox()
         Me.lblSupplier = New System.Windows.Forms.Label()
         Me.cboSupplier = New System.Windows.Forms.ComboBox()
+        Me.btnViewStats = New System.Windows.Forms.Button()
+        Me.chkLowStock = New System.Windows.Forms.CheckBox()
+
         CType(Me.dgvProducts, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
@@ -127,7 +133,7 @@ Partial Class ProductManagementForm
         Me.dgvProducts.ReadOnly = True
         Me.dgvProducts.RowHeadersWidth = 51
         Me.dgvProducts.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect
-        Me.dgvProducts.Size = New System.Drawing.Size(935, 180)
+        Me.dgvProducts.Size = New System.Drawing.Size(1162, 202)
         Me.dgvProducts.TabIndex = 0
         '
         'ProductId
@@ -194,6 +200,14 @@ Partial Class ProductManagementForm
         Me.CategoryName.ReadOnly = True
         Me.CategoryName.Width = 120
         '
+        'SupplierName
+        '
+        Me.SupplierName.HeaderText = "Nhà cung cấp"
+        Me.SupplierName.MinimumWidth = 6
+        Me.SupplierName.Name = "SupplierName"
+        Me.SupplierName.ReadOnly = True
+        Me.SupplierName.Width = 120
+        '
         'CreatedBy
         '
         Me.CreatedBy.HeaderText = "Người tạo"
@@ -204,8 +218,8 @@ Partial Class ProductManagementForm
         '
         'CreatedAt
         '
-        DataGridViewCellStyle1.Format = "dd/MM/yyyy"
-        Me.CreatedAt.DefaultCellStyle = DataGridViewCellStyle1
+        DataGridViewCellStyle3.Format = "dd/MM/yyyy"
+        Me.CreatedAt.DefaultCellStyle = DataGridViewCellStyle3
         Me.CreatedAt.HeaderText = "Ngày tạo"
         Me.CreatedAt.MinimumWidth = 6
         Me.CreatedAt.Name = "CreatedAt"
@@ -227,62 +241,45 @@ Partial Class ProductManagementForm
         Me.CategoryId.Name = "CategoryId"
         Me.CategoryId.ReadOnly = True
         Me.CategoryId.Width = 80
-
-        '
-        ' lblSupplier
-        '
-        Me.lblSupplier.Location = New System.Drawing.Point(20, 510)
-        Me.lblSupplier.Name = "lblSupplier"
-        Me.lblSupplier.Size = New System.Drawing.Size(100, 20)
-        Me.lblSupplier.TabIndex = 39
-        Me.lblSupplier.Text = "Nhà cung cấp:"
-        '
-        ' cboSupplier
-        '
-        Me.cboSupplier.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cboSupplier.Location = New System.Drawing.Point(130, 510)
-        Me.cboSupplier.Name = "cboSupplier"
-        Me.cboSupplier.Size = New System.Drawing.Size(200, 24)
-        Me.cboSupplier.TabIndex = 40
         '
         'txtProductName
         '
-        Me.txtProductName.Location = New System.Drawing.Point(130, 263)
+        Me.txtProductName.Location = New System.Drawing.Point(130, 302)
         Me.txtProductName.Name = "txtProductName"
         Me.txtProductName.Size = New System.Drawing.Size(200, 22)
         Me.txtProductName.TabIndex = 1
         '
         'txtDescription
         '
-        Me.txtDescription.Location = New System.Drawing.Point(130, 298)
+        Me.txtDescription.Location = New System.Drawing.Point(130, 337)
         Me.txtDescription.Name = "txtDescription"
         Me.txtDescription.Size = New System.Drawing.Size(200, 22)
         Me.txtDescription.TabIndex = 2
         '
         'txtPrice
         '
-        Me.txtPrice.Location = New System.Drawing.Point(130, 333)
+        Me.txtPrice.Location = New System.Drawing.Point(130, 372)
         Me.txtPrice.Name = "txtPrice"
         Me.txtPrice.Size = New System.Drawing.Size(200, 22)
         Me.txtPrice.TabIndex = 3
         '
         'txtQuantity
         '
-        Me.txtQuantity.Location = New System.Drawing.Point(130, 368)
+        Me.txtQuantity.Location = New System.Drawing.Point(130, 407)
         Me.txtQuantity.Name = "txtQuantity"
         Me.txtQuantity.Size = New System.Drawing.Size(200, 22)
         Me.txtQuantity.TabIndex = 4
         '
         'txtUnit
         '
-        Me.txtUnit.Location = New System.Drawing.Point(130, 403)
+        Me.txtUnit.Location = New System.Drawing.Point(476, 302)
         Me.txtUnit.Name = "txtUnit"
         Me.txtUnit.Size = New System.Drawing.Size(200, 22)
         Me.txtUnit.TabIndex = 5
         '
         'txtMinStockLevel
         '
-        Me.txtMinStockLevel.Location = New System.Drawing.Point(130, 438)
+        Me.txtMinStockLevel.Location = New System.Drawing.Point(476, 337)
         Me.txtMinStockLevel.Name = "txtMinStockLevel"
         Me.txtMinStockLevel.Size = New System.Drawing.Size(200, 22)
         Me.txtMinStockLevel.TabIndex = 6
@@ -290,14 +287,14 @@ Partial Class ProductManagementForm
         'cboCategory
         '
         Me.cboCategory.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cboCategory.Location = New System.Drawing.Point(130, 481)
+        Me.cboCategory.Location = New System.Drawing.Point(476, 372)
         Me.cboCategory.Name = "cboCategory"
         Me.cboCategory.Size = New System.Drawing.Size(200, 24)
         Me.cboCategory.TabIndex = 10
         '
         'btnAdd
         '
-        Me.btnAdd.Location = New System.Drawing.Point(400, 280)
+        Me.btnAdd.Location = New System.Drawing.Point(760, 302)
         Me.btnAdd.Name = "btnAdd"
         Me.btnAdd.Size = New System.Drawing.Size(100, 30)
         Me.btnAdd.TabIndex = 11
@@ -305,7 +302,7 @@ Partial Class ProductManagementForm
         '
         'btnUpdate
         '
-        Me.btnUpdate.Location = New System.Drawing.Point(400, 315)
+        Me.btnUpdate.Location = New System.Drawing.Point(760, 338)
         Me.btnUpdate.Name = "btnUpdate"
         Me.btnUpdate.Size = New System.Drawing.Size(100, 30)
         Me.btnUpdate.TabIndex = 12
@@ -313,7 +310,7 @@ Partial Class ProductManagementForm
         '
         'btnDelete
         '
-        Me.btnDelete.Location = New System.Drawing.Point(400, 350)
+        Me.btnDelete.Location = New System.Drawing.Point(760, 374)
         Me.btnDelete.Name = "btnDelete"
         Me.btnDelete.Size = New System.Drawing.Size(100, 30)
         Me.btnDelete.TabIndex = 13
@@ -321,7 +318,7 @@ Partial Class ProductManagementForm
         '
         'btnPrev
         '
-        Me.btnPrev.Location = New System.Drawing.Point(770, 259)
+        Me.btnPrev.Location = New System.Drawing.Point(975, 288)
         Me.btnPrev.Name = "btnPrev"
         Me.btnPrev.Size = New System.Drawing.Size(40, 30)
         Me.btnPrev.TabIndex = 14
@@ -329,7 +326,7 @@ Partial Class ProductManagementForm
         '
         'btnNext
         '
-        Me.btnNext.Location = New System.Drawing.Point(816, 259)
+        Me.btnNext.Location = New System.Drawing.Point(1021, 288)
         Me.btnNext.Name = "btnNext"
         Me.btnNext.Size = New System.Drawing.Size(40, 30)
         Me.btnNext.TabIndex = 15
@@ -337,7 +334,7 @@ Partial Class ProductManagementForm
         '
         'lblPage
         '
-        Me.lblPage.Location = New System.Drawing.Point(862, 266)
+        Me.lblPage.Location = New System.Drawing.Point(1067, 295)
         Me.lblPage.Name = "lblPage"
         Me.lblPage.Size = New System.Drawing.Size(120, 20)
         Me.lblPage.TabIndex = 16
@@ -354,7 +351,7 @@ Partial Class ProductManagementForm
         '
         'lblProductName
         '
-        Me.lblProductName.Location = New System.Drawing.Point(20, 263)
+        Me.lblProductName.Location = New System.Drawing.Point(20, 302)
         Me.lblProductName.Name = "lblProductName"
         Me.lblProductName.Size = New System.Drawing.Size(100, 20)
         Me.lblProductName.TabIndex = 18
@@ -362,7 +359,7 @@ Partial Class ProductManagementForm
         '
         'lblDescription
         '
-        Me.lblDescription.Location = New System.Drawing.Point(20, 298)
+        Me.lblDescription.Location = New System.Drawing.Point(20, 337)
         Me.lblDescription.Name = "lblDescription"
         Me.lblDescription.Size = New System.Drawing.Size(100, 20)
         Me.lblDescription.TabIndex = 19
@@ -370,7 +367,7 @@ Partial Class ProductManagementForm
         '
         'lblPrice
         '
-        Me.lblPrice.Location = New System.Drawing.Point(20, 333)
+        Me.lblPrice.Location = New System.Drawing.Point(20, 372)
         Me.lblPrice.Name = "lblPrice"
         Me.lblPrice.Size = New System.Drawing.Size(100, 20)
         Me.lblPrice.TabIndex = 20
@@ -378,7 +375,7 @@ Partial Class ProductManagementForm
         '
         'lblQuantity
         '
-        Me.lblQuantity.Location = New System.Drawing.Point(20, 368)
+        Me.lblQuantity.Location = New System.Drawing.Point(20, 407)
         Me.lblQuantity.Name = "lblQuantity"
         Me.lblQuantity.Size = New System.Drawing.Size(100, 20)
         Me.lblQuantity.TabIndex = 21
@@ -386,7 +383,7 @@ Partial Class ProductManagementForm
         '
         'lblUnit
         '
-        Me.lblUnit.Location = New System.Drawing.Point(20, 403)
+        Me.lblUnit.Location = New System.Drawing.Point(370, 302)
         Me.lblUnit.Name = "lblUnit"
         Me.lblUnit.Size = New System.Drawing.Size(100, 20)
         Me.lblUnit.TabIndex = 22
@@ -394,7 +391,7 @@ Partial Class ProductManagementForm
         '
         'lblMinStockLevel
         '
-        Me.lblMinStockLevel.Location = New System.Drawing.Point(20, 438)
+        Me.lblMinStockLevel.Location = New System.Drawing.Point(370, 337)
         Me.lblMinStockLevel.Name = "lblMinStockLevel"
         Me.lblMinStockLevel.Size = New System.Drawing.Size(100, 20)
         Me.lblMinStockLevel.TabIndex = 23
@@ -402,7 +399,7 @@ Partial Class ProductManagementForm
         '
         'lblCategory
         '
-        Me.lblCategory.Location = New System.Drawing.Point(20, 481)
+        Me.lblCategory.Location = New System.Drawing.Point(370, 372)
         Me.lblCategory.Name = "lblCategory"
         Me.lblCategory.Size = New System.Drawing.Size(100, 20)
         Me.lblCategory.TabIndex = 27
@@ -411,7 +408,7 @@ Partial Class ProductManagementForm
         'btnCancel
         '
         Me.btnCancel.Enabled = False
-        Me.btnCancel.Location = New System.Drawing.Point(400, 385)
+        Me.btnCancel.Location = New System.Drawing.Point(760, 410)
         Me.btnCancel.Name = "btnCancel"
         Me.btnCancel.Size = New System.Drawing.Size(100, 30)
         Me.btnCancel.TabIndex = 28
@@ -463,6 +460,13 @@ Partial Class ProductManagementForm
         Me.lblSortBy.Size = New System.Drawing.Size(50, 20)
         Me.lblSortBy.TabIndex = 34
         Me.lblSortBy.Text = "Sắp xếp:"
+
+        ' chkLowStock
+        Me.chkLowStock.Location = New System.Drawing.Point(700, 60)
+        Me.chkLowStock.Name = "chkLowStock"
+        Me.chkLowStock.Size = New System.Drawing.Size(150, 24)
+        Me.chkLowStock.Text = "Dưới mức tồn kho"
+        Me.chkLowStock.TabIndex = 40
         '
         'btnSearch
         '
@@ -485,7 +489,7 @@ Partial Class ProductManagementForm
         Me.lblCategorySort.AutoSize = True
         Me.lblCategorySort.Location = New System.Drawing.Point(350, 52)
         Me.lblCategorySort.Name = "lblCategorySort"
-        Me.lblCategorySort.Size = New System.Drawing.Size(67, 16)
+        Me.lblCategorySort.Size = New System.Drawing.Size(70, 16)
         Me.lblCategorySort.TabIndex = 37
         Me.lblCategorySort.Text = "Danh mục:"
         '
@@ -497,9 +501,33 @@ Partial Class ProductManagementForm
         Me.cboCategorySort.Size = New System.Drawing.Size(200, 24)
         Me.cboCategorySort.TabIndex = 38
         '
+        'lblSupplier
+        '
+        Me.lblSupplier.Location = New System.Drawing.Point(370, 407)
+        Me.lblSupplier.Name = "lblSupplier"
+        Me.lblSupplier.Size = New System.Drawing.Size(100, 20)
+        Me.lblSupplier.TabIndex = 39
+        Me.lblSupplier.Text = "Nhà cung cấp:"
+        '
+        'cboSupplier
+        '
+        Me.cboSupplier.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cboSupplier.Location = New System.Drawing.Point(476, 407)
+        Me.cboSupplier.Name = "cboSupplier"
+        Me.cboSupplier.Size = New System.Drawing.Size(200, 24)
+        Me.cboSupplier.TabIndex = 40
+        '
+        'btnViewStats
+        '
+        Me.btnViewStats.Location = New System.Drawing.Point(870, 20)
+        Me.btnViewStats.Name = "btnViewStats"
+        Me.btnViewStats.Size = New System.Drawing.Size(100, 30)
+        Me.btnViewStats.TabIndex = 39
+        Me.btnViewStats.Text = "Xem thống kê"
+        '
         'ProductManagementForm
         '
-        Me.ClientSize = New System.Drawing.Size(960, 694)
+        Me.ClientSize = New System.Drawing.Size(1176, 506)
         Me.Controls.Add(Me.cboCategorySort)
         Me.Controls.Add(Me.lblCategorySort)
         Me.Controls.Add(Me.txtSearchName)
@@ -535,6 +563,9 @@ Partial Class ProductManagementForm
         Me.Controls.Add(Me.lblCategory)
         Me.Controls.Add(Me.cboSupplier)
         Me.Controls.Add(Me.lblSupplier)
+        Me.Controls.Add(Me.btnViewStats)
+        Me.Controls.Add(Me.chkLowStock)
+
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
         Me.MaximizeBox = False
         Me.Name = "ProductManagementForm"
@@ -543,5 +574,6 @@ Partial Class ProductManagementForm
         CType(Me.dgvProducts, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
         Me.PerformLayout()
+
     End Sub
 End Class

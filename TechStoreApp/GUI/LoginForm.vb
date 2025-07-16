@@ -21,6 +21,10 @@ Partial Public Class LoginForm
             Dim user = _authService.ValidateUser(txtUsername.Text, txtPassword.Text)
             If user IsNot Nothing Then
                 SessionManager.SetCurrentUser(user)
+
+                'Dim StockTransactionListForm As New StockTransactionListForm(user.UserId)
+                'StockTransactionListForm.Show()
+                'Me.Hide()
                 Dim ProductManagementForm As New ProductManagementForm(user.UserId)
                 ProductManagementForm.Show()
                 Me.Hide()
