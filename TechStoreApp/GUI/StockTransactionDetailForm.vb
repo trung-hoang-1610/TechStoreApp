@@ -2,7 +2,7 @@
 Public Class StockTransactionDetailForm
     Inherits Form
 
-    Private ReadOnly _transactionService As IStockTransactionBLL
+    Private ReadOnly _transactionService As IStockTransactionService
     Private ReadOnly _transactionId As Integer
     Private WithEvents _btnClose As Button
     Private _lblTransactionCode As Label

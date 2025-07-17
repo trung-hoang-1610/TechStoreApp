@@ -1,6 +1,6 @@
 ﻿' DAL/Interfaces/IUserRepository.vb
 Public Interface IUserRepository
-
+    Function GetAllUsers() As List(Of User)
     Function GetUserByUsername(ByVal username As String) As User
 
     ''' <summary>

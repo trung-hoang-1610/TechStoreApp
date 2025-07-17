@@ -1,7 +1,7 @@
 ﻿''' <summary>
 ''' Interface cho các thao tác dữ liệu liên quan đến phiếu nhập/xuất kho.
 ''' </summary>
-Public Interface IStockTransactionDAL
+Public Interface IStockTransactionRepository
     ''' <summary>
     ''' Tạo một phiếu nhập/xuất kho mới.
     ''' </summary>

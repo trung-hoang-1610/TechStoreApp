@@ -1,5 +1,4 @@
-﻿
-Partial Class StockTransactionListForm
+﻿Partial Class StockTransactionListForm
     Inherits System.Windows.Forms.Form
 
     Private Sub InitializeComponent()
@@ -21,8 +20,8 @@ Partial Class StockTransactionListForm
 
         ' Khởi tạo và thiết lập DataGridView cho phiếu nhập
         _gridIn = New DataGridView()
-        _gridIn.Size = New System.Drawing.Size(760, 400)
-        _gridIn.Location = New System.Drawing.Point(10, 10)
+        _gridIn.Size = New System.Drawing.Size(760, 360)
+        _gridIn.Location = New System.Drawing.Point(10, 50)
         _gridIn.AutoGenerateColumns = False
         _gridIn.Columns.Add("TransactionId", "Mã phiếu")
         _gridIn.Columns.Add("TransactionCode", "Mã giao dịch")
@@ -36,8 +35,8 @@ Partial Class StockTransactionListForm
 
         ' Khởi tạo và thiết lập DataGridView cho phiếu xuất
         _gridOut = New DataGridView()
-        _gridOut.Size = New System.Drawing.Size(760, 400)
-        _gridOut.Location = New System.Drawing.Point(10, 10)
+        _gridOut.Size = New System.Drawing.Size(760, 360)
+        _gridOut.Location = New System.Drawing.Point(10, 50)
         _gridOut.AutoGenerateColumns = False
         _gridOut.Columns.Add("TransactionId", "Mã phiếu")
         _gridOut.Columns.Add("TransactionCode", "Mã giao dịch")
@@ -54,12 +53,14 @@ Partial Class StockTransactionListForm
         _btnCreateIn.Size = New System.Drawing.Size(100, 30)
         _btnCreateIn.Location = New System.Drawing.Point(10, 10)
         tabIn.Controls.Add(_btnCreateIn)
+        _btnCreateIn.BringToFront()
 
         _btnCreateOut = New Button()
         _btnCreateOut.Text = "Tạo phiếu xuất"
         _btnCreateOut.Size = New System.Drawing.Size(100, 30)
         _btnCreateOut.Location = New System.Drawing.Point(10, 10)
         tabOut.Controls.Add(_btnCreateOut)
+        _btnCreateOut.BringToFront()
 
         _btnViewDetails = New Button()
         _btnViewDetails.Text = "Xem chi tiết"
@@ -73,7 +74,7 @@ Partial Class StockTransactionListForm
         _btnApprove.Size = New System.Drawing.Size(100, 30)
         _btnApprove.Location = New System.Drawing.Point(230, 10)
         _btnApprove.Enabled = False
-        _btnApprove.Visible = SessionManager.GetCurrentUser()?.RoleId = 1
+        _btnApprove.Visible = False ' Mặc định ẩn, sẽ được cấu hình trong ConfigureControls
         Me.Controls.Add(_btnApprove)
 
         ' Khởi tạo và thiết lập tìm kiếm
@@ -86,8 +87,6 @@ Partial Class StockTransactionListForm
         _cmbStatus = New ComboBox()
         _cmbStatus.Location = New System.Drawing.Point(550, 10)
         _cmbStatus.Size = New System.Drawing.Size(100, 30)
-        _cmbStatus.Items.AddRange({"All", "Pending", "Approved", "Rejected"})
-        _cmbStatus.SelectedIndex = 0
         Me.Controls.Add(_cmbStatus)
 
         Me.ResumeLayout(False)

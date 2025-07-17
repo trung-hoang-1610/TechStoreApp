@@ -1,4 +1,5 @@
-﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
+﻿
+<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
 Partial Class ProductManagementForm
     Inherits System.Windows.Forms.Form
 
@@ -46,6 +47,12 @@ Partial Class ProductManagementForm
     Friend WithEvents btnClearSearch As System.Windows.Forms.Button
     Friend WithEvents lblCategorySort As System.Windows.Forms.Label
     Friend WithEvents cboCategorySort As System.Windows.Forms.ComboBox
+    Friend WithEvents lblSupplier As System.Windows.Forms.Label
+    Friend WithEvents cboSupplier As System.Windows.Forms.ComboBox
+    Friend WithEvents btnViewStats As System.Windows.Forms.Button
+    Friend WithEvents chkLowStock As System.Windows.Forms.CheckBox
+    Friend WithEvents cboIsActive As System.Windows.Forms.ComboBox
+    Friend WithEvents lblIsActive As System.Windows.Forms.Label
     Friend WithEvents ProductId As System.Windows.Forms.DataGridViewTextBoxColumn
     Friend WithEvents ProductName As System.Windows.Forms.DataGridViewTextBoxColumn
     Friend WithEvents Description As System.Windows.Forms.DataGridViewTextBoxColumn
@@ -57,17 +64,12 @@ Partial Class ProductManagementForm
     Friend WithEvents SupplierName As System.Windows.Forms.DataGridViewTextBoxColumn
     Friend WithEvents CreatedBy As System.Windows.Forms.DataGridViewTextBoxColumn
     Friend WithEvents CreatedAt As System.Windows.Forms.DataGridViewTextBoxColumn
-    Friend WithEvents IsActive As System.Windows.Forms.DataGridViewCheckBoxColumn
-    Friend WithEvents CategoryId As System.Windows.Forms.DataGridViewTextBoxColumn
-    Friend WithEvents cboSupplier As System.Windows.Forms.ComboBox
-    Friend WithEvents lblSupplier As System.Windows.Forms.Label
-    Friend WithEvents btnViewStats As Button
-    Friend WithEvents chkLowStock As CheckBox
-
+    Friend WithEvents IsActive As System.Windows.Forms.DataGridViewTextBoxColumn
 
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        Dim DataGridViewCellStyle3 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Me.components = New System.ComponentModel.Container()
         Me.dgvProducts = New System.Windows.Forms.DataGridView()
         Me.ProductId = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.ProductName = New System.Windows.Forms.DataGridViewTextBoxColumn()
@@ -80,8 +82,7 @@ Partial Class ProductManagementForm
         Me.SupplierName = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.CreatedBy = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.CreatedAt = New System.Windows.Forms.DataGridViewTextBoxColumn()
-        Me.IsActive = New System.Windows.Forms.DataGridViewCheckBoxColumn()
-        Me.CategoryId = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.IsActive = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.txtProductName = New System.Windows.Forms.TextBox()
         Me.txtDescription = New System.Windows.Forms.TextBox()
         Me.txtPrice = New System.Windows.Forms.TextBox()
@@ -92,6 +93,7 @@ Partial Class ProductManagementForm
         Me.btnAdd = New System.Windows.Forms.Button()
         Me.btnUpdate = New System.Windows.Forms.Button()
         Me.btnDelete = New System.Windows.Forms.Button()
+        Me.btnCancel = New System.Windows.Forms.Button()
         Me.btnPrev = New System.Windows.Forms.Button()
         Me.btnNext = New System.Windows.Forms.Button()
         Me.lblPage = New System.Windows.Forms.Label()
@@ -103,7 +105,6 @@ Partial Class ProductManagementForm
         Me.lblUnit = New System.Windows.Forms.Label()
         Me.lblMinStockLevel = New System.Windows.Forms.Label()
         Me.lblCategory = New System.Windows.Forms.Label()
-        Me.btnCancel = New System.Windows.Forms.Button()
         Me.txtSearchName = New System.Windows.Forms.TextBox()
         Me.lblSearchName = New System.Windows.Forms.Label()
         Me.cboStatus = New System.Windows.Forms.ComboBox()
@@ -118,13 +119,15 @@ Partial Class ProductManagementForm
         Me.cboSupplier = New System.Windows.Forms.ComboBox()
         Me.btnViewStats = New System.Windows.Forms.Button()
         Me.chkLowStock = New System.Windows.Forms.CheckBox()
-
+        Me.cboIsActive = New System.Windows.Forms.ComboBox()
+        Me.lblIsActive = New System.Windows.Forms.Label()
         CType(Me.dgvProducts, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'dgvProducts
         '
         Me.dgvProducts.AllowUserToAddRows = False
+        Me.dgvProducts.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.dgvProducts.ColumnHeadersHeight = 29
         Me.dgvProducts.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.ProductId, Me.ProductName, Me.Description, Me.Unit, Me.Price, Me.Quantity, Me.MinStockLevel, Me.CategoryName, Me.SupplierName, Me.CreatedBy, Me.CreatedAt, Me.IsActive})
         Me.dgvProducts.Location = New System.Drawing.Point(20, 80)
@@ -133,7 +136,7 @@ Partial Class ProductManagementForm
         Me.dgvProducts.ReadOnly = True
         Me.dgvProducts.RowHeadersWidth = 51
         Me.dgvProducts.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect
-        Me.dgvProducts.Size = New System.Drawing.Size(1162, 202)
+        Me.dgvProducts.Size = New System.Drawing.Size(1160, 200)
         Me.dgvProducts.TabIndex = 0
         '
         'ProductId
@@ -218,8 +221,8 @@ Partial Class ProductManagementForm
         '
         'CreatedAt
         '
-        DataGridViewCellStyle3.Format = "dd/MM/yyyy"
-        Me.CreatedAt.DefaultCellStyle = DataGridViewCellStyle3
+        DataGridViewCellStyle1.Format = "dd/MM/yyyy"
+        Me.CreatedAt.DefaultCellStyle = DataGridViewCellStyle1
         Me.CreatedAt.HeaderText = "Ngày tạo"
         Me.CreatedAt.MinimumWidth = 6
         Me.CreatedAt.Name = "CreatedAt"
@@ -228,73 +231,73 @@ Partial Class ProductManagementForm
         '
         'IsActive
         '
-        Me.IsActive.HeaderText = "Hoạt động"
+        Me.IsActive.HeaderText = "Trạng thái"
         Me.IsActive.MinimumWidth = 6
         Me.IsActive.Name = "IsActive"
         Me.IsActive.ReadOnly = True
         Me.IsActive.Width = 80
         '
-        'CategoryId
-        '
-        Me.CategoryId.HeaderText = "ID Danh mục"
-        Me.CategoryId.MinimumWidth = 6
-        Me.CategoryId.Name = "CategoryId"
-        Me.CategoryId.ReadOnly = True
-        Me.CategoryId.Width = 80
-        '
         'txtProductName
         '
-        Me.txtProductName.Location = New System.Drawing.Point(130, 302)
+        Me.txtProductName.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.txtProductName.Location = New System.Drawing.Point(130, 300)
         Me.txtProductName.Name = "txtProductName"
         Me.txtProductName.Size = New System.Drawing.Size(200, 22)
         Me.txtProductName.TabIndex = 1
         '
         'txtDescription
         '
-        Me.txtDescription.Location = New System.Drawing.Point(130, 337)
+        Me.txtDescription.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.txtDescription.Location = New System.Drawing.Point(130, 335)
         Me.txtDescription.Name = "txtDescription"
         Me.txtDescription.Size = New System.Drawing.Size(200, 22)
         Me.txtDescription.TabIndex = 2
         '
         'txtPrice
         '
-        Me.txtPrice.Location = New System.Drawing.Point(130, 372)
+        Me.txtPrice.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.txtPrice.Location = New System.Drawing.Point(130, 370)
         Me.txtPrice.Name = "txtPrice"
         Me.txtPrice.Size = New System.Drawing.Size(200, 22)
         Me.txtPrice.TabIndex = 3
         '
         'txtQuantity
         '
-        Me.txtQuantity.Location = New System.Drawing.Point(130, 407)
+        Me.txtQuantity.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.txtQuantity.Location = New System.Drawing.Point(130, 405)
         Me.txtQuantity.Name = "txtQuantity"
         Me.txtQuantity.Size = New System.Drawing.Size(200, 22)
         Me.txtQuantity.TabIndex = 4
         '
         'txtUnit
         '
-        Me.txtUnit.Location = New System.Drawing.Point(476, 302)
+        Me.txtUnit.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.txtUnit.Location = New System.Drawing.Point(480, 300)
         Me.txtUnit.Name = "txtUnit"
         Me.txtUnit.Size = New System.Drawing.Size(200, 22)
         Me.txtUnit.TabIndex = 5
         '
         'txtMinStockLevel
         '
-        Me.txtMinStockLevel.Location = New System.Drawing.Point(476, 337)
+        Me.txtMinStockLevel.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.txtMinStockLevel.Location = New System.Drawing.Point(480, 335)
         Me.txtMinStockLevel.Name = "txtMinStockLevel"
         Me.txtMinStockLevel.Size = New System.Drawing.Size(200, 22)
         Me.txtMinStockLevel.TabIndex = 6
         '
         'cboCategory
         '
+        Me.cboCategory.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.cboCategory.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cboCategory.Location = New System.Drawing.Point(476, 372)
+        Me.cboCategory.Location = New System.Drawing.Point(480, 370)
         Me.cboCategory.Name = "cboCategory"
         Me.cboCategory.Size = New System.Drawing.Size(200, 24)
-        Me.cboCategory.TabIndex = 10
+        Me.cboCategory.TabIndex = 7
         '
         'btnAdd
         '
-        Me.btnAdd.Location = New System.Drawing.Point(760, 302)
+        Me.btnAdd.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.btnAdd.Location = New System.Drawing.Point(760, 300)
         Me.btnAdd.Name = "btnAdd"
         Me.btnAdd.Size = New System.Drawing.Size(100, 30)
         Me.btnAdd.TabIndex = 11
@@ -302,7 +305,8 @@ Partial Class ProductManagementForm
         '
         'btnUpdate
         '
-        Me.btnUpdate.Location = New System.Drawing.Point(760, 338)
+        Me.btnUpdate.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.btnUpdate.Location = New System.Drawing.Point(760, 335)
         Me.btnUpdate.Name = "btnUpdate"
         Me.btnUpdate.Size = New System.Drawing.Size(100, 30)
         Me.btnUpdate.TabIndex = 12
@@ -310,262 +314,312 @@ Partial Class ProductManagementForm
         '
         'btnDelete
         '
-        Me.btnDelete.Location = New System.Drawing.Point(760, 374)
+        Me.btnDelete.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.btnDelete.Location = New System.Drawing.Point(760, 370)
         Me.btnDelete.Name = "btnDelete"
         Me.btnDelete.Size = New System.Drawing.Size(100, 30)
         Me.btnDelete.TabIndex = 13
         Me.btnDelete.Text = "Xóa"
         '
+        'btnCancel
+        '
+        Me.btnCancel.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.btnCancel.Enabled = False
+        Me.btnCancel.Location = New System.Drawing.Point(760, 405)
+        Me.btnCancel.Name = "btnCancel"
+        Me.btnCancel.Size = New System.Drawing.Size(100, 30)
+        Me.btnCancel.TabIndex = 14
+        Me.btnCancel.Text = "Hủy"
+        '
         'btnPrev
         '
-        Me.btnPrev.Location = New System.Drawing.Point(975, 288)
+        Me.btnPrev.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.btnPrev.Location = New System.Drawing.Point(975, 285)
         Me.btnPrev.Name = "btnPrev"
         Me.btnPrev.Size = New System.Drawing.Size(40, 30)
-        Me.btnPrev.TabIndex = 14
+        Me.btnPrev.TabIndex = 15
         Me.btnPrev.Text = "←"
         '
         'btnNext
         '
-        Me.btnNext.Location = New System.Drawing.Point(1021, 288)
+        Me.btnNext.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.btnNext.Location = New System.Drawing.Point(1021, 285)
         Me.btnNext.Name = "btnNext"
         Me.btnNext.Size = New System.Drawing.Size(40, 30)
-        Me.btnNext.TabIndex = 15
+        Me.btnNext.TabIndex = 16
         Me.btnNext.Text = "→"
         '
         'lblPage
         '
-        Me.lblPage.Location = New System.Drawing.Point(1067, 295)
+        Me.lblPage.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.lblPage.Location = New System.Drawing.Point(1067, 290)
         Me.lblPage.Name = "lblPage"
         Me.lblPage.Size = New System.Drawing.Size(120, 20)
-        Me.lblPage.TabIndex = 16
+        Me.lblPage.TabIndex = 17
         Me.lblPage.Text = "Trang 1/1"
         '
         'lblError
         '
+        Me.lblError.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.lblError.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Italic)
         Me.lblError.ForeColor = System.Drawing.Color.Red
-        Me.lblError.Location = New System.Drawing.Point(260, 553)
+        Me.lblError.Location = New System.Drawing.Point(260, 480)
         Me.lblError.Name = "lblError"
         Me.lblError.Size = New System.Drawing.Size(520, 30)
-        Me.lblError.TabIndex = 17
+        Me.lblError.TabIndex = 18
         '
         'lblProductName
         '
-        Me.lblProductName.Location = New System.Drawing.Point(20, 302)
+        Me.lblProductName.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.lblProductName.Location = New System.Drawing.Point(20, 300)
         Me.lblProductName.Name = "lblProductName"
         Me.lblProductName.Size = New System.Drawing.Size(100, 20)
-        Me.lblProductName.TabIndex = 18
+        Me.lblProductName.TabIndex = 19
         Me.lblProductName.Text = "Tên sản phẩm:"
         '
         'lblDescription
         '
-        Me.lblDescription.Location = New System.Drawing.Point(20, 337)
+        Me.lblDescription.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.lblDescription.Location = New System.Drawing.Point(20, 335)
         Me.lblDescription.Name = "lblDescription"
         Me.lblDescription.Size = New System.Drawing.Size(100, 20)
-        Me.lblDescription.TabIndex = 19
+        Me.lblDescription.TabIndex = 20
         Me.lblDescription.Text = "Mô tả:"
         '
         'lblPrice
         '
-        Me.lblPrice.Location = New System.Drawing.Point(20, 372)
+        Me.lblPrice.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.lblPrice.Location = New System.Drawing.Point(20, 370)
         Me.lblPrice.Name = "lblPrice"
         Me.lblPrice.Size = New System.Drawing.Size(100, 20)
-        Me.lblPrice.TabIndex = 20
+        Me.lblPrice.TabIndex = 21
         Me.lblPrice.Text = "Giá:"
         '
         'lblQuantity
         '
-        Me.lblQuantity.Location = New System.Drawing.Point(20, 407)
+        Me.lblQuantity.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.lblQuantity.Location = New System.Drawing.Point(20, 405)
         Me.lblQuantity.Name = "lblQuantity"
         Me.lblQuantity.Size = New System.Drawing.Size(100, 20)
-        Me.lblQuantity.TabIndex = 21
+        Me.lblQuantity.TabIndex = 22
         Me.lblQuantity.Text = "Số lượng:"
         '
         'lblUnit
         '
-        Me.lblUnit.Location = New System.Drawing.Point(370, 302)
+        Me.lblUnit.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.lblUnit.Location = New System.Drawing.Point(370, 300)
         Me.lblUnit.Name = "lblUnit"
         Me.lblUnit.Size = New System.Drawing.Size(100, 20)
-        Me.lblUnit.TabIndex = 22
+        Me.lblUnit.TabIndex = 23
         Me.lblUnit.Text = "Đơn vị:"
         '
         'lblMinStockLevel
         '
-        Me.lblMinStockLevel.Location = New System.Drawing.Point(370, 337)
+        Me.lblMinStockLevel.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.lblMinStockLevel.Location = New System.Drawing.Point(370, 335)
         Me.lblMinStockLevel.Name = "lblMinStockLevel"
         Me.lblMinStockLevel.Size = New System.Drawing.Size(100, 20)
-        Me.lblMinStockLevel.TabIndex = 23
+        Me.lblMinStockLevel.TabIndex = 24
         Me.lblMinStockLevel.Text = "Tồn tối thiểu:"
         '
         'lblCategory
         '
-        Me.lblCategory.Location = New System.Drawing.Point(370, 372)
+        Me.lblCategory.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.lblCategory.Location = New System.Drawing.Point(370, 370)
         Me.lblCategory.Name = "lblCategory"
         Me.lblCategory.Size = New System.Drawing.Size(100, 20)
-        Me.lblCategory.TabIndex = 27
+        Me.lblCategory.TabIndex = 25
         Me.lblCategory.Text = "Danh mục:"
-        '
-        'btnCancel
-        '
-        Me.btnCancel.Enabled = False
-        Me.btnCancel.Location = New System.Drawing.Point(760, 410)
-        Me.btnCancel.Name = "btnCancel"
-        Me.btnCancel.Size = New System.Drawing.Size(100, 30)
-        Me.btnCancel.TabIndex = 28
-        Me.btnCancel.Text = "Hủy"
         '
         'txtSearchName
         '
+        Me.txtSearchName.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.txtSearchName.Location = New System.Drawing.Point(130, 20)
         Me.txtSearchName.Name = "txtSearchName"
         Me.txtSearchName.Size = New System.Drawing.Size(200, 22)
-        Me.txtSearchName.TabIndex = 29
+        Me.txtSearchName.TabIndex = 26
         '
         'lblSearchName
         '
+        Me.lblSearchName.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.lblSearchName.Location = New System.Drawing.Point(20, 20)
         Me.lblSearchName.Name = "lblSearchName"
         Me.lblSearchName.Size = New System.Drawing.Size(100, 20)
-        Me.lblSearchName.TabIndex = 30
+        Me.lblSearchName.TabIndex = 27
         Me.lblSearchName.Text = "Tên sản phẩm:"
         '
         'cboStatus
         '
+        Me.cboStatus.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.cboStatus.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cboStatus.Location = New System.Drawing.Point(130, 48)
         Me.cboStatus.Name = "cboStatus"
         Me.cboStatus.Size = New System.Drawing.Size(200, 24)
-        Me.cboStatus.TabIndex = 31
+        Me.cboStatus.TabIndex = 28
         '
         'lblStatus
         '
+        Me.lblStatus.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.lblStatus.Location = New System.Drawing.Point(20, 48)
         Me.lblStatus.Name = "lblStatus"
         Me.lblStatus.Size = New System.Drawing.Size(100, 20)
-        Me.lblStatus.TabIndex = 32
+        Me.lblStatus.TabIndex = 29
         Me.lblStatus.Text = "Trạng thái:"
         '
         'cboSortBy
         '
+        Me.cboSortBy.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.cboSortBy.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cboSortBy.Location = New System.Drawing.Point(400, 20)
         Me.cboSortBy.Name = "cboSortBy"
         Me.cboSortBy.Size = New System.Drawing.Size(200, 24)
-        Me.cboSortBy.TabIndex = 33
+        Me.cboSortBy.TabIndex = 30
         '
         'lblSortBy
         '
+        Me.lblSortBy.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.lblSortBy.Location = New System.Drawing.Point(350, 20)
         Me.lblSortBy.Name = "lblSortBy"
         Me.lblSortBy.Size = New System.Drawing.Size(50, 20)
-        Me.lblSortBy.TabIndex = 34
+        Me.lblSortBy.TabIndex = 31
         Me.lblSortBy.Text = "Sắp xếp:"
-
-        ' chkLowStock
-        Me.chkLowStock.Location = New System.Drawing.Point(700, 60)
-        Me.chkLowStock.Name = "chkLowStock"
-        Me.chkLowStock.Size = New System.Drawing.Size(150, 24)
-        Me.chkLowStock.Text = "Dưới mức tồn kho"
-        Me.chkLowStock.TabIndex = 40
         '
         'btnSearch
         '
+        Me.btnSearch.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.btnSearch.Location = New System.Drawing.Point(650, 20)
         Me.btnSearch.Name = "btnSearch"
         Me.btnSearch.Size = New System.Drawing.Size(100, 30)
-        Me.btnSearch.TabIndex = 35
+        Me.btnSearch.TabIndex = 32
         Me.btnSearch.Text = "Tìm kiếm"
         '
         'btnClearSearch
         '
+        Me.btnClearSearch.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.btnClearSearch.Location = New System.Drawing.Point(760, 20)
         Me.btnClearSearch.Name = "btnClearSearch"
         Me.btnClearSearch.Size = New System.Drawing.Size(100, 30)
-        Me.btnClearSearch.TabIndex = 36
+        Me.btnClearSearch.TabIndex = 33
         Me.btnClearSearch.Text = "Xóa tìm kiếm"
         '
         'lblCategorySort
         '
+        Me.lblCategorySort.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.lblCategorySort.AutoSize = True
         Me.lblCategorySort.Location = New System.Drawing.Point(350, 52)
         Me.lblCategorySort.Name = "lblCategorySort"
         Me.lblCategorySort.Size = New System.Drawing.Size(70, 16)
-        Me.lblCategorySort.TabIndex = 37
+        Me.lblCategorySort.TabIndex = 34
         Me.lblCategorySort.Text = "Danh mục:"
         '
         'cboCategorySort
         '
+        Me.cboCategorySort.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.cboCategorySort.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cboCategorySort.Location = New System.Drawing.Point(400, 48)
         Me.cboCategorySort.Name = "cboCategorySort"
         Me.cboCategorySort.Size = New System.Drawing.Size(200, 24)
-        Me.cboCategorySort.TabIndex = 38
+        Me.cboCategorySort.TabIndex = 35
         '
         'lblSupplier
         '
-        Me.lblSupplier.Location = New System.Drawing.Point(370, 407)
+        Me.lblSupplier.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.lblSupplier.Location = New System.Drawing.Point(370, 405)
         Me.lblSupplier.Name = "lblSupplier"
         Me.lblSupplier.Size = New System.Drawing.Size(100, 20)
-        Me.lblSupplier.TabIndex = 39
+        Me.lblSupplier.TabIndex = 36
         Me.lblSupplier.Text = "Nhà cung cấp:"
         '
         'cboSupplier
         '
+        Me.cboSupplier.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.cboSupplier.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cboSupplier.Location = New System.Drawing.Point(476, 407)
+        Me.cboSupplier.Location = New System.Drawing.Point(480, 405)
         Me.cboSupplier.Name = "cboSupplier"
         Me.cboSupplier.Size = New System.Drawing.Size(200, 24)
-        Me.cboSupplier.TabIndex = 40
+        Me.cboSupplier.TabIndex = 37
         '
         'btnViewStats
         '
+        Me.btnViewStats.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.btnViewStats.Location = New System.Drawing.Point(870, 20)
         Me.btnViewStats.Name = "btnViewStats"
         Me.btnViewStats.Size = New System.Drawing.Size(100, 30)
-        Me.btnViewStats.TabIndex = 39
+        Me.btnViewStats.TabIndex = 38
         Me.btnViewStats.Text = "Xem thống kê"
+        '
+        'chkLowStock
+        '
+        Me.chkLowStock.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.chkLowStock.Location = New System.Drawing.Point(650, 54)
+        Me.chkLowStock.Name = "chkLowStock"
+        Me.chkLowStock.Size = New System.Drawing.Size(150, 24)
+        Me.chkLowStock.TabIndex = 39
+        Me.chkLowStock.Text = "Dưới mức tồn kho"
+        '
+        'cboIsActive
+        '
+        Me.cboIsActive.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.cboIsActive.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cboIsActive.Items.AddRange(New Object() {"Hoạt động", "Ngưng hoạt động"})
+        Me.cboIsActive.Location = New System.Drawing.Point(480, 440)
+        Me.cboIsActive.Name = "cboIsActive"
+        Me.cboIsActive.Size = New System.Drawing.Size(200, 24)
+        Me.cboIsActive.TabIndex = 40
+        Me.cboIsActive.SelectedIndex = 0
+        '
+        'lblIsActive
+        '
+        Me.lblIsActive.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.lblIsActive.Location = New System.Drawing.Point(370, 440)
+        Me.lblIsActive.Name = "lblIsActive"
+        Me.lblIsActive.Size = New System.Drawing.Size(100, 20)
+        Me.lblIsActive.TabIndex = 41
+        Me.lblIsActive.Text = "Trạng thái:"
         '
         'ProductManagementForm
         '
-        Me.ClientSize = New System.Drawing.Size(1176, 506)
-        Me.Controls.Add(Me.cboCategorySort)
-        Me.Controls.Add(Me.lblCategorySort)
-        Me.Controls.Add(Me.txtSearchName)
-        Me.Controls.Add(Me.lblSearchName)
-        Me.Controls.Add(Me.cboStatus)
-        Me.Controls.Add(Me.lblStatus)
-        Me.Controls.Add(Me.cboSortBy)
-        Me.Controls.Add(Me.lblSortBy)
-        Me.Controls.Add(Me.btnSearch)
-        Me.Controls.Add(Me.btnClearSearch)
-        Me.Controls.Add(Me.dgvProducts)
-        Me.Controls.Add(Me.txtProductName)
-        Me.Controls.Add(Me.txtDescription)
-        Me.Controls.Add(Me.txtPrice)
-        Me.Controls.Add(Me.txtQuantity)
-        Me.Controls.Add(Me.txtUnit)
-        Me.Controls.Add(Me.txtMinStockLevel)
-        Me.Controls.Add(Me.cboCategory)
-        Me.Controls.Add(Me.btnAdd)
-        Me.Controls.Add(Me.btnUpdate)
-        Me.Controls.Add(Me.btnDelete)
-        Me.Controls.Add(Me.btnCancel)
-        Me.Controls.Add(Me.btnPrev)
-        Me.Controls.Add(Me.btnNext)
-        Me.Controls.Add(Me.lblPage)
-        Me.Controls.Add(Me.lblError)
-        Me.Controls.Add(Me.lblProductName)
-        Me.Controls.Add(Me.lblDescription)
-        Me.Controls.Add(Me.lblPrice)
-        Me.Controls.Add(Me.lblQuantity)
-        Me.Controls.Add(Me.lblUnit)
-        Me.Controls.Add(Me.lblMinStockLevel)
-        Me.Controls.Add(Me.lblCategory)
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
+        Me.ClientSize = New System.Drawing.Size(1200, 620)
+        Me.Controls.Add(Me.cboIsActive)
+        Me.Controls.Add(Me.lblIsActive)
+        Me.Controls.Add(Me.chkLowStock)
+        Me.Controls.Add(Me.btnViewStats)
         Me.Controls.Add(Me.cboSupplier)
         Me.Controls.Add(Me.lblSupplier)
-        Me.Controls.Add(Me.btnViewStats)
-        Me.Controls.Add(Me.chkLowStock)
-
+        Me.Controls.Add(Me.cboCategorySort)
+        Me.Controls.Add(Me.lblCategorySort)
+        Me.Controls.Add(Me.btnClearSearch)
+        Me.Controls.Add(Me.btnSearch)
+        Me.Controls.Add(Me.cboSortBy)
+        Me.Controls.Add(Me.lblSortBy)
+        Me.Controls.Add(Me.cboStatus)
+        Me.Controls.Add(Me.lblStatus)
+        Me.Controls.Add(Me.txtSearchName)
+        Me.Controls.Add(Me.lblSearchName)
+        Me.Controls.Add(Me.btnCancel)
+        Me.Controls.Add(Me.lblCategory)
+        Me.Controls.Add(Me.lblMinStockLevel)
+        Me.Controls.Add(Me.lblUnit)
+        Me.Controls.Add(Me.lblQuantity)
+        Me.Controls.Add(Me.lblPrice)
+        Me.Controls.Add(Me.lblDescription)
+        Me.Controls.Add(Me.lblProductName)
+        Me.Controls.Add(Me.lblError)
+        Me.Controls.Add(Me.lblPage)
+        Me.Controls.Add(Me.btnNext)
+        Me.Controls.Add(Me.btnPrev)
+        Me.Controls.Add(Me.btnDelete)
+        Me.Controls.Add(Me.btnUpdate)
+        Me.Controls.Add(Me.btnAdd)
+        Me.Controls.Add(Me.cboCategory)
+        Me.Controls.Add(Me.txtMinStockLevel)
+        Me.Controls.Add(Me.txtUnit)
+        Me.Controls.Add(Me.txtQuantity)
+        Me.Controls.Add(Me.txtPrice)
+        Me.Controls.Add(Me.txtDescription)
+        Me.Controls.Add(Me.txtProductName)
+        Me.Controls.Add(Me.dgvProducts)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
         Me.MaximizeBox = False
         Me.Name = "ProductManagementForm"
@@ -574,6 +628,5 @@ Partial Class ProductManagementForm
         CType(Me.dgvProducts, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
         Me.PerformLayout()
-
     End Sub
 End Class

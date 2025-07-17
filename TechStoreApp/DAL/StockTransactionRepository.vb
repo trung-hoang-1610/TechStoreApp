@@ -5,15 +5,14 @@ Imports System.Collections.Generic
 ''' <summary>
 ''' Lớp DAL cho các thao tác liên quan đến phiếu nhập/xuất kho.
 ''' </summary>
-Public Class StockTransactionDAL
-    Implements IStockTransactionDAL
+Public Class StockTransactionRepository
+    Implements IStockTransactionRepository
 
     ''' <summary>
     ''' Tạo một phiếu nhập/xuất kho mới.
     ''' </summary>
-    Public Function CreateTransaction(ByVal transaction As StockTransaction) As Integer Implements IStockTransactionDAL.CreateTransaction
+    Public Function CreateTransaction(ByVal transaction As StockTransaction) As Integer Implements IStockTransactionRepository.CreateTransaction
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
-            connection.Open()
             Dim query As String = "INSERT INTO StockTransactions (TransactionCode, TransactionType, Note, CreatedBy, SupplierId, Status) VALUES (?, ?, ?, ?, ?, ?)"
             Using command As New OdbcCommand(query, connection)
                 command.Parameters.AddWithValue("?", transaction.TransactionCode)
@@ -35,9 +34,8 @@ Public Class StockTransactionDAL
     ''' <summary>
     ''' Cập nhật thông tin phiếu nhập/xuất.
     ''' </summary>
-    Public Function UpdateTransaction(ByVal transaction As StockTransaction) As Boolean Implements IStockTransactionDAL.UpdateTransaction
+    Public Function UpdateTransaction(ByVal transaction As StockTransaction) As Boolean Implements IStockTransactionRepository.UpdateTransaction
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
-            connection.Open()
             Dim query As String = "UPDATE StockTransactions SET Status = ?, ApprovedBy = ?, ApprovedAt = ? WHERE TransactionId = ?"
             Using command As New OdbcCommand(query, connection)
                 command.Parameters.AddWithValue("?", transaction.Status)
@@ -54,10 +52,9 @@ Public Class StockTransactionDAL
     ''' <summary>
     ''' Lấy danh sách phiếu nhập/xuất theo loại và người tạo.
     ''' </summary>
-    Public Function GetTransactions(ByVal transactionType As String, ByVal createdBy As Integer?) As List(Of StockTransaction) Implements IStockTransactionDAL.GetTransactions
+    Public Function GetTransactions(ByVal transactionType As String, ByVal createdBy As Integer?) As List(Of StockTransaction) Implements IStockTransactionRepository.GetTransactions
         Dim transactions As New List(Of StockTransaction)
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
-            connection.Open()
             Dim query As String = "SELECT t.*, u1.Username AS CreatedByName, u2.Username AS ApprovedByName, s.SupplierName " &
                                  "FROM StockTransactions t " &
                                  "LEFT JOIN Users u1 ON t.CreatedBy = u1.UserId " &
@@ -98,9 +95,8 @@ Public Class StockTransactionDAL
     ''' <summary>
     ''' Lấy thông tin phiếu theo mã phiếu.
     ''' </summary>
-    Public Function GetTransactionById(ByVal transactionId As Integer) As StockTransaction Implements IStockTransactionDAL.GetTransactionById
+    Public Function GetTransactionById(ByVal transactionId As Integer) As StockTransaction Implements IStockTransactionRepository.GetTransactionById
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
-            connection.Open()
             Dim query As String = "SELECT t.*, u1.Username AS CreatedByName, u2.Username AS ApprovedByName, s.SupplierName " &
                                  "FROM StockTransactions t " &
                                  "LEFT JOIN Users u1 ON t.CreatedBy = u1.UserId " &
@@ -135,10 +131,9 @@ Public Class StockTransactionDAL
     ''' <summary>
     ''' Tìm kiếm phiếu theo tiêu chí.
     ''' </summary>
-    Public Function SearchTransactions(ByVal transactionType As String, ByVal createdBy As Integer?, ByVal searchCriteria As String) As List(Of StockTransaction) Implements IStockTransactionDAL.SearchTransactions
+    Public Function SearchTransactions(ByVal transactionType As String, ByVal createdBy As Integer?, ByVal searchCriteria As String) As List(Of StockTransaction) Implements IStockTransactionRepository.SearchTransactions
         Dim transactions As New List(Of StockTransaction)
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
-            connection.Open()
             Dim query As String = "SELECT t.*, u1.Username AS CreatedByName, u2.Username AS ApprovedByName, s.SupplierName " &
                                  "FROM StockTransactions t " &
                                  "LEFT JOIN Users u1 ON t.CreatedBy = u1.UserId " &
@@ -181,9 +176,8 @@ Public Class StockTransactionDAL
     ''' <summary>
     ''' Tạo phiếu nhập/xuất kho cùng với chi tiết trong một transaction.
     ''' </summary>
-    Public Function CreateTransactionWithDetails(ByVal transaction As StockTransaction, ByVal details As List(Of StockTransactionDetail)) As Integer Implements IStockTransactionDAL.CreateTransactionWithDetails
+    Public Function CreateTransactionWithDetails(ByVal transaction As StockTransaction, ByVal details As List(Of StockTransactionDetail)) As Integer Implements IStockTransactionRepository.CreateTransactionWithDetails
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
-            connection.Open()
             Dim transactionScope As OdbcTransaction = connection.BeginTransaction()
             Dim query As String = "INSERT INTO StockTransactions (TransactionCode, TransactionType, Note, CreatedBy, SupplierId, Status) VALUES (?, ?, ?, ?, ?, ?)"
             Using command As New OdbcCommand(query, connection, transactionScope)
@@ -219,9 +213,8 @@ Public Class StockTransactionDAL
     ''' <summary>
     ''' Duyệt phiếu nhập/xuất và cập nhật tồn kho.
     ''' </summary>
-    Public Function ApproveTransaction(ByVal transactionId As Integer, ByVal approvedBy As Integer, ByVal isApproved As Boolean) As Boolean Implements IStockTransactionDAL.ApproveTransaction
+    Public Function ApproveTransaction(ByVal transactionId As Integer, ByVal approvedBy As Integer, ByVal isApproved As Boolean) As Boolean Implements IStockTransactionRepository.ApproveTransaction
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
-            connection.Open()
             Dim transactionScope As OdbcTransaction = connection.BeginTransaction()
             Dim query As String = "SELECT * FROM StockTransactions WHERE TransactionId = ?"
             Using command As New OdbcCommand(query, connection, transactionScope)

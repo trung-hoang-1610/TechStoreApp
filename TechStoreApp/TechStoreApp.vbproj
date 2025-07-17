@@ -11,6 +11,7 @@
     <AssemblyName>TechStoreApp</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MyType>WindowsForms</MyType>
+	<UseApplicationFramework>true</UseApplicationFramework>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
@@ -45,6 +46,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <OptionInfer>On</OptionInfer>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>My Project\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ClosedXML, Version=0.76.0.0, Culture=neutral, PublicKeyToken=fd1eb21b62ae805b, processorArchitecture=MSIL">
@@ -90,12 +94,12 @@
     <Compile Include="BLL\Interfaces\ICategoryService.vb" />
     <Compile Include="BLL\Interfaces\IProductService.vb" />
     <Compile Include="BLL\Interfaces\IRoleService.vb" />
-    <Compile Include="BLL\Interfaces\IStockTransactionBLL.vb" />
+    <Compile Include="BLL\Interfaces\IStockTransactionService.vb" />
     <Compile Include="BLL\Interfaces\ISupplierService.vb" />
     <Compile Include="BLL\Interfaces\IUserService.vb" />
     <Compile Include="BLL\ProductService.vb" />
     <Compile Include="BLL\RoleService.vb" />
-    <Compile Include="BLL\StockTransactionBLL.vb" />
+    <Compile Include="BLL\StockTransactionService.vb" />
     <Compile Include="BLL\SupplierService.vb" />
     <Compile Include="BLL\UserService.vb" />
     <Compile Include="Common\DAL\ConnectionHelper.vb" />
@@ -106,7 +110,7 @@
     <Compile Include="DAL\Intefaces\ICategoryRepository.vb" />
     <Compile Include="DAL\Intefaces\IProductRepository.vb" />
     <Compile Include="DAL\Intefaces\IRoleRepository.vb" />
-    <Compile Include="DAL\Intefaces\IStockTransactionDAL.vb" />
+    <Compile Include="DAL\Intefaces\IStockTransactionRepository.vb" />
     <Compile Include="DAL\Intefaces\IStockTransactionDetailDAL.vb" />
     <Compile Include="DAL\Intefaces\ISupplierRepository.vb" />
     <Compile Include="DAL\Intefaces\IUserRepository.vb" />
@@ -117,7 +121,7 @@
     <Compile Include="DAL\Model\Supplier.vb" />
     <Compile Include="DAL\ProductRepository.vb" />
     <Compile Include="DAL\RoleRepository.vb" />
-    <Compile Include="DAL\StockTransactionDAL.vb" />
+    <Compile Include="DAL\StockTransactionRepository.vb" />
     <Compile Include="DAL\StockTransactionDetailDAL.vb" />
     <Compile Include="DAL\SupplierRepository.vb" />
     <Compile Include="DAL\UserRepository.vb" />
@@ -212,6 +216,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="My Project\app.manifest" />
     <None Include="My Project\Application.myapp">
       <Generator>MyApplicationCodeGenerator</Generator>
     </None>

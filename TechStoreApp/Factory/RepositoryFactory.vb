@@ -46,8 +46,8 @@ Public Class RepositoryFactory
         Return New SupplierRepository()
     End Function
 
-    Public Shared Function CreateStockTransactionRepository() As IStockTransactionDAL
-        Return New StockTransactionDAL()
+    Public Shared Function CreateStockTransactionRepository() As IStockTransactionRepository
+        Return New StockTransactionRepository()
     End Function
 
     Public Shared Function CreateStockTransactionDetailRepository() As IStockTransactionDetailDAL

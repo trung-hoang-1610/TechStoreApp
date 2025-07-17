@@ -21,7 +21,7 @@ Public Class ProductManagementForm
         InitializeComponent()
         _productService = ServiceFactory.CreateProductService()
         _categoryService = ServiceFactory.CreateCategoryService()
-        _supplierService = ServiceFactory.CreateSupplierService
+        _supplierService = ServiceFactory.CreateSupplierService()
         _userId = userId
         categoryLookup = New Dictionary(Of String, Integer)
         supplierLookup = New Dictionary(Of String, Integer)
@@ -69,6 +69,8 @@ Public Class ProductManagementForm
             cboCategorySort.Items.Clear()
             categoryLookup.Clear()
             Dim categories = _categoryService.GetAllCategories()
+            cboCategorySort.Items.Add("Tất cả")
+            categoryLookup.Add("Tất cả", Nothing)
             For Each cat In categories
                 cboCategory.Items.Add(cat.CategoryName)
                 cboCategorySort.Items.Add(cat.CategoryName)
@@ -85,10 +87,12 @@ Public Class ProductManagementForm
         End Try
     End Sub
 
+
+
     Private Sub LoadSuppliers()
         Try
             cboSupplier.Items.Clear()
-            SupplierLookup.Clear()
+            supplierLookup.Clear()
             Dim suppliers = _supplierService.GetAllSuppliers()
             For Each sup In suppliers
                 cboSupplier.Items.Add(sup.SupplierName)
@@ -106,7 +110,7 @@ Public Class ProductManagementForm
 
     Private Sub LoadSortByOptions()
         cboSortBy.Items.Clear()
-        cboSortBy.Items.AddRange({"Tên (A-Z)", "Giá (Thấp đến Cao)", "Giá (Cao đến Thấp)"})
+        cboSortBy.Items.AddRange({"Tất cả", "Tên (A-Z)", "Giá (Thấp đến Cao)", "Giá (Cao đến Thấp)"})
         cboSortBy.SelectedIndex = 0
     End Sub
 
@@ -123,7 +127,7 @@ Public Class ProductManagementForm
             totalPages = If(searchCriteria.PageSize > 0, CInt(Math.Ceiling(searchCriteria.TotalCount / searchCriteria.PageSize)), 1)
             dgvProducts.Rows.Clear()
             For Each p In products
-                dgvProducts.Rows.Add(p.ProductId, p.ProductName, p.Description, p.Unit, p.Price, p.Quantity, p.MinStockLevel, p.CategoryName, p.SupplierName, p.CreatedBy, p.CreatedAt, p.IsActive)
+                dgvProducts.Rows.Add(p.ProductId, p.ProductName, p.Description, p.Unit, p.Price, p.Quantity, p.MinStockLevel, p.CategoryName, p.SupplierName, p.CreatedByName, p.CreatedAt, If(p.IsActive, "Active", "InActive"))
             Next
 
             lblPage.Text = $"Trang {currentPage + 1}/{totalPages}"
@@ -147,6 +151,11 @@ Public Class ProductManagementForm
             cboCategory.SelectedIndex = 0
         Else
             cboCategory.SelectedIndex = -1
+        End If
+        If cboIsActive.Items.Count > 0 Then
+            cboIsActive.SelectedIndex = 0 ' Mặc định là Hoạt động
+        Else
+            cboIsActive.SelectedIndex = -1
         End If
         lblError.Text = String.Empty
     End Sub
@@ -245,6 +254,7 @@ Public Class ProductManagementForm
 
             Dim row = dgvProducts.SelectedRows(0)
             Dim productId = Convert.ToInt32(row.Cells("ProductId").Value)
+            Dim isActive As Boolean = (cboIsActive.SelectedItem.ToString() = "Hoạt động")
 
             Dim product As New Product With {
                 .ProductName = txtProductName.Text.Trim(),
@@ -255,7 +265,8 @@ Public Class ProductManagementForm
                 .MinStockLevel = Integer.Parse(txtMinStockLevel.Text),
                 .CategoryId = categoryLookup(cboCategory.SelectedItem.ToString()),
                 .SupplierId = supplierLookup(cboSupplier.SelectedItem.ToString()),
-                .CreatedBy = _userId
+                .CreatedBy = _userId,
+                .IsActive = isActive
             }
 
             product.GetType().GetField("_productId", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).SetValue(product, productId)
@@ -325,12 +336,28 @@ Public Class ProductManagementForm
                 cboCategory.SelectedIndex = If(cboCategory.Items.Contains(catName), cboCategory.Items.IndexOf(catName), -1)
                 Dim supName = If(row.Cells("SupplierName").Value IsNot Nothing, row.Cells("SupplierName").Value.ToString(), String.Empty)
                 cboSupplier.SelectedIndex = If(cboSupplier.Items.Contains(supName), cboSupplier.Items.IndexOf(supName), -1)
+                Dim status = If(row.Cells("IsActive").Value IsNot Nothing, row.Cells("IsActive").Value.ToString(), "Active")
+                cboIsActive.SelectedIndex = If(status = "Active", 0, 1)
             End If
         Catch ex As Exception
             lblError.Text = "Lỗi khi chọn sản phẩm: " & ex.Message
         End Try
     End Sub
+    Private Sub chkLowStock_CheckedChanged(sender As Object, e As EventArgs) Handles chkLowStock.CheckedChanged
+        Try
+            ' Cập nhật searchCriteria.LowStockOnly dựa trên trạng thái checkbox
+            searchCriteria.LowStockOnly = chkLowStock.Checked
+            Debug.WriteLine($"LowStockOnly: {searchCriteria.LowStockOnly}")
 
+            ' Đặt lại trang về 0 để đảm bảo hiển thị từ đầu
+            currentPage = 0
+            LoadProducts()
+        Catch ex As OdbcException
+            lblError.Text = "Lỗi khi lọc sản phẩm tồn kho thấp: " & ex.Message
+        Catch ex As Exception
+            lblError.Text = "Lỗi hệ thống khi lọc sản phẩm tồn kho thấp: " & ex.Message
+        End Try
+    End Sub
     Private Sub btnSearch_Click(sender As Object, e As EventArgs) Handles btnSearch.Click
         Try
             Dim nameValue = If(String.IsNullOrEmpty(txtSearchName.Text.Trim()), Nothing, txtSearchName.Text.Trim())
@@ -346,10 +373,19 @@ Public Class ProductManagementForm
                     isActiveValue = False
             End Select
 
-            Dim sortByValue = If(cboSortBy.SelectedIndex >= 0 AndAlso cboSortBy.SelectedItem IsNot Nothing,
-                               If(cboSortBy.SelectedItem.ToString() = "Tên (A-Z)", "Name",
-                                  If(cboSortBy.SelectedItem.ToString() = "Giá (Thấp đến Cao)", "PriceAsc", "PriceDesc")),
-                               "Name")
+            Dim sortByValue As String = Nothing ' Default to no sorting
+            If cboSortBy IsNot Nothing AndAlso cboSortBy.SelectedIndex >= 0 AndAlso cboSortBy.SelectedItem IsNot Nothing Then
+                Select Case cboSortBy.SelectedItem.ToString()
+                    Case "Tất cả"
+                        sortByValue = Nothing ' No sorting
+                    Case "Tên (A-Z)"
+                        sortByValue = "Name"
+                    Case "Giá (Thấp đến Cao)"
+                        sortByValue = "PriceAsc"
+                    Case "Giá (Cao đến Thấp)"
+                        sortByValue = "PriceDesc"
+                End Select
+            End If
 
             searchCriteria = New ProductSearchCriteria With {
                 .Name = nameValue,
@@ -358,7 +394,7 @@ Public Class ProductManagementForm
                 .PageIndex = 0,
                 .PageSize = pageSize,
                 .SortBy = sortByValue,
-                .LowStockOnly = chkLowStock.Checked
+                .LowStockOnly = If(chkLowStock IsNot Nothing, chkLowStock.Checked, False)
             }
 
             currentPage = 0
@@ -380,7 +416,7 @@ Public Class ProductManagementForm
             Else
                 cboCategorySort.SelectedIndex = -1
             End If
-
+            chkLowStock.Checked = False
             searchCriteria = New ProductSearchCriteria With {
                 .PageSize = pageSize,
                 .PageIndex = 0
@@ -441,6 +477,8 @@ Public Class ProductManagementForm
         txtQuantity.Enabled = editing
         txtMinStockLevel.Enabled = editing
         cboCategory.Enabled = editing
+        cboIsActive.Enabled = editing
+        cboSupplier.Enabled = editing
 
         btnAdd.Text = If(adding, "Lưu", "Thêm")
         btnUpdate.Text = If(Not adding AndAlso editing, "Lưu", "Cập nhật")

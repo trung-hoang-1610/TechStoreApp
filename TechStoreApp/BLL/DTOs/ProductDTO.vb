@@ -10,6 +10,7 @@ Public Class ProductDTO
     Public Property CategoryName As String
     Public Property SupplierName As String
     Public Property CreatedBy As Integer
+    Public Property CreatedByName As String
     Public Property CreatedAt As DateTime
     Public Property IsActive As Boolean
 End Class

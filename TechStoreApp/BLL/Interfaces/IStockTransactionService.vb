@@ -1,7 +1,7 @@
 ﻿''' <summary>
 ''' Interface cho các thao tác nghiệp vụ liên quan đến phiếu nhập/xuất kho.
 ''' </summary>
-Public Interface IStockTransactionBLL
+Public Interface IStockTransactionService
     ''' <summary>
     ''' Tạo phiếu nhập kho.
     ''' </summary>

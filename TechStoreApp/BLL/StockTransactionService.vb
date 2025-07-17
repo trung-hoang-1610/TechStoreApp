@@ -4,9 +4,9 @@
 ''' Lớp BLL cho các thao tác liên quan đến phiếu nhập/xuất kho.
 ''' </summary>
 Public Class StockTransactionService
-    Implements IStockTransactionBLL
+    Implements IStockTransactionService
 
-    Private ReadOnly _transactionRepository As IStockTransactionDAL
+    Private ReadOnly _transactionRepository As IStockTransactionRepository
     Private ReadOnly _productRepository As IProductRepository
     Private ReadOnly _userRepository As IUserRepository
     Private ReadOnly _supplierRepository As ISupplierRepository
@@ -15,7 +15,7 @@ Public Class StockTransactionService
     ''' <summary>
     ''' Khởi tạo StockTransactionService với các repository tương ứng.
     ''' </summary>
-    Public Sub New(ByVal transactionRepository As IStockTransactionDAL, ByVal productRepository As IProductRepository, ByVal userRepository As IUserRepository, ByVal supplierRepository As ISupplierRepository)
+    Public Sub New(ByVal transactionRepository As IStockTransactionRepository, ByVal productRepository As IProductRepository, ByVal userRepository As IUserRepository, ByVal supplierRepository As ISupplierRepository)
         If transactionRepository Is Nothing Then
             Throw New ArgumentNullException(NameOf(transactionRepository), "TransactionRepository không được là Nothing.")
         End If
@@ -46,7 +46,7 @@ Public Class StockTransactionService
     ''' <summary>
     ''' Tạo phiếu nhập kho.
     ''' </summary>
-    Public Function CreateStockInTransaction(ByVal transaction As StockTransactionDTO, ByVal details As List(Of StockTransactionDetailDTO)) As OperationResult Implements IStockTransactionBLL.CreateStockInTransaction
+    Public Function CreateStockInTransaction(ByVal transaction As StockTransactionDTO, ByVal details As List(Of StockTransactionDetailDTO)) As OperationResult Implements IStockTransactionService.CreateStockInTransaction
         If transaction Is Nothing Then
             Throw New ArgumentNullException(NameOf(transaction), "Đối tượng StockTransactionDTO không được là Nothing.")
         End If
@@ -109,7 +109,7 @@ Public Class StockTransactionService
     ''' <summary>
     ''' Tạo phiếu xuất kho.
     ''' </summary>
-    Public Function CreateStockOutTransaction(ByVal transaction As StockTransactionDTO, ByVal details As List(Of StockTransactionDetailDTO)) As OperationResult Implements IStockTransactionBLL.CreateStockOutTransaction
+    Public Function CreateStockOutTransaction(ByVal transaction As StockTransactionDTO, ByVal details As List(Of StockTransactionDetailDTO)) As OperationResult Implements IStockTransactionService.CreateStockOutTransaction
         If transaction Is Nothing Then
             Throw New ArgumentNullException(NameOf(transaction), "Đối tượng StockTransactionDTO không được là Nothing.")
         End If
@@ -174,7 +174,7 @@ Public Class StockTransactionService
     ''' <summary>
     ''' Duyệt phiếu nhập/xuất (chỉ admin).
     ''' </summary>
-    Public Function ApproveTransaction(ByVal transactionId As Integer, ByVal approvedBy As Integer, ByVal isApproved As Boolean) As OperationResult Implements IStockTransactionBLL.ApproveTransaction
+    Public Function ApproveTransaction(ByVal transactionId As Integer, ByVal approvedBy As Integer, ByVal isApproved As Boolean) As OperationResult Implements IStockTransactionService.ApproveTransaction
         Dim currentUser = SessionManager.GetCurrentUser()
         If currentUser Is Nothing OrElse currentUser.RoleId <> 1 Then
             Return New OperationResult(False, Nothing, New List(Of String) From {"Chỉ admin mới có quyền duyệt phiếu."})
@@ -197,7 +197,7 @@ Public Class StockTransactionService
     ''' <summary>
     ''' Lấy danh sách phiếu nhập/xuất.
     ''' </summary>
-    Public Function GetTransactions(ByVal transactionType As String, ByVal userId As Integer?) As List(Of StockTransactionDTO) Implements IStockTransactionBLL.GetTransactions
+    Public Function GetTransactions(ByVal transactionType As String, ByVal userId As Integer?) As List(Of StockTransactionDTO) Implements IStockTransactionService.GetTransactions
         If transactionType <> "IN" AndAlso transactionType <> "OUT" Then
             Throw New ArgumentException("Loại phiếu phải là 'IN' hoặc 'OUT'.", NameOf(transactionType))
         End If
@@ -217,7 +217,7 @@ Public Class StockTransactionService
     ''' <summary>
     ''' Tìm kiếm phiếu nhập/xuất.
     ''' </summary>
-    Public Function SearchTransactions(ByVal transactionType As String, ByVal userId As Integer?, ByVal criteria As SearchCriteriaDTO) As List(Of StockTransactionDTO) Implements IStockTransactionBLL.SearchTransactions
+    Public Function SearchTransactions(ByVal transactionType As String, ByVal userId As Integer?, ByVal criteria As SearchCriteriaDTO) As List(Of StockTransactionDTO) Implements IStockTransactionService.SearchTransactions
         If transactionType <> "IN" AndAlso transactionType <> "OUT" Then
             Throw New ArgumentException("Loại phiếu phải là 'IN' hoặc 'OUT'.", NameOf(transactionType))
         End If
@@ -247,7 +247,7 @@ Public Class StockTransactionService
     ''' <summary>
     ''' Lấy chi tiết phiếu theo mã phiếu.
     ''' </summary>
-    Public Function GetTransactionDetails(ByVal transactionId As Integer) As List(Of StockTransactionDetailDTO) Implements IStockTransactionBLL.GetTransactionDetails
+    Public Function GetTransactionDetails(ByVal transactionId As Integer) As List(Of StockTransactionDetailDTO) Implements IStockTransactionService.GetTransactionDetails
         If transactionId <= 0 Then
             Throw New ArgumentException("Mã phiếu không hợp lệ.", NameOf(transactionId))
         End If
@@ -329,7 +329,7 @@ Public Class StockTransactionService
         Return result
     End Function
 
-    Public Function GetTransactionById(transactionId As Integer) As StockTransactionDTO Implements IStockTransactionBLL.GetTransactionById
+    Public Function GetTransactionById(transactionId As Integer) As StockTransactionDTO Implements IStockTransactionService.GetTransactionById
         Return MapToDTO(_transactionRepository.GetTransactionById(transactionId))
     End Function
 End Class

@@ -105,7 +105,7 @@ Public Class ProductRepository
         End If
 
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
-            Dim query As String = "UPDATE Products SET ProductName = ?, Description = ?, Unit = ?, Price = ?, Quantity = ?, MinStockLevel = ?, CategoryId = ?, SupplierId = ? WHERE ProductId = ?"
+            Dim query As String = "UPDATE Products SET ProductName = ?, Description = ?, Unit = ?, Price = ?, Quantity = ?, MinStockLevel = ?, CategoryId = ?, SupplierId = ?, IsActive = ? WHERE ProductId = ?"
 
 
             If connection.State <> ConnectionState.Open Then
@@ -120,10 +120,11 @@ Public Class ProductRepository
                     command.Parameters.Add("", OdbcType.Int).Value = product.Quantity
                     command.Parameters.Add("", OdbcType.Int).Value = product.MinStockLevel
                     command.Parameters.Add("", OdbcType.Int).Value = product.CategoryId
-                    command.Parameters.Add("", OdbcType.Int).Value = product.SupplierId
-                    command.Parameters.Add("", OdbcType.Int).Value = product.ProductId
+                command.Parameters.Add("", OdbcType.Int).Value = product.SupplierId
+                command.Parameters.AddWithValue("", product.IsActive)
+                command.Parameters.Add("", OdbcType.Int).Value = product.ProductId
 
-                    Return command.ExecuteNonQuery() > 0
+                Return command.ExecuteNonQuery() > 0
                 End Using
 
         End Using
@@ -135,7 +136,7 @@ Public Class ProductRepository
         End If
 
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
-            Dim query As String = $"UPDATE Products SET IsActive = FALSE WHERE ProductId = {id}"
+            Dim query As String = $"Delete FROM Products WHERE ProductId = {id}"
 
 
             If connection.State <> ConnectionState.Open Then
@@ -223,7 +224,7 @@ Public Class ProductRepository
             hasConditions = True
         End If
 
-        If criteria.CategoryId.HasValue Then
+        If criteria.CategoryId > 0 Then
             queryBuilder.Append(If(hasConditions, " AND ", " WHERE ") & $"CategoryId = {criteria.CategoryId.Value}")
             countQuery.Append(If(hasConditions, " AND ", " WHERE ") & $"CategoryId = {criteria.CategoryId.Value}")
             hasConditions = True
@@ -265,6 +266,8 @@ Public Class ProductRepository
                 Case "pricedesc"
                     sortColumn = "Price"
                     sortDirection = "DESC"
+                Case Else
+
             End Select
         End If
         queryBuilder.Append($" ORDER BY {sortColumn} {sortDirection}")
@@ -384,7 +387,7 @@ Public Class ProductRepository
         End Try
 
         Try
-            product.IsActive = If(reader.GetSchemaTable.Columns.Contains("IsActive") AndAlso Not IsDBNull(reader("IsActive")), Convert.ToBoolean(reader("IsActive")), False)
+            product.IsActive = Convert.ToBoolean(reader("IsActive"))
         Catch ex As Exception
             Debug.WriteLine("❌ Lỗi tại IsActive: " & ex.Message)
         End Try
@@ -463,7 +466,7 @@ Public Class ProductRepository
     Public Function GetProductsBySupplierId(id As Integer) As List(Of Product) Implements IProductRepository.GetProductsBySupplierId
         Dim products As New List(Of Product)
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
-            Dim query As String = $"SELECT ProductId, ProductName, Description, Price, Quantity, CategoryId, SupplierId, CreatedBy, CreatedAt FROM Products WHERE IsActive = TRUE AND Products.SupplierId = {id} ORDER BY ProductId DESC"
+            Dim query As String = $"SELECT ProductId, ProductName, Quantity, CategoryId FROM Products WHERE IsActive = TRUE AND Products.SupplierId = {id} ORDER BY ProductId DESC"
 
 
             If connection.State <> ConnectionState.Open Then

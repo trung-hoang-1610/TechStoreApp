@@ -6,6 +6,49 @@ Imports System.Text
 Public Class UserRepository
     Implements IUserRepository
 
+
+    ''' <summary>
+    ''' Lấy tất cả người dùng từ cơ sở dữ liệu
+    ''' </summary>
+    ''' <returns>Danh sách các đối tượng User, hoặc danh sách rỗng nếu không có người dùng</returns>
+    ''' <exception cref="OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
+    Public Function GetAllUsers() As List(Of User) Implements IUserRepository.GetAllUsers
+        Dim users As New List(Of User)
+        Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            Dim query As String = "SELECT UserId, Username, PasswordHash, Email, RoleId, CreatedAt FROM Users"
+            Using command As New OdbcCommand(query, connection)
+                Try
+                    If connection.State <> ConnectionState.Open Then
+                        connection.Open()
+                    End If
+
+                    Using reader As OdbcDataReader = command.ExecuteReader()
+                        While reader.Read()
+                            Dim user As New User
+                            user.GetType().GetField("_userId", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).SetValue(user, reader.GetInt32(0))
+                            user.Username = reader.GetString(1)
+                            user.PasswordHash = reader.GetString(2)
+                            user.Email = If(reader.IsDBNull(3), Nothing, reader.GetString(3))
+                            user.RoleId = reader.GetInt32(4)
+                            user.GetType().GetField("_createdAt", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).SetValue(user, reader.GetDateTime(5))
+                            users.Add(user)
+                        End While
+                    End Using
+                Catch ex As OdbcException
+                    Debug.WriteLine($"Lỗi cơ sở dữ liệu trong GetAllUsers: {ex.Message}")
+                    Throw
+                Catch ex As Exception
+                    Debug.WriteLine($"Lỗi hệ thống trong GetAllUsers: {ex.Message}")
+                    Throw
+                Finally
+                    If connection.State = ConnectionState.Open Then
+                        connection.Close()
+                    End If
+                End Try
+            End Using
+        End Using
+        Return users
+    End Function
     ''' <summary>
     ''' Lấy người dùng theo mã định danh từ cơ sở dữ liệu
     ''' </summary>

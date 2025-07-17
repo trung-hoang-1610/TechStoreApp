@@ -51,7 +51,8 @@ Public Class ServiceFactory
         Dim productRepository As IProductRepository = RepositoryFactory.CreateProductRepository()
         Dim categoryRepository As ICategoryRepository = RepositoryFactory.CreateCategoryRepository()
         Dim supplierRepository As ISupplierRepository = RepositoryFactory.CreateSupplierRepository()
-        Return New ProductService(productRepository, categoryRepository, supplierRepository)
+        Dim userRepository As IUserRepository = RepositoryFactory.CreateUserRepository()
+        Return New ProductService(productRepository, categoryRepository, supplierRepository, userRepository)
     End Function
 
 
@@ -64,11 +65,13 @@ Public Class ServiceFactory
         Return New SupplierService(supplierRepository)
     End Function
 
-    Public Shared Function CreateStockTransactionService() As IStockTransactionBLL
-        Dim stockTransactionRepository As IStockTransactionDAL = RepositoryFactory.CreateStockTransactionRepository()
+    Public Shared Function CreateStockTransactionService() As IStockTransactionService
+        Dim stockTransactionRepository As IStockTransactionRepository = RepositoryFactory.CreateStockTransactionRepository()
         Dim productRepository As IProductRepository = RepositoryFactory.CreateProductRepository()
         Dim userRepository As IUserRepository = RepositoryFactory.CreateUserRepository()
         Dim supplierRepository As ISupplierRepository = RepositoryFactory.CreateSupplierRepository()
+
+
         Return New StockTransactionService(stockTransactionRepository, productRepository, userRepository, supplierRepository)
     End Function
 End Class

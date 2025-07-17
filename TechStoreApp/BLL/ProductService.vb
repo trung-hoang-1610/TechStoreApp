@@ -7,8 +7,10 @@ Public Class ProductService
     Private ReadOnly _productRepository As IProductRepository
     Private ReadOnly _categoryRepository As ICategoryRepository
     Private ReadOnly _supplierRepository As ISupplierRepository
+    Private ReadOnly _userRepository As IUserRepository
     Private ReadOnly _categoryCache As Dictionary(Of Integer, Category)
     Private ReadOnly _supplierCache As Dictionary(Of Integer, Supplier)
+    Private ReadOnly _userCache As Dictionary(Of Integer, User)
 
     ''' <summary>
     ''' Khởi tạo ProductService với repository tương ứng
@@ -16,7 +18,7 @@ Public Class ProductService
     ''' <param name="productRepository">Đối tượng IProductRepository</param>
     ''' <param name="categoryRepository">Đối tượng ICategoryRepository</param>
     ''' <exception cref="ArgumentNullException">Ném ra nếu productRepository hoặc categoryRepository là Nothing</exception>
-    Public Sub New(ByVal productRepository As IProductRepository, ByVal categoryRepository As ICategoryRepository, ByVal supplierRepository As ISupplierRepository)
+    Public Sub New(ByVal productRepository As IProductRepository, ByVal categoryRepository As ICategoryRepository, ByVal supplierRepository As ISupplierRepository, ByVal userRepository As IUserRepository)
         If productRepository Is Nothing Then
             Throw New ArgumentNullException(NameOf(productRepository), "ProductRepository không được là Nothing.")
         End If
@@ -26,8 +28,10 @@ Public Class ProductService
         _productRepository = productRepository
         _categoryRepository = categoryRepository
         _supplierRepository = supplierRepository
+        _userRepository = userRepository
         _categoryCache = LoadCategoryCache()
         _supplierCache = LoadSupplierCache()
+        _userCache = LoadUserCache()
 
     End Sub
 
@@ -48,7 +52,12 @@ Public Class ProductService
         Return suppliers.ToDictionary(Function(s) s.SupplierId, Function(s) s)
 
     End Function
+    Private Function LoadUserCache() As Dictionary(Of Integer, User)
 
+        Dim users = _userRepository.GetAllUsers()
+        Return users.ToDictionary(Function(u) u.UserId, Function(u) u)
+
+    End Function
     ''' <summary>
     ''' Trả về danh sách tất cả sản phẩm dưới dạng DTO
     ''' </summary>
@@ -205,7 +214,7 @@ Public Class ProductService
     Private Function MapToDTO(p As Product) As ProductDTO
         Dim category As Category = Nothing
         Dim supplier As Supplier = Nothing
-
+        Dim user As User = Nothing
         If Not _categoryCache.TryGetValue(p.CategoryId, category) Then
             category = _categoryRepository.GetCategoryById(p.CategoryId)
             If category IsNot Nothing Then
@@ -217,6 +226,13 @@ Public Class ProductService
             supplier = _supplierRepository.GetSupplierById(p.SupplierId)
             If category IsNot Nothing Then
                 _supplierCache(p.SupplierId) = supplier
+            End If
+        End If
+
+        If Not _userCache.TryGetValue(p.CreatedBy, user) Then
+            user = _userRepository.GetUserById(p.CreatedBy)
+            If user IsNot Nothing Then
+                _userCache(p.CreatedBy) = user
             End If
         End If
         Console.WriteLine("categoryID: " & p.CategoryId)
@@ -233,7 +249,8 @@ Public Class ProductService
         .Price = p.Price,
         .Quantity = p.Quantity,
         .CategoryName = If(category IsNot Nothing, category.CategoryName, "Không xác định"),
-        .SupplierName = If(supplier IsNot Nothing, supplier.SupplierName, "Không xác định")
+        .SupplierName = If(supplier IsNot Nothing, supplier.SupplierName, "Không xác định"),
+        .CreatedByName = If(user IsNot Nothing, user.Username, "Không xác định")
     }
     End Function
 
@@ -250,8 +267,8 @@ Public Class ProductService
         Return _productRepository.GetProductStatistics(timeRange)
     End Function
 
-    Public Function GetProductsBySupplierId() As List(Of ProductDTO) Implements IProductService.GetProductsBySupplierId
-        Dim products = _productRepository.GetAllProducts()
+    Public Function GetProductsBySupplierId(supplierId As Integer?) As List(Of ProductDTO) Implements IProductService.GetProductsBySupplierId
+        Dim products = _productRepository.GetProductsBySupplierId(supplierId)
         Return MapToDTOList(products)
     End Function
 End Class
