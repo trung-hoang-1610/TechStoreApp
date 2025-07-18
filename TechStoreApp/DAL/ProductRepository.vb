@@ -13,7 +13,8 @@ Public Class ProductRepository
     Public Function GetAllProducts() As List(Of Product) Implements IProductRepository.GetAllProducts
         Dim products As New List(Of Product)
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
-            Dim query As String = "SELECT ProductId, ProductName, Description, Price, Quantity, CategoryId, SupplierId, CreatedBy, CreatedAt FROM Products WHERE IsActive = FALSE ORDER BY ProductId DESC"
+            Dim query As String = "SELECT ProductId, ProductName, Description, Unit, Price, Quantity, 
+                                            MinStockLevel, CategoryId, SupplierId, CreatedBy, CreatedAt, isActive FROM Products WHERE IsActive = TRUE ORDER BY ProductId DESC"
 
 
             If connection.State <> ConnectionState.Open Then
@@ -40,7 +41,8 @@ Public Class ProductRepository
         End If
 
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
-            Dim query As String = "SELECT ProductId, ProductName, Description, Price, Quantity, CategoryId, SupplierId, CreatedBy, CreatedAt FROM Products WHERE ProductId = ? AND IsActive = FALSE"
+            Dim query As String = "SELECT ProductId, ProductName, Description, Unit, Price, Quantity, 
+                                            MinStockLevel, CategoryId, SupplierId, CreatedBy, CreatedAt, isActive FROM Products WHERE ProductId = ? AND IsActive = TRUE"
 
 
             If connection.State <> ConnectionState.Open Then
@@ -279,8 +281,8 @@ Public Class ProductRepository
             queryBuilder.Append($" LIMIT {limit} OFFSET {offset}")
         End If
 
-        Try
-            Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+
+        Using connection As OdbcConnection = ConnectionHelper.GetConnection()
                 If connection.State <> ConnectionState.Open Then connection.Open()
 
                 ' Đếm số dòng
@@ -302,15 +304,9 @@ Public Class ProductRepository
                     End Using
                 End Using
             End Using
-        Catch ex As OdbcException
-            Debug.WriteLine($"[ERROR {DateTime.Now}] OdbcException in SearchProducts: {ex.Message}, Query: {queryBuilder}")
-            Throw
-        Catch ex As Exception
-            Debug.WriteLine($"[ERROR {DateTime.Now}] Exception in SearchProducts: {ex.Message}, Query: {queryBuilder}")
-            Throw
-        End Try
 
-        Return products
+
+            Return products
     End Function
 
 
@@ -466,7 +462,8 @@ Public Class ProductRepository
     Public Function GetProductsBySupplierId(id As Integer) As List(Of Product) Implements IProductRepository.GetProductsBySupplierId
         Dim products As New List(Of Product)
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
-            Dim query As String = $"SELECT ProductId, ProductName, Quantity, CategoryId FROM Products WHERE IsActive = TRUE AND Products.SupplierId = {id} ORDER BY ProductId DESC"
+            Dim query As String = $"SELECT   ProductId, ProductName, Description, Unit, Price, Quantity, 
+                                            MinStockLevel, CategoryId, SupplierId, CreatedBy, CreatedAt, isActive FROM Products WHERE IsActive = TRUE AND Products.SupplierId = {id} ORDER BY ProductId DESC"
 
 
             If connection.State <> ConnectionState.Open Then

@@ -134,41 +134,54 @@ Public Class StockTransactionRepository
     Public Function SearchTransactions(ByVal transactionType As String, ByVal createdBy As Integer?, ByVal searchCriteria As String) As List(Of StockTransaction) Implements IStockTransactionRepository.SearchTransactions
         Dim transactions As New List(Of StockTransaction)
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
-            Dim query As String = "SELECT t.*, u1.Username AS CreatedByName, u2.Username AS ApprovedByName, s.SupplierName " &
-                                 "FROM StockTransactions t " &
-                                 "LEFT JOIN Users u1 ON t.CreatedBy = u1.UserId " &
-                                 "LEFT JOIN Users u2 ON t.ApprovedBy = u2.UserId " &
-                                 "LEFT JOIN Suppliers s ON t.SupplierId = s.SupplierId " &
-                                 "WHERE t.TransactionType = ? AND (t.TransactionCode LIKE ? OR t.Status LIKE ?)"
-            If createdBy.HasValue Then
-                query &= " AND t.CreatedBy = ?"
-            End If
-            Using command As New OdbcCommand(query, connection)
-                command.Parameters.AddWithValue("?", transactionType)
-                command.Parameters.AddWithValue("?", "%" & searchCriteria & "%")
-                command.Parameters.AddWithValue("?", "%" & searchCriteria & "%")
-                If createdBy.HasValue Then
-                    command.Parameters.AddWithValue("?", createdBy.Value)
-                End If
-                Using reader As OdbcDataReader = command.ExecuteReader()
-                    While reader.Read()
-                        Dim transaction As New StockTransaction()
-                        transaction.SetTransactionId(reader.GetInt32(reader.GetOrdinal("TransactionId")))
-                        transaction.TransactionCode = reader.GetString(reader.GetOrdinal("TransactionCode"))
-                        transaction.TransactionType = reader.GetString(reader.GetOrdinal("TransactionType"))
-                        transaction.Note = If(reader.IsDBNull(reader.GetOrdinal("Note")), Nothing, reader.GetString(reader.GetOrdinal("Note")))
-                        transaction.CreatedBy = reader.GetInt32(reader.GetOrdinal("CreatedBy"))
-                        transaction.CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"))
-                        transaction.ApprovedBy = If(reader.IsDBNull(reader.GetOrdinal("ApprovedBy")), 0, reader.GetInt32(reader.GetOrdinal("ApprovedBy")))
-                        transaction.ApprovedAt = If(reader.IsDBNull(reader.GetOrdinal("ApprovedAt")), DateTime.MinValue, reader.GetDateTime(reader.GetOrdinal("ApprovedAt")))
-                        transaction.Status = reader.GetString(reader.GetOrdinal("Status"))
-                        transaction.SupplierId = If(reader.IsDBNull(reader.GetOrdinal("SupplierId")), 0, reader.GetInt32(reader.GetOrdinal("SupplierId")))
-                        transactions.Add(transaction)
-                    End While
-                End Using
-            End Using
-            ConnectionHelper.CloseConnection(connection)
+            Try
+                Dim query As String = "SELECT t.TransactionId, t.TransactionCode, t.TransactionType, t.Note, t.CreatedBy, t.CreatedAt, " &
+                                  "t.ApprovedBy, t.ApprovedAt, t.Status, t.SupplierId, " &
+                                  "u1.UserName AS CreatedByName, u2.UserName AS ApprovedByName, s.SupplierName AS SupplierName " &
+                                  "FROM StockTransactions t " &
+                                  "LEFT JOIN Users u1 ON t.CreatedBy = u1.UserId " &
+                                  "LEFT JOIN Users u2 ON t.ApprovedBy = u2.UserId " &
+                                  "LEFT JOIN Suppliers s ON t.SupplierId = s.SupplierId " &
+                                  "WHERE t.TransactionType = ? " &
+                                  "AND (t.TransactionCode LIKE ? OR t.Status LIKE ?)"
 
+                If createdBy.HasValue Then
+                    query &= " AND t.CreatedBy = ?"
+                End If
+
+
+                Using command As New OdbcCommand(query, connection)
+                    ' Thứ tự tham số PHẢI khớp với dấu ? trong query
+                    command.Parameters.AddWithValue("@Type", transactionType)
+                    command.Parameters.AddWithValue("@CodeLike", "%" & searchCriteria & "%")
+                    command.Parameters.AddWithValue("@StatusLike", "%" & searchCriteria & "%")
+                    If createdBy.HasValue Then
+                        command.Parameters.AddWithValue("@CreatedBy", createdBy.Value)
+                    End If
+
+                    Using reader As OdbcDataReader = command.ExecuteReader()
+                        While reader.Read()
+                            Dim transaction As New StockTransaction()
+                            transaction.SetTransactionId(reader.GetInt32(reader.GetOrdinal("TransactionId")))
+                            transaction.TransactionCode = reader.GetString(reader.GetOrdinal("TransactionCode"))
+                            transaction.TransactionType = reader.GetString(reader.GetOrdinal("TransactionType"))
+                            transaction.Note = If(reader.IsDBNull(reader.GetOrdinal("Note")), Nothing, reader.GetString(reader.GetOrdinal("Note")))
+                            transaction.CreatedBy = reader("CreatedBy")
+                            transaction.CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"))
+                            transaction.ApprovedBy = If(reader.IsDBNull(reader.GetOrdinal("ApprovedBy")), 0, reader.GetInt32(reader.GetOrdinal("ApprovedBy")))
+                            transaction.ApprovedAt = If(reader.IsDBNull(reader.GetOrdinal("ApprovedAt")), DateTime.MinValue, reader.GetDateTime(reader.GetOrdinal("ApprovedAt")))
+                            transaction.Status = reader.GetString(reader.GetOrdinal("Status"))
+                            transaction.SupplierId = If(reader.IsDBNull(reader.GetOrdinal("SupplierId")), 0, reader.GetInt32(reader.GetOrdinal("SupplierId")))
+                            transactions.Add(transaction)
+                        End While
+                    End Using
+                End Using
+            Catch ex As Exception
+                Console.WriteLine("ERROR: " & ex.Message & vbCrLf & ex.StackTrace)
+                Throw
+            Finally
+                ConnectionHelper.CloseConnection(connection)
+            End Try
         End Using
         Return transactions
     End Function

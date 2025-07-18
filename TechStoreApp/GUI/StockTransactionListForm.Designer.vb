@@ -23,14 +23,65 @@
         _gridIn.Size = New System.Drawing.Size(760, 360)
         _gridIn.Location = New System.Drawing.Point(10, 50)
         _gridIn.AutoGenerateColumns = False
-        _gridIn.Columns.Add("TransactionId", "Mã phiếu")
-        _gridIn.Columns.Add("TransactionCode", "Mã giao dịch")
-        _gridIn.Columns.Add("CreatedByName", "Người tạo")
-        _gridIn.Columns.Add("CreatedAt", "Ngày tạo")
-        _gridIn.Columns.Add("SupplierName", "Nhà cung cấp")
-        _gridIn.Columns.Add("Status", "Trạng thái")
-        _gridIn.Columns.Add("ApprovedByName", "Người duyệt")
-        _gridIn.Columns.Add("ApprovedAt", "Ngày duyệt")
+
+        Dim colTransactionIdIn As New DataGridViewTextBoxColumn()
+        colTransactionIdIn.Name = "TransactionId"
+        colTransactionIdIn.HeaderText = "Mã phiếu"
+        colTransactionIdIn.DataPropertyName = "TransactionId"
+        colTransactionIdIn.Width = 80
+        _gridIn.Columns.Add(colTransactionIdIn)
+
+        Dim colTransactionCodeIn As New DataGridViewTextBoxColumn()
+        colTransactionCodeIn.Name = "TransactionCode"
+        colTransactionCodeIn.HeaderText = "Mã giao dịch"
+        colTransactionCodeIn.DataPropertyName = "TransactionCode"
+        colTransactionCodeIn.Width = 120
+        _gridIn.Columns.Add(colTransactionCodeIn)
+
+        Dim colCreatedByNameIn As New DataGridViewTextBoxColumn()
+        colCreatedByNameIn.Name = "CreatedByName"
+        colCreatedByNameIn.HeaderText = "Người tạo"
+        colCreatedByNameIn.DataPropertyName = "CreatedByName"
+        colCreatedByNameIn.Width = 120
+        _gridIn.Columns.Add(colCreatedByNameIn)
+
+        Dim colCreatedAtIn As New DataGridViewTextBoxColumn()
+        colCreatedAtIn.Name = "CreatedAt"
+        colCreatedAtIn.HeaderText = "Ngày tạo"
+        colCreatedAtIn.DataPropertyName = "CreatedAt"
+        colCreatedAtIn.Width = 100
+        _gridIn.Columns.Add(colCreatedAtIn)
+
+        Dim colSupplierNameIn As New DataGridViewTextBoxColumn()
+        colSupplierNameIn.Name = "SupplierName"
+        colSupplierNameIn.HeaderText = "Nhà cung cấp"
+        colSupplierNameIn.DataPropertyName = "SupplierName"
+        colSupplierNameIn.Width = 150
+        _gridIn.Columns.Add(colSupplierNameIn)
+
+        Dim colStatusIn As New DataGridViewTextBoxColumn()
+        colStatusIn.Name = "Status"
+        colStatusIn.HeaderText = "Trạng thái"
+        colStatusIn.DataPropertyName = "Status"
+        colStatusIn.Width = 100
+        _gridIn.Columns.Add(colStatusIn)
+
+        Dim colApprovedByNameIn As New DataGridViewTextBoxColumn()
+        colApprovedByNameIn.Name = "ApprovedByName"
+        colApprovedByNameIn.HeaderText = "Người duyệt"
+        colApprovedByNameIn.DataPropertyName = "ApprovedByName"
+        colApprovedByNameIn.Width = 120
+        _gridIn.Columns.Add(colApprovedByNameIn)
+
+        Dim colApprovedAtIn As New DataGridViewTextBoxColumn()
+        colApprovedAtIn.Name = "ApprovedAt"
+        colApprovedAtIn.HeaderText = "Ngày duyệt"
+        colApprovedAtIn.DataPropertyName = "ApprovedAt"
+        colApprovedAtIn.Width = 100
+        _gridIn.Columns.Add(colApprovedAtIn)
+
+        _gridIn.Visible = True
+        _gridIn.Enabled = True
         tabIn.Controls.Add(_gridIn)
 
         ' Khởi tạo và thiết lập DataGridView cho phiếu xuất
@@ -38,13 +89,58 @@
         _gridOut.Size = New System.Drawing.Size(760, 360)
         _gridOut.Location = New System.Drawing.Point(10, 50)
         _gridOut.AutoGenerateColumns = False
-        _gridOut.Columns.Add("TransactionId", "Mã phiếu")
-        _gridOut.Columns.Add("TransactionCode", "Mã giao dịch")
-        _gridOut.Columns.Add("CreatedByName", "Người tạo")
-        _gridOut.Columns.Add("CreatedAt", "Ngày tạo")
-        _gridOut.Columns.Add("Status", "Trạng thái")
-        _gridOut.Columns.Add("ApprovedByName", "Người duyệt")
-        _gridOut.Columns.Add("ApprovedAt", "Ngày duyệt")
+
+        Dim colTransactionIdOut As New DataGridViewTextBoxColumn()
+        colTransactionIdOut.Name = "TransactionIdOut"
+        colTransactionIdOut.HeaderText = "Mã phiếu"
+        colTransactionIdOut.DataPropertyName = "TransactionId"
+        colTransactionIdOut.Width = 80
+        _gridOut.Columns.Add(colTransactionIdOut)
+
+        Dim colTransactionCodeOut As New DataGridViewTextBoxColumn()
+        colTransactionCodeOut.Name = "TransactionCodeOut"
+        colTransactionCodeOut.HeaderText = "Mã giao dịch"
+        colTransactionCodeOut.DataPropertyName = "TransactionCode"
+        colTransactionCodeOut.Width = 120
+        _gridOut.Columns.Add(colTransactionCodeOut)
+
+        Dim colCreatedByNameOut As New DataGridViewTextBoxColumn()
+        colCreatedByNameOut.Name = "CreatedByNameOut"
+        colCreatedByNameOut.HeaderText = "Người tạo"
+        colCreatedByNameOut.DataPropertyName = "CreatedByName"
+        colCreatedByNameOut.Width = 120
+        _gridOut.Columns.Add(colCreatedByNameOut)
+
+        Dim colCreatedAtOut As New DataGridViewTextBoxColumn()
+        colCreatedAtOut.Name = "CreatedAtOut"
+        colCreatedAtOut.HeaderText = "Ngày tạo"
+        colCreatedAtOut.DataPropertyName = "CreatedAt"
+        colCreatedAtOut.Width = 100
+        _gridOut.Columns.Add(colCreatedAtOut)
+
+        Dim colStatusOut As New DataGridViewTextBoxColumn()
+        colStatusOut.Name = "StatusOut"
+        colStatusOut.HeaderText = "Trạng thái"
+        colStatusOut.DataPropertyName = "Status"
+        colStatusOut.Width = 100
+        _gridOut.Columns.Add(colStatusOut)
+
+        Dim colApprovedByNameOut As New DataGridViewTextBoxColumn()
+        colApprovedByNameOut.Name = "ApprovedByNameOut"
+        colApprovedByNameOut.HeaderText = "Người duyệt"
+        colApprovedByNameOut.DataPropertyName = "ApprovedByName"
+        colApprovedByNameOut.Width = 120
+        _gridOut.Columns.Add(colApprovedByNameOut)
+
+        Dim colApprovedAtOut As New DataGridViewTextBoxColumn()
+        colApprovedAtOut.Name = "ApprovedAtOut"
+        colApprovedAtOut.HeaderText = "Ngày duyệt"
+        colApprovedAtOut.DataPropertyName = "ApprovedAt"
+        colApprovedAtOut.Width = 100
+        _gridOut.Columns.Add(colApprovedAtOut)
+
+        _gridOut.Visible = True
+        _gridOut.Enabled = True
         tabOut.Controls.Add(_gridOut)
 
         ' Khởi tạo và thiết lập các nút
@@ -81,7 +177,6 @@
         _txtSearch = New TextBox()
         _txtSearch.Location = New System.Drawing.Point(340, 10)
         _txtSearch.Size = New System.Drawing.Size(200, 30)
-        _txtSearch.Text = "Tìm kiếm mã phiếu..."
         Me.Controls.Add(_txtSearch)
 
         _cmbStatus = New ComboBox()

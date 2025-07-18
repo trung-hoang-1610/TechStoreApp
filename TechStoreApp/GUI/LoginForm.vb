@@ -22,14 +22,19 @@ Partial Public Class LoginForm
             If user IsNot Nothing Then
                 SessionManager.SetCurrentUser(user)
 
-                'Dim StockTransactionListForm As New StockTransactionListForm()
-                'StockTransactionListForm.Show()
-                'Me.Hide()
                 Me.Hide()
-                Dim ProductManagementForm As New ProductManagementForm(user.UserId)
-                ProductManagementForm.ShowDialog()
-
+                Dim MainForm As New MainForm()
+                MainForm.ShowDialog()
                 Me.Close()
+                'Me.Hide()
+                'Dim StockTransactionListForm As New StockTransactionListForm()
+                'StockTransactionListForm.ShowDialog()
+                'Me.Close()
+                'Me.Hide()
+                'Dim ProductManagementForm As New ProductManagementForm(user.UserId)
+                'ProductManagementForm.ShowDialog()
+
+                'Me.Close()
             Else
                 lblError.Text = "Tên đăng nhập hoặc mật khẩu không đúng."
             End If

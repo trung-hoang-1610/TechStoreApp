@@ -6,6 +6,7 @@
     Private ReadOnly _supplierService As ISupplierService
     Private ReadOnly _categoryService As ICategoryService
     Private ReadOnly _transactionType As String
+    Private ReadOnly _supplierId As Integer?  ' Lưu supplierId cho phiếu nhập
     Private WithEvents _txtTransactionCode As TextBox
     Private WithEvents _txtNote As TextBox
     Private WithEvents _cmbSupplier As ComboBox
@@ -20,12 +21,16 @@
     Private WithEvents _btnCancel As Button
     Private ReadOnly _selectedProducts As List(Of StockTransactionDetailDTO)
 
-    Public Sub New(transactionType As String)
+    Public Sub New(transactionType As String, Optional supplierId As Integer? = Nothing)
         If String.IsNullOrEmpty(transactionType) Then
             Throw New ArgumentNullException(NameOf(transactionType), "Transaction type cannot be null or empty.")
         End If
+        If transactionType = "IN" AndAlso Not supplierId.HasValue Then
+            Throw New ArgumentException("SupplierId is required for stock-in transactions.")
+        End If
 
         _transactionType = transactionType
+        _supplierId = supplierId
         _transactionService = ServiceFactory.CreateStockTransactionService()
         _productService = ServiceFactory.CreateProductService()
         _supplierService = ServiceFactory.CreateSupplierService()
@@ -33,19 +38,36 @@
         _selectedProducts = New List(Of StockTransactionDetailDTO)()
 
         InitializeComponent()
-
         ConfigureForm()
         InitializeData()
     End Sub
 
     Private Sub ConfigureForm()
-        If _txtTransactionCode Is Nothing OrElse _cmbSupplier Is Nothing Then
-            Return
-        End If
+        If _txtTransactionCode Is Nothing OrElse _cmbSupplier Is Nothing Then Return
 
         Me.Text = If(_transactionType = "IN", "Tạo phiếu nhập", "Tạo phiếu xuất")
-        _cmbSupplier.Visible = _transactionType = "IN"
         _txtTransactionCode.Text = GenerateTransactionCode()
+        _txtTransactionCode.Enabled = False  ' Vô hiệu hóa chỉnh sửa mã giao dịch
+
+        If _transactionType = "IN" Then
+            _cmbSupplier.Enabled = False  ' Vô hiệu hóa chọn NCC cho phiếu nhập
+            If _supplierId.HasValue Then
+                Dim supplier = _supplierService.GetSupplierById(_supplierId.Value)
+                If supplier IsNot Nothing Then
+                    _cmbSupplier.Items.Add(supplier)
+                    _cmbSupplier.DisplayMember = "SupplierName"
+                    _cmbSupplier.ValueMember = "SupplierId"
+                    _cmbSupplier.SelectedIndex = 0
+                Else
+                    ShowErrorMessage("Không tìm thấy nhà cung cấp với SupplierId: " & _supplierId.Value)
+                End If
+            End If
+        Else
+            _cmbSupplier.Enabled = True  ' Bật chọn NCC cho phiếu xuất
+        End If
+
+        _gridProducts.AutoGenerateColumns = False
+        _gridSelectedProducts.AutoGenerateColumns = False
     End Sub
 
     Private Sub InitializeData()
@@ -60,35 +82,20 @@
     End Sub
 
     Private Sub RemoveEventHandlers()
-        If _cmbSupplier IsNot Nothing Then
-            RemoveHandler _cmbSupplier.SelectedIndexChanged, AddressOf OnSupplierSelectedIndexChanged
-        End If
-        If _cmbCategory IsNot Nothing Then
-            RemoveHandler _cmbCategory.SelectedIndexChanged, AddressOf OnCategorySelectedIndexChanged
-        End If
-        If _txtProductSearch IsNot Nothing Then
-            RemoveHandler _txtProductSearch.TextChanged, AddressOf OnProductSearchTextChanged
-        End If
+        If _cmbSupplier IsNot Nothing Then RemoveHandler _cmbSupplier.SelectedIndexChanged, AddressOf OnSupplierSelectedIndexChanged
+        If _cmbCategory IsNot Nothing Then RemoveHandler _cmbCategory.SelectedIndexChanged, AddressOf OnCategorySelectedIndexChanged
+        If _txtProductSearch IsNot Nothing Then RemoveHandler _txtProductSearch.TextChanged, AddressOf OnProductSearchTextChanged
     End Sub
 
     Private Sub AddEventHandlers()
-        If _cmbSupplier IsNot Nothing Then
-            AddHandler _cmbSupplier.SelectedIndexChanged, AddressOf OnSupplierSelectedIndexChanged
-        End If
-        If _cmbCategory IsNot Nothing Then
-            AddHandler _cmbCategory.SelectedIndexChanged, AddressOf OnCategorySelectedIndexChanged
-        End If
-        If _txtProductSearch IsNot Nothing Then
-            AddHandler _txtProductSearch.TextChanged, AddressOf OnProductSearchTextChanged
-        End If
+        If _cmbSupplier IsNot Nothing Then AddHandler _cmbSupplier.SelectedIndexChanged, AddressOf OnSupplierSelectedIndexChanged
+        If _cmbCategory IsNot Nothing Then AddHandler _cmbCategory.SelectedIndexChanged, AddressOf OnCategorySelectedIndexChanged
+        If _txtProductSearch IsNot Nothing Then AddHandler _txtProductSearch.TextChanged, AddressOf OnProductSearchTextChanged
     End Sub
 
     Private Function GenerateTransactionCode() As String
         Try
-            If _transactionService Is Nothing Then
-                Return String.Empty
-            End If
-
+            If _transactionService Is Nothing Then Return String.Empty
             Dim prefix = If(_transactionType = "IN", "IN", "OUT")
             Dim datePart = DateTime.Now.ToString("yyyyMMdd")
             Dim transactions = _transactionService.GetTransactions(_transactionType, Nothing)
@@ -102,22 +109,21 @@
 
     Private Sub LoadSuppliers()
         If _cmbSupplier Is Nothing OrElse _supplierService Is Nothing Then
+            ShowErrorMessage("ComboBox nhà cung cấp hoặc SupplierService không được khởi tạo.")
             Return
         End If
 
         Try
-            If _transactionType = "IN" Then
+            If _transactionType = "OUT" Then
+                _cmbSupplier.Items.Clear()
+                _cmbSupplier.Items.Add("Tất cả")  ' Thêm tùy chọn "Tất cả" cho phiếu xuất
                 Dim suppliers = _supplierService.GetAllSuppliers()
                 If suppliers IsNot Nothing AndAlso suppliers.Any() Then
                     _cmbSupplier.DataSource = suppliers
                     _cmbSupplier.DisplayMember = "SupplierName"
                     _cmbSupplier.ValueMember = "SupplierId"
-                    _cmbSupplier.SelectedIndex = -1
-                Else
-                    _cmbSupplier.Enabled = False
+                    _cmbSupplier.SelectedIndex = 0  ' Chọn "Tất cả" làm mặc định
                 End If
-            Else
-                _cmbSupplier.Enabled = False
             End If
         Catch ex As Exception
             ShowErrorMessage("Lỗi khi tải danh sách nhà cung cấp: " & ex.Message)
@@ -125,130 +131,67 @@
     End Sub
 
     Private Sub LoadCategories()
-        If _cmbCategory Is Nothing OrElse _categoryService Is Nothing Then
-            Return
-        End If
+        If _cmbCategory Is Nothing OrElse _categoryService Is Nothing Then Return
 
         Try
             _cmbCategory.Items.Clear()
-            _cmbCategory.Items.Add("All")
+            _cmbCategory.Items.Add("Tất cả")  ' Thêm tùy chọn "Tất cả"
             Dim categories = _categoryService.GetAllCategories()
             If categories IsNot Nothing AndAlso categories.Any() Then
                 _cmbCategory.DataSource = categories
                 _cmbCategory.DisplayMember = "CategoryName"
                 _cmbCategory.ValueMember = "CategoryId"
-                _cmbCategory.SelectedIndex = -1
+                _cmbCategory.SelectedIndex = 0  ' Chọn "Tất cả" làm mặc định
             End If
         Catch ex As Exception
-            ShowErrorMessage("Lỗi khi tải danh sách danh mục: " & ex.Message)
+            ShowErrorMessage("Lỗi khi tải danhLists danh mục: " & ex.Message)
         End Try
     End Sub
 
     Private Sub LoadProducts()
-        If _gridProducts Is Nothing OrElse _productService Is Nothing Then
-            ShowErrorMessage("Grid hoặc ProductService không được khởi tạo.")
-            Return
-        End If
+        If _gridProducts Is Nothing OrElse _productService Is Nothing Then Return
 
         Try
-            ' Kiểm tra _transactionType
-            If String.IsNullOrEmpty(_transactionType) Then
-                ShowErrorMessage("TransactionType không được khởi tạo.")
-                Return
-            End If
-
-            ' Kiểm tra _cmbSupplier
-            Dim supplierId As Integer? = Nothing
-            If _transactionType = "IN" Then
-                If _cmbSupplier Is Nothing Then
-                    ShowErrorMessage("ComboBox nhà cung cấp không được khởi tạo.")
-                    Return
-                End If
-                If _cmbSupplier.SelectedIndex >= 0 AndAlso _cmbSupplier.SelectedValue IsNot Nothing Then
-                    Try
-                        supplierId = CInt(_cmbSupplier.SelectedValue)
-                        Debug.WriteLine($"SupplierId: {supplierId}")
-                    Catch ex As InvalidCastException
-                        ShowErrorMessage("Lỗi khi chuyển đổi SupplierId: " & ex.Message)
-                        Return
-                    End Try
-                End If
-            End If
-
-            ' Kiểm tra _cmbCategory
-            Dim category As String = Nothing
-            If _cmbCategory Is Nothing Then
-                ShowErrorMessage("ComboBox danh mục không được khởi tạo.")
-                Return
-            End If
-            If _cmbCategory.SelectedIndex > 0 AndAlso _cmbCategory.SelectedItem IsNot Nothing Then
-                category = _cmbCategory.SelectedItem.ToString()
-                Debug.WriteLine($"Category: {category}")
-            End If
-
-            ' Kiểm tra _txtProductSearch
-            Dim searchText As String = If(_txtProductSearch?.Text, String.Empty)
-            Debug.WriteLine($"SearchText: {searchText}")
-
-            ' Lấy danh sách sản phẩm
-            Dim products As List(Of ProductDTO) = Nothing
-            If _transactionType = "IN" Then
-                Debug.WriteLine("Gọi GetProductsBySupplierId...")
-                Try
-                    products = _productService.GetProductsBySupplierId(supplierId)
-                Catch ex As ArgumentOutOfRangeException
-                    ShowErrorMessage($"Lỗi trong GetProductsBySupplierId: {ex.Message}{vbCrLf}{ex.StackTrace}")
-                    _gridProducts.DataSource = Nothing
-                    Return
-                End Try
+            Dim products As List(Of ProductDTO)
+            If _transactionType = "IN" AndAlso _supplierId.HasValue Then
+                products = _productService.GetProductsBySupplierId(_supplierId.Value)
+            ElseIf _transactionType = "OUT" AndAlso _cmbSupplier.SelectedIndex > 0 AndAlso _cmbSupplier.SelectedValue IsNot Nothing Then
+                products = _productService.GetProductsBySupplierId(CInt(_cmbSupplier.SelectedValue))
             Else
-                Debug.WriteLine("Gọi GetAllProducts...")
-                Try
-                    products = _productService.GetAllProducts()
-                Catch ex As ArgumentOutOfRangeException
-                    ShowErrorMessage($"Lỗi trong GetAllProducts: {ex.Message}{vbCrLf}{ex.StackTrace}")
-                    _gridProducts.DataSource = Nothing
-                    Return
-                End Try
+                products = _productService.GetAllProducts()
             End If
 
-            ' Kiểm tra danh sách sản phẩm
             If products Is Nothing OrElse Not products.Any() Then
-                MessageBox.Show("Không lấy được danh sách sản phẩm. Danh sách rỗng hoặc null.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning)
                 _gridProducts.DataSource = Nothing
+                MessageBox.Show("Không có sản phẩm nào để hiển thị.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information)
                 Return
-            Else
-                MessageBox.Show($"Đã lấy được {products.Count} sản phẩm.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                ' Log danh sách sản phẩm
-                Debug.WriteLine("Danh sách sản phẩm:")
-                For Each product In products
-                    If product IsNot Nothing Then
-                        Debug.WriteLine($"Product: ID={product.ProductId}, Name={product.ProductName}, Category={product.CategoryName}, Unit={product.Unit}, Quantity={product.Quantity}")
-                    Else
-                        Debug.WriteLine("Product: NULL")
-                    End If
-                Next
             End If
 
-            ' Lọc sản phẩm
-            If Not String.IsNullOrEmpty(category) AndAlso category <> "All" Then
+            Dim category As String = If(_cmbCategory?.Text, "Tất cả")
+            Dim searchText As String = If(_txtProductSearch?.Text, String.Empty)
+
+            If category <> "Tất cả" Then
                 products = products.Where(Function(p) p?.CategoryName = category).ToList()
             End If
+
             If Not String.IsNullOrEmpty(searchText) Then
                 products = products.Where(Function(p) p IsNot Nothing AndAlso
-                ((p.ProductName?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0) OrElse
-                 (p.ProductId.ToString().IndexOf(searchText) >= 0))).ToList()
+                    (p.ProductName?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0 OrElse
+                     p.ProductId.ToString().IndexOf(searchText) >= 0)).ToList()
             End If
 
+            _gridProducts.DataSource = Nothing
             _gridProducts.DataSource = products
         Catch ex As Exception
-            ShowErrorMessage("Lỗi khi tải danh sách sản phẩm: " & ex.Message & vbCrLf & ex.StackTrace)
+            ShowErrorMessage("Lỗi khi tải danh sách sản phẩm: " & ex.Message)
             _gridProducts.DataSource = Nothing
         End Try
     End Sub
 
     Private Sub OnSupplierSelectedIndexChanged(sender As Object, e As EventArgs)
-        LoadProducts()
+        If _transactionType = "OUT" Then
+            LoadProducts()
+        End If
     End Sub
 
     Private Sub OnProductSearchTextChanged(sender As Object, e As EventArgs)
@@ -260,22 +203,20 @@
     End Sub
 
     Private Sub _btnAddProduct_Click(sender As Object, e As EventArgs) Handles _btnAddProduct.Click
-        If _gridProducts Is Nothing OrElse _gridSelectedProducts Is Nothing OrElse _numQuantity Is Nothing Then
-            Return
-        End If
+        If _gridProducts Is Nothing OrElse _gridSelectedProducts Is Nothing OrElse _numQuantity Is Nothing Then Return
 
         Try
-            If Not _gridProducts.Columns.Contains("Select") Then
-                ShowErrorMessage("Cột 'Select' không tồn tại trong lưới sản phẩm.")
+            If Not _gridProducts.Columns.Contains("ChkSelect") Then
+                ShowErrorMessage("Cột 'ChkSelect' không tồn tại trong lưới sản phẩm.")
                 Return
             End If
 
             For Each row As DataGridViewRow In _gridProducts.Rows
-                If row.Cells("Select")?.Value IsNot Nothing AndAlso CBool(row.Cells("Select").Value) Then
-                    Dim productId = If(row.Cells("ProductId")?.Value IsNot Nothing, CInt(row.Cells("ProductId").Value), 0)
+                If row.Cells("ChkSelect")?.Value IsNot Nothing AndAlso CBool(row.Cells("ChkSelect").Value) Then
+                    Dim productId = If(row.Cells("ProductId_Products")?.Value IsNot Nothing, CInt(row.Cells("ProductId_Products").Value), 0)
                     If productId = 0 Then Continue For
 
-                    Dim product = _productService?.GetProductById(productId)
+                    Dim product = _productService.GetProductById(productId)
                     If product Is Nothing Then
                         ShowErrorMessage($"Không tìm thấy sản phẩm với ProductId: {productId}")
                         Continue For
@@ -299,33 +240,38 @@
                         .Note = String.Empty
                     }
                     _selectedProducts.Add(detail)
-                    row.Cells("Select").Value = False
+                    row.Cells("ChkSelect").Value = False
                 End If
             Next
 
             RefreshSelectedProductsGrid()
         Catch ex As Exception
-            ShowErrorMessage("Lỗi khi thêm sản phẩm: " & ex.Message & vbCrLf & ex.StackTrace)
+            ShowErrorMessage("Lỗi khi thêm sản phẩm: " & ex.Message)
         End Try
     End Sub
 
     Private Sub _btnRemoveProduct_Click(sender As Object, e As EventArgs) Handles _btnRemoveProduct.Click
-        If _gridSelectedProducts Is Nothing Then
-            Return
-        End If
+        If _gridSelectedProducts Is Nothing Then Return
 
         Try
-            If _gridSelectedProducts.SelectedRows.Count > 0 Then
-                Dim selectedDetail = TryCast(_gridSelectedProducts.SelectedRows(0).DataBoundItem, StockTransactionDetailDTO)
-                If selectedDetail IsNot Nothing Then
-                    _selectedProducts.Remove(selectedDetail)
-                    RefreshSelectedProductsGrid()
-                End If
-            Else
-                MessageBox.Show("Vui lòng chọn một sản phẩm để xóa.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            If _gridSelectedProducts.SelectedRows.Count = 0 Then
+                MessageBox.Show("Vui lòng chọn ít nhất một sản phẩm để xóa.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                Return
             End If
+
+            Dim toRemove As New List(Of StockTransactionDetailDTO)
+            For Each row As DataGridViewRow In _gridSelectedProducts.SelectedRows
+                Dim detail = TryCast(row.DataBoundItem, StockTransactionDetailDTO)
+                If detail IsNot Nothing Then toRemove.Add(detail)
+            Next
+
+            For Each detail In toRemove
+                _selectedProducts.Remove(detail)
+            Next
+
+            RefreshSelectedProductsGrid()
         Catch ex As Exception
-            ShowErrorMessage("Lỗi khi xóa sản phẩm: " & ex.Message & vbCrLf & ex.StackTrace)
+            ShowErrorMessage("Lỗi khi xóa sản phẩm: " & ex.Message)
         End Try
     End Sub
 
@@ -335,17 +281,21 @@
                 ShowErrorMessage("Vui lòng chọn ít nhất một sản phẩm.")
                 Return
             End If
-
-            If _txtTransactionCode Is Nothing OrElse _transactionService Is Nothing Then
+            If _transactionType = "IN" AndAlso Not _supplierId.HasValue Then
+                ShowErrorMessage("Vui lòng cung cấp nhà cung cấp cho phiếu nhập.")
                 Return
             End If
+
+            If _txtTransactionCode Is Nothing OrElse _transactionService Is Nothing Then Return
 
             Dim transaction As New StockTransactionDTO With {
                 .TransactionCode = _txtTransactionCode.Text,
                 .TransactionType = _transactionType,
                 .Note = _txtNote?.Text,
                 .CreatedBy = SessionManager.GetCurrentUser()?.UserId,
-                .SupplierId = If(_transactionType = "IN" AndAlso _cmbSupplier?.SelectedValue IsNot Nothing, CInt(_cmbSupplier.SelectedValue), 0)
+                .SupplierId = If(_transactionType = "IN", _supplierId.Value,
+                                If(_transactionType = "OUT" AndAlso _cmbSupplier.SelectedIndex > 0 AndAlso _cmbSupplier.SelectedValue IsNot Nothing,
+                                   CInt(_cmbSupplier.SelectedValue), 0))
             }
 
             Dim result = If(_transactionType = "IN",
@@ -360,7 +310,7 @@
                 ShowErrorMessage(String.Join(Environment.NewLine, result.Errors.ToArray()))
             End If
         Catch ex As Exception
-            ShowErrorMessage("Lỗi khi lưu giao dịch: " & ex.Message & vbCrLf & ex.StackTrace)
+            ShowErrorMessage("Lỗi khi lưu giao dịch: " & ex.Message)
         End Try
     End Sub
 

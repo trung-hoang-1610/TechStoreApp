@@ -130,9 +130,9 @@ Public Class StockTransactionService
         If transaction.TransactionType <> "OUT" Then
             errors.Add("Loại phiếu phải là 'OUT' cho phiếu xuất.")
         End If
-        If transaction.SupplierId.HasValue Then
-            errors.Add("Phiếu xuất không được có nhà cung cấp.")
-        End If
+        'If transaction.SupplierId.HasValue Then
+        '    errors.Add("Phiếu xuất không được có nhà cung cấp.")
+        'End If
         For Each detail In details
             Dim product = _productRepository.GetProductById(detail.ProductId)
             If product Is Nothing Then
@@ -272,33 +272,72 @@ Public Class StockTransactionService
     ''' Chuyển đổi đối tượng StockTransaction sang StockTransactionDTO.
     ''' </summary>
     Private Function MapToDTO(ByVal transaction As StockTransaction) As StockTransactionDTO
-        Dim createdByUser As User = _userRepository.GetUserById(transaction.CreatedBy)
-        Dim approvedByUser As User = If(transaction.ApprovedBy > 0, _userRepository.GetUserById(transaction.ApprovedBy), Nothing)
-        Dim supplier As Supplier = If(transaction.SupplierId > 0 AndAlso _supplierCache.ContainsKey(transaction.SupplierId), _supplierCache(transaction.SupplierId), Nothing)
+        Console.WriteLine("=== Mapping StockTransaction to DTO ===")
+        Console.WriteLine($"TransactionId: {transaction.TransactionId}")
+        Console.WriteLine($"TransactionCode: {transaction.TransactionCode}")
+        Console.WriteLine($"TransactionType: {transaction.TransactionType}")
+        Console.WriteLine($"Note: {transaction.Note}")
+        Console.WriteLine($"CreatedBy: {transaction.CreatedBy}")
+        Console.WriteLine($"CreatedAt: {transaction.CreatedAt}")
+        Console.WriteLine($"SupplierId: {transaction.SupplierId}")
+        Console.WriteLine($"Status: {transaction.Status}")
+        Console.WriteLine($"ApprovedBy: {transaction.ApprovedBy}")
+        Console.WriteLine($"ApprovedAt: {transaction.ApprovedAt}")
 
-        If transaction.SupplierId > 0 AndAlso supplier Is Nothing Then
-            supplier = _supplierRepository.GetSupplierById(transaction.SupplierId)
-            If supplier IsNot Nothing Then
-                _supplierCache(transaction.SupplierId) = supplier
+        Dim createdByUser As User = _userRepository.GetUserById(transaction.CreatedBy)
+        If createdByUser IsNot Nothing Then
+            Console.WriteLine($"CreatedByUser: ID = {createdByUser.UserId}, Username = {createdByUser.Username}")
+        Else
+            Console.WriteLine("CreatedByUser: Không tìm thấy")
+        End If
+
+        Dim approvedByUser As User = Nothing
+        If transaction.ApprovedBy > 0 Then
+            approvedByUser = _userRepository.GetUserById(transaction.ApprovedBy)
+            If approvedByUser IsNot Nothing Then
+                Console.WriteLine($"ApprovedByUser: ID = {approvedByUser.UserId}, Username = {approvedByUser.Username}")
+            Else
+                Console.WriteLine("ApprovedByUser: Không tìm thấy")
             End If
+        Else
+            Console.WriteLine("ApprovedByUser: NULL hoặc không có")
+        End If
+
+        Dim supplier As Supplier = Nothing
+        If transaction.SupplierId > 0 Then
+            If _supplierCache.ContainsKey(transaction.SupplierId) Then
+                supplier = _supplierCache(transaction.SupplierId)
+                Console.WriteLine($"Supplier (from cache): ID = {supplier.SupplierId}, Name = {supplier.SupplierName}")
+            Else
+                supplier = _supplierRepository.GetSupplierById(transaction.SupplierId)
+                If supplier IsNot Nothing Then
+                    _supplierCache(transaction.SupplierId) = supplier
+                    Console.WriteLine($"Supplier (from DB): ID = {supplier.SupplierId}, Name = {supplier.SupplierName}")
+                Else
+                    Console.WriteLine("Supplier: Không tìm thấy trong cache hoặc DB")
+                End If
+            End If
+        Else
+            Console.WriteLine("SupplierId = 0 hoặc NULL")
         End If
 
         Return New StockTransactionDTO With {
-            .TransactionId = transaction.TransactionId,
-            .TransactionCode = transaction.TransactionCode,
-            .TransactionType = transaction.TransactionType,
-            .Note = transaction.Note,
-            .CreatedBy = transaction.CreatedBy,
-            .CreatedByName = If(createdByUser IsNot Nothing, createdByUser.Username, "Không xác định"),
-            .CreatedAt = transaction.CreatedAt,
-            .SupplierId = If(transaction.SupplierId > 0, transaction.SupplierId, Nothing),
-            .SupplierName = If(supplier IsNot Nothing, supplier.SupplierName, "Không xác định"),
-            .Status = transaction.Status,
-            .ApprovedBy = If(transaction.ApprovedBy > 0, transaction.ApprovedBy, Nothing),
-            .ApprovedByName = If(approvedByUser IsNot Nothing, approvedByUser.Username, "Không xác định"),
-            .ApprovedAt = If(transaction.ApprovedAt > DateTime.MinValue, transaction.ApprovedAt, Nothing)
-        }
+        .TransactionId = transaction.TransactionId,
+        .TransactionCode = transaction.TransactionCode,
+        .TransactionType = transaction.TransactionType,
+        .Note = transaction.Note,
+        .CreatedBy = transaction.CreatedBy,
+        .CreatedByName = If(createdByUser IsNot Nothing, createdByUser.Username, "Không xác định"),
+        .CreatedAt = transaction.CreatedAt,
+        .SupplierId = If(transaction.SupplierId > 0, transaction.SupplierId, Nothing),
+        .SupplierName = If(supplier IsNot Nothing, supplier.SupplierName, "Không xác định"),
+        .Status = transaction.Status,
+        .ApprovedBy = If(transaction.ApprovedBy > 0, transaction.ApprovedBy, Nothing),
+        .ApprovedByName = If(approvedByUser IsNot Nothing, approvedByUser.Username, "Không xác định"),
+        .ApprovedAt = If(transaction.ApprovedAt > DateTime.MinValue, transaction.ApprovedAt, Nothing)
+    }
     End Function
+
 
     ''' <summary>
     ''' Chuyển đổi danh sách StockTransaction sang danh sách StockTransactionDTO.

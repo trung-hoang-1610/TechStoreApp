@@ -267,7 +267,7 @@ Public Class ProductService
         Return _productRepository.GetProductStatistics(timeRange)
     End Function
 
-    Public Function GetProductsBySupplierId(supplierId As Integer?) As List(Of ProductDTO) Implements IProductService.GetProductsBySupplierId
+    Public Function GetProductsBySupplierId(supplierId As Integer) As List(Of ProductDTO) Implements IProductService.GetProductsBySupplierId
         Dim products = _productRepository.GetProductsBySupplierId(supplierId)
         Return MapToDTOList(products)
     End Function

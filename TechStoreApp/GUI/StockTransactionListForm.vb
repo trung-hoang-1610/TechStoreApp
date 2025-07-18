@@ -2,6 +2,7 @@
     Inherits System.Windows.Forms.Form
 
     Private ReadOnly _myTransactionService As IStockTransactionService
+
     Private WithEvents _tabControl As TabControl
     Private WithEvents _gridIn As DataGridView
     Private WithEvents _gridOut As DataGridView
@@ -14,15 +15,8 @@
 
     Public Sub New()
         _myTransactionService = ServiceFactory.CreateStockTransactionService
-        MessageBox.Show("_transactionService được tạo: " & If(_myTransactionService IsNot Nothing, "OK", "NULL"))
-
         ' Gọi InitializeComponent trước để khởi tạo giao diện
         InitializeComponent()
-
-        ' Khởi tạo dịch vụ
-
-
-
 
         ' Cấu hình giao diện
         ConfigureControls()
@@ -92,9 +86,9 @@
     End Sub
 
     Private Sub _btnCreateIn_Click(sender As Object, e As EventArgs) Handles _btnCreateIn.Click
-        Using createForm As New StockTransactionCreateForm("IN")
-            If createForm.ShowDialog() = DialogResult.OK Then
-                LoadTransactions()
+        Using selectSupplierForm As New SelectSupplierForm()
+            If selectSupplierForm.ShowDialog() = DialogResult.OK Then
+                LoadTransactions()  ' Tải lại danh sách sau khi tạo phiếu
             End If
         End Using
     End Sub
@@ -137,7 +131,12 @@
     Private Sub _btnApprove_Click(sender As Object, e As EventArgs) Handles _btnApprove.Click
         Dim selectedGrid As DataGridView = If(_gridIn.SelectedRows.Count > 0, _gridIn, _gridOut)
         If selectedGrid.SelectedRows.Count > 0 Then
-            Dim transactionId As Integer = CInt(selectedGrid.SelectedRows(0).Cells("TransactionId").Value)
+            Dim transactionId As Integer
+            If selectedGrid Is _gridIn Then
+                transactionId = CInt(selectedGrid.SelectedRows(0).Cells("TransactionId").Value)
+            Else
+                transactionId = CInt(selectedGrid.SelectedRows(0).Cells("TransactionIdOut").Value)
+            End If
             Dim dialogResult = MessageBox.Show("Duyệt phiếu này?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
             If dialogResult = DialogResult.Yes Then
                 Dim currentUser = SessionManager.GetCurrentUser()

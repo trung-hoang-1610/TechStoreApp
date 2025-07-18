@@ -40,7 +40,7 @@ Public Class SupplierRepository
 
 
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
-            Dim query As String = "SELECT SupplierId, SupplierName, ContactInfo FROM Categories WHERE supplierId = ?"
+            Dim query As String = "SELECT SupplierId, SupplierName, ContactInfo FROM Suppliers WHERE SupplierId = ?"
             Using command As New OdbcCommand(query, connection)
                 command.Parameters.AddWithValue("id", supplierId)
                 Using reader As OdbcDataReader = command.ExecuteReader()
