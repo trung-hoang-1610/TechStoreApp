@@ -1,4 +1,4 @@
-﻿Public Class ProductSearchCriteria
+﻿Public Class ProductSearchCriteriaDTO
     Public Property Name As String
     Public Property CategoryId As Integer?
     Public Property MinPrice As Decimal?

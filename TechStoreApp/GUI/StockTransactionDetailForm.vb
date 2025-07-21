@@ -1,4 +1,5 @@
-﻿
+﻿Imports System.Data.Common
+
 Public Class StockTransactionDetailForm
     Inherits Form
 
@@ -14,11 +15,14 @@ Public Class StockTransactionDetailForm
     Private _lblApprovedBy As Label
     Private _lblApprovedAt As Label
     Private _gridDetails As DataGridView
+    Private WithEvents _btnApprove As Button
+    Private WithEvents _btnReject As Button
 
     Public Sub New(ByVal transactionId As Integer)
         InitializeComponent()
         _transactionId = transactionId
         _transactionService = ServiceFactory.CreateStockTransactionService()
+
         LoadTransactionDetails()
     End Sub
 
@@ -31,21 +35,64 @@ Public Class StockTransactionDetailForm
                 Return
             End If
 
-            _lblTransactionCode.Text = $"Mã giao dịch: {transaction.TransactionCode}"
-            _lblTransactionType.Text = $"Loại phiếu: {transaction.TransactionType}"
-            _lblCreatedBy.Text = $"Người tạo: {transaction.CreatedByName}"
-            _lblCreatedAt.Text = $"Ngày tạo: {transaction.CreatedAt}"
-            _lblSupplier.Text = $"Nhà cung cấp: {transaction.SupplierName}"
-            _lblStatus.Text = $"Trạng thái: {transaction.Status}"
-            _lblApprovedBy.Text = $"Người duyệt: {transaction.ApprovedByName}"
-            _lblApprovedAt.Text = $"Ngày duyệt: {If(transaction.ApprovedAt, "Chưa duyệt")}"
+            If transaction.Status = "Pending" Then
+                Dim currentUser = SessionManager.GetCurrentUser()
+                If currentUser IsNot Nothing AndAlso currentUser.RoleId = 1 Then
+                    _btnApprove.Visible = True
+                    _btnReject.Visible = True
+                End If
+            End If
+
+
+            _lblTransactionCode.Text = "Mã giao dịch: " & transaction.TransactionCode
+            _lblTransactionType.Text = "Loại phiếu: " & transaction.TransactionType
+            _lblCreatedBy.Text = "Người tạo: " & transaction.CreatedByName
+            _lblCreatedAt.Text = "Ngày tạo: " & transaction.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+
+            _lblSupplier.Text = "Nhà cung cấp: " & If(transaction.SupplierId.HasValue, transaction.SupplierName, "(Không có)")
+            _lblStatus.Text = "Trạng thái: " & transaction.Status
+            _lblApprovedBy.Text = "Người duyệt: " & If(transaction.ApprovedBy.HasValue AndAlso Not String.IsNullOrEmpty(transaction.ApprovedByName), transaction.ApprovedByName, "(Chưa duyệt)")
+            _lblApprovedAt.Text = "Ngày duyệt: " & If(transaction.ApprovedAt.HasValue AndAlso transaction.ApprovedAt.Value > DateTime.MinValue, transaction.ApprovedAt.Value.ToString("dd/MM/yyyy HH:mm"), "(Chưa duyệt)")
+
 
             Dim details = _transactionService.GetTransactionDetails(_transactionId)
             _gridDetails.DataSource = details
         Catch ex As Exception
             MessageBox.Show(ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Console.WriteLine("Lỗi viewDetail: " & ex.Message)
             Me.Close()
         End Try
+    End Sub
+
+    Private Sub _btnApprove_Click(sender As Object, e As EventArgs) Handles _btnApprove.Click
+        Dim confirm = MessageBox.Show("Bạn có chắc muốn duyệt phiếu này?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+        If confirm = DialogResult.Yes Then
+            Dim user = SessionManager.GetCurrentUser()
+            Dim result = _transactionService.ApproveTransaction(_transactionId, user.UserId, True)
+            If result.Success Then
+                MessageBox.Show("Phiếu đã được duyệt.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                Me.DialogResult = DialogResult.OK
+                Me.Close()
+            Else
+                MessageBox.Show(String.Join(Environment.NewLine, result.Errors.ToArray()), "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
+
+            End If
+        End If
+    End Sub
+
+    Private Sub _btnReject_Click(sender As Object, e As EventArgs) Handles _btnReject.Click
+        Dim confirm = MessageBox.Show("Bạn có chắc muốn từ chối phiếu này?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Warning)
+        If confirm = DialogResult.Yes Then
+            Dim user = SessionManager.GetCurrentUser()
+            Dim result = _transactionService.ApproveTransaction(_transactionId, user.UserId, False)
+            If result.Success Then
+                MessageBox.Show("Phiếu đã bị từ chối.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                Me.DialogResult = DialogResult.OK
+                Me.Close()
+            Else
+                MessageBox.Show(String.Join(Environment.NewLine, result.Errors.ToArray()), "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            End If
+        End If
     End Sub
 
     Private Sub _btnClose_Click(sender As Object, e As EventArgs) Handles _btnClose.Click

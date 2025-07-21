@@ -237,14 +237,40 @@ Public Class StockTransactionRepository
                         transactionScope.Rollback()
                         Throw New InvalidOperationException("Phiếu không tồn tại.")
                     End If
+
                     Dim status = reader.GetString(reader.GetOrdinal("Status"))
                     If status <> "Pending" Then
                         transactionScope.Rollback()
                         Throw New InvalidOperationException("Phiếu đã được xử lý.")
                     End If
+
                     Dim transactionType = reader.GetString(reader.GetOrdinal("TransactionType"))
                     reader.Close()
 
+                    ' Nếu duyệt phiếu xuất, cần kiểm tra tồn kho trước
+                    If isApproved AndAlso transactionType = "OUT" Then
+                        query = "SELECT d.ProductId, d.Quantity, p.Quantity AS CurrentStock
+                             FROM StockTransactionDetails d
+                             INNER JOIN Products p ON d.ProductId = p.ProductId
+                             WHERE d.TransactionId = ?"
+                        command.CommandText = query
+                        command.Parameters.Clear()
+                        command.Parameters.AddWithValue("?", transactionId)
+
+                        Using checkReader As OdbcDataReader = command.ExecuteReader()
+                            While checkReader.Read()
+                                Dim productId = checkReader.GetInt32(checkReader.GetOrdinal("ProductId"))
+                                Dim quantity = checkReader.GetInt32(checkReader.GetOrdinal("Quantity"))
+                                Dim currentStock = checkReader.GetInt32(checkReader.GetOrdinal("CurrentStock"))
+                                If quantity > currentStock Then
+                                    transactionScope.Rollback()
+                                    Throw New InvalidOperationException($"Không đủ tồn kho để xuất sản phẩm ID {productId}. Hiện còn {currentStock}, cần {quantity}.")
+                                End If
+                            End While
+                        End Using
+                    End If
+
+                    ' Cập nhật trạng thái phiếu
                     query = "UPDATE StockTransactions SET Status = ?, ApprovedBy = ?, ApprovedAt = ? WHERE TransactionId = ?"
                     command.CommandText = query
                     command.Parameters.Clear()
@@ -257,16 +283,19 @@ Public Class StockTransactionRepository
                         Throw New InvalidOperationException("Lỗi khi cập nhật trạng thái phiếu.")
                     End If
 
+                    ' Nếu là duyệt => cập nhật tồn kho
                     If isApproved Then
                         query = "SELECT ProductId, Quantity FROM StockTransactionDetails WHERE TransactionId = ?"
                         command.CommandText = query
                         command.Parameters.Clear()
                         command.Parameters.AddWithValue("?", transactionId)
+
                         Using detailReader As OdbcDataReader = command.ExecuteReader()
                             While detailReader.Read()
                                 Dim productId = detailReader.GetInt32(detailReader.GetOrdinal("ProductId"))
                                 Dim quantity = detailReader.GetInt32(detailReader.GetOrdinal("Quantity"))
                                 Dim quantityChange = If(transactionType = "IN", quantity, -quantity)
+
                                 query = "UPDATE Products SET Quantity = Quantity + ? WHERE ProductId = ?"
                                 Using updateCommand As New OdbcCommand(query, connection, transactionScope)
                                     updateCommand.Parameters.AddWithValue("?", quantityChange)
@@ -284,8 +313,44 @@ Public Class StockTransactionRepository
                     Return True
                 End Using
             End Using
+        End Using
+    End Function
+
+
+    ''' <summary>
+    ''' Lấy danh sách chi tiết sản phẩm trong một phiếu nhập/xuất.
+    ''' </summary>
+    ''' <param name="transactionId">Mã phiếu</param>
+    ''' <returns>Danh sách chi tiết</returns>
+    Public Function GetTransactionDetails(ByVal transactionId As Integer) As List(Of StockTransactionDetail) Implements IStockTransactionRepository.GetTransactionDetails
+        Dim details As New List(Of StockTransactionDetail)
+
+        Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            Dim query As String = "SELECT DetailId, TransactionId, ProductId, Quantity, Note FROM StockTransactionDetails WHERE TransactionId = ?"
+
+            Using command As New OdbcCommand(query, connection)
+                command.Parameters.AddWithValue("?", transactionId)
+
+                Using reader As OdbcDataReader = command.ExecuteReader()
+                    While reader.Read()
+                        Dim detail As New StockTransactionDetail()
+
+                        detail.SetDetailId(reader.GetInt32(reader.GetOrdinal("DetailId")))
+                        detail.TransactionId = reader.GetInt32(reader.GetOrdinal("TransactionId"))
+                        detail.ProductId = reader.GetInt32(reader.GetOrdinal("ProductId"))
+                        detail.Quantity = reader.GetInt32(reader.GetOrdinal("Quantity"))
+                        detail.Note = If(reader.IsDBNull(reader.GetOrdinal("Note")), String.Empty, reader.GetString(reader.GetOrdinal("Note")))
+
+                        details.Add(detail)
+                    End While
+                End Using
+            End Using
+
             ConnectionHelper.CloseConnection(connection)
 
         End Using
+
+        Return details
     End Function
+
 End Class

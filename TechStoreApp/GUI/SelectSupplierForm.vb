@@ -39,12 +39,15 @@
             Return
         End If
         SelectedSupplierId = CInt(_cmbSupplier.SelectedValue)
-        Using createForm As New StockTransactionCreateForm("IN", SelectedSupplierId)
-            If createForm.ShowDialog() = DialogResult.OK Then
-                Me.DialogResult = DialogResult.OK
-                Me.Close()
-            End If
-        End Using
+        Me.Hide()
+        Dim createForm As New StockTransactionCreateForm("IN", SelectedSupplierId)
+        Dim result = createForm.ShowDialog()
+        If result = DialogResult.OK Then
+            Me.DialogResult = DialogResult.OK
+        End If
+        Me.Close()
+
+
     End Sub
 
     Private Sub _btnCancel_Click(sender As Object, e As EventArgs) Handles _btnCancel.Click

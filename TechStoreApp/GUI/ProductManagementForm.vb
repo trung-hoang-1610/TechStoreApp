@@ -15,7 +15,7 @@ Public Class ProductManagementForm
     Private totalPages As Integer = 0
     Private categoryLookup As Dictionary(Of String, Integer)
     Private supplierLookup As Dictionary(Of String, Integer)
-    Private searchCriteria As ProductSearchCriteria
+    Private searchCriteria As ProductSearchCriteriaDTO
 
     Public Sub New(ByVal userId As Integer)
         InitializeComponent()
@@ -25,7 +25,7 @@ Public Class ProductManagementForm
         _userId = userId
         categoryLookup = New Dictionary(Of String, Integer)
         supplierLookup = New Dictionary(Of String, Integer)
-        searchCriteria = New ProductSearchCriteria With {
+        searchCriteria = New ProductSearchCriteriaDTO With {
             .PageSize = pageSize,
             .PageIndex = currentPage
         }
@@ -387,7 +387,7 @@ Public Class ProductManagementForm
                 End Select
             End If
 
-            searchCriteria = New ProductSearchCriteria With {
+            searchCriteria = New ProductSearchCriteriaDTO With {
                 .Name = nameValue,
                 .CategoryId = categoryIdValue,
                 .IsActive = isActiveValue,
@@ -417,7 +417,7 @@ Public Class ProductManagementForm
                 cboCategorySort.SelectedIndex = -1
             End If
             chkLowStock.Checked = False
-            searchCriteria = New ProductSearchCriteria With {
+            searchCriteria = New ProductSearchCriteriaDTO With {
                 .PageSize = pageSize,
                 .PageIndex = 0
             }
@@ -493,5 +493,9 @@ Public Class ProductManagementForm
         dgvProducts.Enabled = Not editing
 
         btnCancel.Visible = editing
+    End Sub
+
+    Private Sub dgvProducts_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles dgvProducts.CellContentClick
+
     End Sub
 End Class

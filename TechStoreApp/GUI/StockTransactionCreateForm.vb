@@ -116,14 +116,18 @@
         Try
             If _transactionType = "OUT" Then
                 _cmbSupplier.Items.Clear()
-                _cmbSupplier.Items.Add("Tất cả")  ' Thêm tùy chọn "Tất cả" cho phiếu xuất
+
                 Dim suppliers = _supplierService.GetAllSuppliers()
-                If suppliers IsNot Nothing AndAlso suppliers.Any() Then
-                    _cmbSupplier.DataSource = suppliers
-                    _cmbSupplier.DisplayMember = "SupplierName"
-                    _cmbSupplier.ValueMember = "SupplierId"
-                    _cmbSupplier.SelectedIndex = 0  ' Chọn "Tất cả" làm mặc định
+                _cmbSupplier.Items.Add("Tất cả")  ' Thêm tùy chọn "Tất cả" cho phiếu xuất
+                For Each sup In suppliers
+                    _cmbSupplier.Items.Add(sup.SupplierName)
+
+                Next
+                If _cmbSupplier.Items.Count > 0 Then
+                    _cmbSupplier.SelectedIndex = 0
+                    _cmbSupplier.SelectedIndex = 0
                 End If
+
             End If
         Catch ex As Exception
             ShowErrorMessage("Lỗi khi tải danh sách nhà cung cấp: " & ex.Message)
@@ -135,16 +139,19 @@
 
         Try
             _cmbCategory.Items.Clear()
-            _cmbCategory.Items.Add("Tất cả")  ' Thêm tùy chọn "Tất cả"
             Dim categories = _categoryService.GetAllCategories()
-            If categories IsNot Nothing AndAlso categories.Any() Then
-                _cmbCategory.DataSource = categories
-                _cmbCategory.DisplayMember = "CategoryName"
-                _cmbCategory.ValueMember = "CategoryId"
-                _cmbCategory.SelectedIndex = 0  ' Chọn "Tất cả" làm mặc định
+            _cmbCategory.Items.Add("Tất cả")  ' Thêm tùy chọn "Tất cả"
+
+            For Each cat In categories
+                _cmbCategory.Items.Add(cat.CategoryName)
+
+            Next
+            If _cmbCategory.Items.Count > 0 Then
+                _cmbCategory.SelectedIndex = 0
+                _cmbCategory.SelectedIndex = 0
             End If
         Catch ex As Exception
-            ShowErrorMessage("Lỗi khi tải danhLists danh mục: " & ex.Message)
+            ShowErrorMessage("Lỗi khi tải danh mục: " & ex.Message)
         End Try
     End Sub
 
@@ -168,12 +175,16 @@
             End If
 
             Dim category As String = If(_cmbCategory?.Text, "Tất cả")
+            Dim supplier As String = If(_cmbSupplier?.Text, "Tất cả")
             Dim searchText As String = If(_txtProductSearch?.Text, String.Empty)
 
             If category <> "Tất cả" Then
                 products = products.Where(Function(p) p?.CategoryName = category).ToList()
             End If
 
+            If supplier <> "Tất cả" Then
+                products = products.Where(Function(p) p?.SupplierName = supplier).ToList()
+            End If
             If Not String.IsNullOrEmpty(searchText) Then
                 products = products.Where(Function(p) p IsNot Nothing AndAlso
                     (p.ProductName?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0 OrElse

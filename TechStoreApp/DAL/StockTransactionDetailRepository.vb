@@ -4,14 +4,14 @@ Imports System.Collections.Generic
 ''' <summary>
 ''' Lớp DAL cho các thao tác liên quan đến chi tiết phiếu nhập/xuất kho.
 ''' </summary>
-Public Class StockTransactionDetailDAL
-    Implements IStockTransactionDetailDAL
+Public Class StockTransactionDetailRepository
+    Implements IStockTransactionDetailRepository
 
 
     ''' <summary>
     ''' Tạo danh sách chi tiết cho một phiếu nhập/xuất.
     ''' </summary>
-    Public Function CreateTransactionDetails(ByVal details As List(Of StockTransactionDetail)) As Boolean Implements IStockTransactionDetailDAL.CreateTransactionDetails
+    Public Function CreateTransactionDetails(ByVal details As List(Of StockTransactionDetail)) As Boolean Implements IStockTransactionDetailRepository.CreateTransactionDetails
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
             connection.Open()
             Dim query As String = "INSERT INTO StockTransactionDetails (TransactionId, ProductId, Quantity, Note) VALUES (?, ?, ?, ?)"
@@ -34,7 +34,7 @@ Public Class StockTransactionDetailDAL
     ''' <summary>
     ''' Lấy danh sách chi tiết của một phiếu.
     ''' </summary>
-    Public Function GetTransactionDetails(ByVal transactionId As Integer) As List(Of StockTransactionDetail) Implements IStockTransactionDetailDAL.GetTransactionDetails
+    Public Function GetTransactionDetails(ByVal transactionId As Integer) As List(Of StockTransactionDetail) Implements IStockTransactionDetailRepository.GetTransactionDetails
         Dim details As New List(Of StockTransactionDetail)
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
             connection.Open()

@@ -263,8 +263,7 @@ Public Class StockTransactionService
         End If
 
         ' Gọi StockTransactionDetailDAL để lấy chi tiết phiếu
-        Dim detailRepository As New StockTransactionDetailDAL()
-        Dim details = detailRepository.GetTransactionDetails(transactionId)
+        Dim details = _transactionRepository.GetTransactionDetails(transactionId)
         Return MapToDetailDTOList(details)
     End Function
 
@@ -333,8 +332,13 @@ Public Class StockTransactionService
         .SupplierName = If(supplier IsNot Nothing, supplier.SupplierName, "Không xác định"),
         .Status = transaction.Status,
         .ApprovedBy = If(transaction.ApprovedBy > 0, transaction.ApprovedBy, Nothing),
-        .ApprovedByName = If(approvedByUser IsNot Nothing, approvedByUser.Username, "Không xác định"),
-        .ApprovedAt = If(transaction.ApprovedAt > DateTime.MinValue, transaction.ApprovedAt, Nothing)
+        .ApprovedByName = If(approvedByUser IsNot Nothing AndAlso transaction.ApprovedBy > 0,
+                     approvedByUser.Username,
+                     "Chưa xử lý"),
+        .ApprovedAt = If(transaction.ApprovedAt > DateTime.MinValue, transaction.ApprovedAt, Nothing),
+        .ApprovedAtString = If(transaction.ApprovedAt > DateTime.MinValue,
+                       transaction.ApprovedAt.ToString("dd/MM/yyyy"),
+                       "Chưa xử lý")
     }
     End Function
 

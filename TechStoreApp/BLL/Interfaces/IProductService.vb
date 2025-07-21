@@ -66,7 +66,7 @@ Public Interface IProductService
     ''' <param name="criteria">Tiêu chí tìm kiếm (tên, danh mục, giá, trạng thái, phân trang, sắp xếp)</param>
     ''' <returns>Danh sách sản phẩm phù hợp với tiêu chí</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
-    Function SearchProducts(ByVal criteria As ProductSearchCriteria) As List(Of ProductDTO)
+    Function SearchProducts(ByVal criteria As ProductSearchCriteriaDTO) As List(Of ProductDTO)
 
     Function GetProductStatistics(timeRange As String) As ProductStatistics
 

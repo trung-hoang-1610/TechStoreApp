@@ -68,8 +68,7 @@ Partial Class ProductManagementForm
 
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
-        Me.components = New System.ComponentModel.Container()
+        Dim DataGridViewCellStyle2 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Me.dgvProducts = New System.Windows.Forms.DataGridView()
         Me.ProductId = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.ProductName = New System.Windows.Forms.DataGridViewTextBoxColumn()
@@ -127,7 +126,8 @@ Partial Class ProductManagementForm
         'dgvProducts
         '
         Me.dgvProducts.AllowUserToAddRows = False
-        Me.dgvProducts.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.dgvProducts.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.dgvProducts.ColumnHeadersHeight = 29
         Me.dgvProducts.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.ProductId, Me.ProductName, Me.Description, Me.Unit, Me.Price, Me.Quantity, Me.MinStockLevel, Me.CategoryName, Me.SupplierName, Me.CreatedBy, Me.CreatedAt, Me.IsActive})
         Me.dgvProducts.Location = New System.Drawing.Point(20, 80)
@@ -221,8 +221,8 @@ Partial Class ProductManagementForm
         '
         'CreatedAt
         '
-        DataGridViewCellStyle1.Format = "dd/MM/yyyy"
-        Me.CreatedAt.DefaultCellStyle = DataGridViewCellStyle1
+        DataGridViewCellStyle2.Format = "dd/MM/yyyy"
+        Me.CreatedAt.DefaultCellStyle = DataGridViewCellStyle2
         Me.CreatedAt.HeaderText = "Ngày tạo"
         Me.CreatedAt.MinimumWidth = 6
         Me.CreatedAt.Name = "CreatedAt"
@@ -239,7 +239,6 @@ Partial Class ProductManagementForm
         '
         'txtProductName
         '
-        Me.txtProductName.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.txtProductName.Location = New System.Drawing.Point(130, 300)
         Me.txtProductName.Name = "txtProductName"
         Me.txtProductName.Size = New System.Drawing.Size(200, 22)
@@ -247,7 +246,6 @@ Partial Class ProductManagementForm
         '
         'txtDescription
         '
-        Me.txtDescription.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.txtDescription.Location = New System.Drawing.Point(130, 335)
         Me.txtDescription.Name = "txtDescription"
         Me.txtDescription.Size = New System.Drawing.Size(200, 22)
@@ -255,7 +253,6 @@ Partial Class ProductManagementForm
         '
         'txtPrice
         '
-        Me.txtPrice.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.txtPrice.Location = New System.Drawing.Point(130, 370)
         Me.txtPrice.Name = "txtPrice"
         Me.txtPrice.Size = New System.Drawing.Size(200, 22)
@@ -263,7 +260,6 @@ Partial Class ProductManagementForm
         '
         'txtQuantity
         '
-        Me.txtQuantity.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.txtQuantity.Location = New System.Drawing.Point(130, 405)
         Me.txtQuantity.Name = "txtQuantity"
         Me.txtQuantity.Size = New System.Drawing.Size(200, 22)
@@ -271,7 +267,6 @@ Partial Class ProductManagementForm
         '
         'txtUnit
         '
-        Me.txtUnit.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.txtUnit.Location = New System.Drawing.Point(480, 300)
         Me.txtUnit.Name = "txtUnit"
         Me.txtUnit.Size = New System.Drawing.Size(200, 22)
@@ -279,7 +274,6 @@ Partial Class ProductManagementForm
         '
         'txtMinStockLevel
         '
-        Me.txtMinStockLevel.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.txtMinStockLevel.Location = New System.Drawing.Point(480, 335)
         Me.txtMinStockLevel.Name = "txtMinStockLevel"
         Me.txtMinStockLevel.Size = New System.Drawing.Size(200, 22)
@@ -287,7 +281,6 @@ Partial Class ProductManagementForm
         '
         'cboCategory
         '
-        Me.cboCategory.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.cboCategory.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cboCategory.Location = New System.Drawing.Point(480, 370)
         Me.cboCategory.Name = "cboCategory"
@@ -360,7 +353,6 @@ Partial Class ProductManagementForm
         '
         'lblError
         '
-        Me.lblError.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.lblError.Font = New System.Drawing.Font("Segoe UI", 9.0!, System.Drawing.FontStyle.Italic)
         Me.lblError.ForeColor = System.Drawing.Color.Red
         Me.lblError.Location = New System.Drawing.Point(260, 480)
@@ -370,7 +362,6 @@ Partial Class ProductManagementForm
         '
         'lblProductName
         '
-        Me.lblProductName.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.lblProductName.Location = New System.Drawing.Point(20, 300)
         Me.lblProductName.Name = "lblProductName"
         Me.lblProductName.Size = New System.Drawing.Size(100, 20)
@@ -379,7 +370,6 @@ Partial Class ProductManagementForm
         '
         'lblDescription
         '
-        Me.lblDescription.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.lblDescription.Location = New System.Drawing.Point(20, 335)
         Me.lblDescription.Name = "lblDescription"
         Me.lblDescription.Size = New System.Drawing.Size(100, 20)
@@ -388,7 +378,6 @@ Partial Class ProductManagementForm
         '
         'lblPrice
         '
-        Me.lblPrice.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.lblPrice.Location = New System.Drawing.Point(20, 370)
         Me.lblPrice.Name = "lblPrice"
         Me.lblPrice.Size = New System.Drawing.Size(100, 20)
@@ -397,7 +386,6 @@ Partial Class ProductManagementForm
         '
         'lblQuantity
         '
-        Me.lblQuantity.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.lblQuantity.Location = New System.Drawing.Point(20, 405)
         Me.lblQuantity.Name = "lblQuantity"
         Me.lblQuantity.Size = New System.Drawing.Size(100, 20)
@@ -406,7 +394,6 @@ Partial Class ProductManagementForm
         '
         'lblUnit
         '
-        Me.lblUnit.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.lblUnit.Location = New System.Drawing.Point(370, 300)
         Me.lblUnit.Name = "lblUnit"
         Me.lblUnit.Size = New System.Drawing.Size(100, 20)
@@ -415,7 +402,6 @@ Partial Class ProductManagementForm
         '
         'lblMinStockLevel
         '
-        Me.lblMinStockLevel.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.lblMinStockLevel.Location = New System.Drawing.Point(370, 335)
         Me.lblMinStockLevel.Name = "lblMinStockLevel"
         Me.lblMinStockLevel.Size = New System.Drawing.Size(100, 20)
@@ -424,7 +410,6 @@ Partial Class ProductManagementForm
         '
         'lblCategory
         '
-        Me.lblCategory.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.lblCategory.Location = New System.Drawing.Point(370, 370)
         Me.lblCategory.Name = "lblCategory"
         Me.lblCategory.Size = New System.Drawing.Size(100, 20)
@@ -433,7 +418,6 @@ Partial Class ProductManagementForm
         '
         'txtSearchName
         '
-        Me.txtSearchName.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.txtSearchName.Location = New System.Drawing.Point(130, 20)
         Me.txtSearchName.Name = "txtSearchName"
         Me.txtSearchName.Size = New System.Drawing.Size(200, 22)
@@ -441,7 +425,6 @@ Partial Class ProductManagementForm
         '
         'lblSearchName
         '
-        Me.lblSearchName.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.lblSearchName.Location = New System.Drawing.Point(20, 20)
         Me.lblSearchName.Name = "lblSearchName"
         Me.lblSearchName.Size = New System.Drawing.Size(100, 20)
@@ -450,7 +433,6 @@ Partial Class ProductManagementForm
         '
         'cboStatus
         '
-        Me.cboStatus.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.cboStatus.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cboStatus.Location = New System.Drawing.Point(130, 48)
         Me.cboStatus.Name = "cboStatus"
@@ -459,7 +441,6 @@ Partial Class ProductManagementForm
         '
         'lblStatus
         '
-        Me.lblStatus.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.lblStatus.Location = New System.Drawing.Point(20, 48)
         Me.lblStatus.Name = "lblStatus"
         Me.lblStatus.Size = New System.Drawing.Size(100, 20)
@@ -468,16 +449,14 @@ Partial Class ProductManagementForm
         '
         'cboSortBy
         '
-        Me.cboSortBy.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.cboSortBy.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cboSortBy.Location = New System.Drawing.Point(400, 20)
+        Me.cboSortBy.Location = New System.Drawing.Point(426, 18)
         Me.cboSortBy.Name = "cboSortBy"
         Me.cboSortBy.Size = New System.Drawing.Size(200, 24)
         Me.cboSortBy.TabIndex = 30
         '
         'lblSortBy
         '
-        Me.lblSortBy.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.lblSortBy.Location = New System.Drawing.Point(350, 20)
         Me.lblSortBy.Name = "lblSortBy"
         Me.lblSortBy.Size = New System.Drawing.Size(50, 20)
@@ -504,7 +483,6 @@ Partial Class ProductManagementForm
         '
         'lblCategorySort
         '
-        Me.lblCategorySort.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.lblCategorySort.AutoSize = True
         Me.lblCategorySort.Location = New System.Drawing.Point(350, 52)
         Me.lblCategorySort.Name = "lblCategorySort"
@@ -514,16 +492,14 @@ Partial Class ProductManagementForm
         '
         'cboCategorySort
         '
-        Me.cboCategorySort.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.cboCategorySort.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cboCategorySort.Location = New System.Drawing.Point(400, 48)
+        Me.cboCategorySort.Location = New System.Drawing.Point(426, 48)
         Me.cboCategorySort.Name = "cboCategorySort"
         Me.cboCategorySort.Size = New System.Drawing.Size(200, 24)
         Me.cboCategorySort.TabIndex = 35
         '
         'lblSupplier
         '
-        Me.lblSupplier.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.lblSupplier.Location = New System.Drawing.Point(370, 405)
         Me.lblSupplier.Name = "lblSupplier"
         Me.lblSupplier.Size = New System.Drawing.Size(100, 20)
@@ -532,7 +508,6 @@ Partial Class ProductManagementForm
         '
         'cboSupplier
         '
-        Me.cboSupplier.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.cboSupplier.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cboSupplier.Location = New System.Drawing.Point(480, 405)
         Me.cboSupplier.Name = "cboSupplier"
@@ -559,18 +534,15 @@ Partial Class ProductManagementForm
         '
         'cboIsActive
         '
-        Me.cboIsActive.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.cboIsActive.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cboIsActive.Items.AddRange(New Object() {"Hoạt động", "Ngưng hoạt động"})
         Me.cboIsActive.Location = New System.Drawing.Point(480, 440)
         Me.cboIsActive.Name = "cboIsActive"
         Me.cboIsActive.Size = New System.Drawing.Size(200, 24)
         Me.cboIsActive.TabIndex = 40
-        Me.cboIsActive.SelectedIndex = 0
         '
         'lblIsActive
         '
-        Me.lblIsActive.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.lblIsActive.Location = New System.Drawing.Point(370, 440)
         Me.lblIsActive.Name = "lblIsActive"
         Me.lblIsActive.Size = New System.Drawing.Size(100, 20)
@@ -628,5 +600,6 @@ Partial Class ProductManagementForm
         CType(Me.dgvProducts, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
         Me.PerformLayout()
+
     End Sub
 End Class

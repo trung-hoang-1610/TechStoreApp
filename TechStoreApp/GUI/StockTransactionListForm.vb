@@ -102,31 +102,60 @@
     End Sub
 
     Private Sub _gridIn_SelectionChanged(sender As Object, e As EventArgs) Handles _gridIn.SelectionChanged, _gridOut.SelectionChanged
-        Dim isRowSelected = _gridIn.SelectedRows.Count > 0 OrElse _gridOut.SelectedRows.Count > 0
+        HandleSelectionChanged(_gridIn)
+
+    End Sub
+    Private Sub _gridOut_SelectionChanged(sender As Object, e As EventArgs) Handles _gridOut.SelectionChanged
+        HandleSelectionChanged(_gridOut)
+    End Sub
+    Private Sub HandleSelectionChanged(grid As DataGridView)
+        Dim isRowSelected = grid.SelectedRows.Count > 0
         _btnViewDetails.Enabled = isRowSelected
+
         Dim currentUser = SessionManager.GetCurrentUser()
         _btnApprove.Enabled = isRowSelected AndAlso (currentUser IsNot Nothing AndAlso currentUser.RoleId = 1)
     End Sub
 
-    Private Sub _gridIn_DoubleClick(sender As Object, e As EventArgs) Handles _gridIn.DoubleClick, _gridOut.DoubleClick
-        Dim selectedGrid As DataGridView = If(sender Is _gridIn, _gridIn, _gridOut)
-        If selectedGrid.SelectedRows.Count > 0 Then
-            Dim transactionId As Integer = CInt(selectedGrid.SelectedRows(0).Cells("TransactionId").Value)
+    Private Sub _gridIn_DoubleClick(sender As Object, e As EventArgs) Handles _gridIn.DoubleClick
+        ShowTransactionDetail(_gridIn)
+    End Sub
+
+    Private Sub _gridOut_DoubleClick(sender As Object, e As EventArgs) Handles _gridOut.DoubleClick
+        ShowTransactionDetail(_gridOut)
+    End Sub
+
+    Private Sub ShowTransactionDetail(grid As DataGridView)
+        If grid.SelectedRows.Count > 0 Then
+            Dim transactionId As Integer
+
+            If grid Is _gridIn Then
+                transactionId = CInt(grid.SelectedRows(0).Cells("TransactionId").Value)
+            ElseIf grid Is _gridOut Then
+                transactionId = CInt(grid.SelectedRows(0).Cells("TransactionIdOut").Value)
+            Else
+                Exit Sub
+            End If
+
             Using detailForm As New StockTransactionDetailForm(transactionId)
-                detailForm.ShowDialog()
+                If detailForm.ShowDialog() = DialogResult.OK Then
+                    LoadTransactions()
+                End If
             End Using
         End If
     End Sub
 
     Private Sub _btnViewDetails_Click(sender As Object, e As EventArgs) Handles _btnViewDetails.Click
-        Dim selectedGrid As DataGridView = If(_gridIn.SelectedRows.Count > 0, _gridIn, _gridOut)
-        If selectedGrid.SelectedRows.Count > 0 Then
-            Dim transactionId As Integer = CInt(selectedGrid.SelectedRows(0).Cells("TransactionId").Value)
-            Using detailForm As New StockTransactionDetailForm(transactionId)
-                detailForm.ShowDialog()
-            End Using
+        Dim selectedTab = _tabControl.SelectedTab
+
+        If selectedTab IsNot Nothing Then
+            If selectedTab.Text = "Phiếu nhập" Then
+                ShowTransactionDetail(_gridIn)
+            ElseIf selectedTab.Text = "Phiếu xuất" Then
+                ShowTransactionDetail(_gridOut)
+            End If
         End If
     End Sub
+
 
     Private Sub _btnApprove_Click(sender As Object, e As EventArgs) Handles _btnApprove.Click
         Dim selectedGrid As DataGridView = If(_gridIn.SelectedRows.Count > 0, _gridIn, _gridOut)
@@ -157,5 +186,9 @@
 
     Private Sub _txtSearch_TextChanged(sender As Object, e As EventArgs) Handles _txtSearch.TextChanged, _cmbStatus.SelectedIndexChanged
         LoadTransactions()
+    End Sub
+
+    Private Sub StockTransactionListForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+
     End Sub
 End Class

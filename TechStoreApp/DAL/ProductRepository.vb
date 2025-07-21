@@ -208,7 +208,7 @@ Public Class ProductRepository
         End Using
     End Function
 
-    Public Function SearchProducts(ByVal criteria As ProductSearchCriteria) As List(Of Product) Implements IProductRepository.SearchProducts
+    Public Function SearchProducts(ByVal criteria As ProductSearchCriteriaDTO) As List(Of Product) Implements IProductRepository.SearchProducts
         If criteria Is Nothing Then
             Throw New ArgumentNullException(NameOf(criteria), "Tiêu chí tìm kiếm không được null.")
         End If

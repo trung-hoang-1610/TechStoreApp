@@ -50,7 +50,7 @@ Public Class RepositoryFactory
         Return New StockTransactionRepository()
     End Function
 
-    Public Shared Function CreateStockTransactionDetailRepository() As IStockTransactionDetailDAL
-        Return New StockTransactionDetailDAL()
+    Public Shared Function CreateStockTransactionDetailRepository() As IStockTransactionDetailRepository
+        Return New StockTransactionDetailRepository()
     End Function
 End Class

@@ -42,4 +42,12 @@ Public Interface IStockTransactionRepository
 
     Function CreateTransactionWithDetails(ByVal transaction As StockTransaction, ByVal details As List(Of StockTransactionDetail)) As Integer
     Function ApproveTransaction(ByVal transactionId As Integer, ByVal approvedBy As Integer, ByVal isApproved As Boolean) As Boolean
+
+    ''' <summary>
+    ''' Lấy danh sách chi tiết sản phẩm trong một phiếu nhập/xuất.
+    ''' </summary>
+    ''' <param name="transactionId">Mã phiếu</param>
+    ''' <returns>Danh sách chi tiết sản phẩm thuộc phiếu</returns>
+    Function GetTransactionDetails(ByVal transactionId As Integer) As List(Of StockTransactionDetail)
+
 End Interface

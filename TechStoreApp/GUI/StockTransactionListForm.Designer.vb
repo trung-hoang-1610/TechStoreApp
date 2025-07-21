@@ -50,6 +50,7 @@
         colCreatedAtIn.HeaderText = "Ngày tạo"
         colCreatedAtIn.DataPropertyName = "CreatedAt"
         colCreatedAtIn.Width = 100
+        colCreatedAtIn.DefaultCellStyle.Format = "dd/MM/yyyy"
         _gridIn.Columns.Add(colCreatedAtIn)
 
         Dim colSupplierNameIn As New DataGridViewTextBoxColumn()
@@ -76,8 +77,9 @@
         Dim colApprovedAtIn As New DataGridViewTextBoxColumn()
         colApprovedAtIn.Name = "ApprovedAt"
         colApprovedAtIn.HeaderText = "Ngày duyệt"
-        colApprovedAtIn.DataPropertyName = "ApprovedAt"
+        colApprovedAtIn.DataPropertyName = "ApprovedAtString"
         colApprovedAtIn.Width = 100
+        colApprovedAtIn.DefaultCellStyle.Format = "dd/MM/yyyy"
         _gridIn.Columns.Add(colApprovedAtIn)
 
         _gridIn.Visible = True
@@ -115,6 +117,7 @@
         colCreatedAtOut.Name = "CreatedAtOut"
         colCreatedAtOut.HeaderText = "Ngày tạo"
         colCreatedAtOut.DataPropertyName = "CreatedAt"
+        colCreatedAtOut.DefaultCellStyle.Format = "dd/MM/yyyy"
         colCreatedAtOut.Width = 100
         _gridOut.Columns.Add(colCreatedAtOut)
 
@@ -135,8 +138,9 @@
         Dim colApprovedAtOut As New DataGridViewTextBoxColumn()
         colApprovedAtOut.Name = "ApprovedAtOut"
         colApprovedAtOut.HeaderText = "Ngày duyệt"
-        colApprovedAtOut.DataPropertyName = "ApprovedAt"
+        colApprovedAtOut.DataPropertyName = "ApprovedAtString"
         colApprovedAtOut.Width = 100
+        colApprovedAtOut.DefaultCellStyle.Format = "dd/MM/yyyy"
         _gridOut.Columns.Add(colApprovedAtOut)
 
         _gridOut.Visible = True
@@ -186,4 +190,7 @@
 
         Me.ResumeLayout(False)
     End Sub
+
+    Friend WithEvents tabIn As TabPage
+    Friend WithEvents tabOut As TabPage
 End Class

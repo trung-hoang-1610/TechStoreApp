@@ -16,4 +16,7 @@ Public Class StockTransactionDTO
     Public Property ApprovedBy As Integer? ' Mã người duyệt (chỉ get, có thể null)
     Public Property ApprovedByName As String ' Tên người duyệt (chỉ get, có thể null)
     Public Property ApprovedAt As DateTime? ' Ngày duyệt (chỉ get, có thể null)
+
+    Public Property ApprovedAtString As String
+
 End Class

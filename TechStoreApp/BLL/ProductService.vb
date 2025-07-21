@@ -199,7 +199,7 @@ Public Class ProductService
     End Function
 
 
-    Public Function SearchProducts(ByVal criteria As ProductSearchCriteria) As List(Of ProductDTO) Implements IProductService.SearchProducts
+    Public Function SearchProducts(ByVal criteria As ProductSearchCriteriaDTO) As List(Of ProductDTO) Implements IProductService.SearchProducts
         If criteria Is Nothing Then
             Throw New ArgumentNullException(NameOf(criteria), "Tiêu chí tìm kiếm không được null.")
         End If

@@ -40,16 +40,7 @@ Partial Class StockTransactionCreateForm
         _txtNote.Size = New Size(150, 30)
         grpTransactionInfo.Controls.Add(_txtNote)
 
-        Dim lblSupplier As New Label()
-        lblSupplier.Text = "Nhà cung cấp:"
-        lblSupplier.Location = New Point(480, 20)
-        lblSupplier.Size = New Size(80, 20)
-        grpTransactionInfo.Controls.Add(lblSupplier)
 
-        _cmbSupplier = New ComboBox()
-        _cmbSupplier.Location = New Point(560, 20)
-        _cmbSupplier.Size = New Size(150, 30)
-        grpTransactionInfo.Controls.Add(_cmbSupplier)
 
         ' GroupBox cho chọn sản phẩm
         Dim grpProductSelection As New GroupBox()
@@ -79,6 +70,18 @@ Partial Class StockTransactionCreateForm
         _cmbCategory.Location = New Point(310, 20)
         _cmbCategory.Size = New Size(150, 30)
         grpProductSelection.Controls.Add(_cmbCategory)
+
+
+        Dim lblSupplier As New Label()
+        lblSupplier.Text = "Nhà cung cấp:"
+        lblSupplier.Location = New Point(480, 20)
+        lblSupplier.Size = New Size(80, 20)
+        grpProductSelection.Controls.Add(lblSupplier)
+
+        _cmbSupplier = New ComboBox()
+        _cmbSupplier.Location = New Point(560, 20)
+        _cmbSupplier.Size = New Size(150, 30)
+        grpProductSelection.Controls.Add(_cmbSupplier)
 
         _gridProducts = New DataGridView()
         _gridProducts.Location = New Point(10, 60)
