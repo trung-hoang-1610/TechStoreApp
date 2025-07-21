@@ -117,10 +117,10 @@
     <Compile Include="DAL\Model\StockTransactionDetails.vb" />
     <Compile Include="DAL\Model\StockTransactions.vb" />
     <Compile Include="DAL\Model\Supplier.vb" />
+    <Compile Include="DAL\Model\TransactionStatisticsDTO.vb" />
     <Compile Include="DAL\ProductRepository.vb" />
     <Compile Include="DAL\RoleRepository.vb" />
     <Compile Include="DAL\StockTransactionRepository.vb" />
-    <Compile Include="DAL\StockTransactionDetailRepository.vb" />
     <Compile Include="DAL\SupplierRepository.vb" />
     <Compile Include="DAL\UserRepository.vb" />
     <Compile Include="Factory\RepositoryFactory.vb" />
@@ -159,10 +159,10 @@
     <Compile Include="GUI\SelectSupplierForm.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GUI\StatisticsForm.Designer.vb">
-      <DependentUpon>StatisticsForm.vb</DependentUpon>
+    <Compile Include="GUI\ProductStatisticsForm.Designer.vb">
+      <DependentUpon>ProductStatisticsForm.vb</DependentUpon>
     </Compile>
-    <Compile Include="GUI\StatisticsForm.vb">
+    <Compile Include="GUI\ProductStatisticsForm.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GUI\StockTransactionCreateForm.Designer.vb">
@@ -208,8 +208,8 @@
     <EmbeddedResource Include="GUI\RegisterForm.resx">
       <DependentUpon>RegisterForm.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GUI\StatisticsForm.resx">
-      <DependentUpon>StatisticsForm.vb</DependentUpon>
+    <EmbeddedResource Include="GUI\ProductStatisticsForm.resx">
+      <DependentUpon>ProductStatisticsForm.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\StockTransactionCreateForm.resx">
       <DependentUpon>StockTransactionCreateForm.vb</DependentUpon>

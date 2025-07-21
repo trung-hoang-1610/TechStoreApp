@@ -19,6 +19,7 @@ Public Class ProductManagementForm
 
     Public Sub New(ByVal userId As Integer)
         InitializeComponent()
+        Me.StartPosition = FormStartPosition.CenterScreen
         _productService = ServiceFactory.CreateProductService()
         _categoryService = ServiceFactory.CreateCategoryService()
         _supplierService = ServiceFactory.CreateSupplierService()
@@ -456,7 +457,7 @@ Public Class ProductManagementForm
 
     Private Sub btnViewStats_Click(sender As Object, e As EventArgs) Handles btnViewStats.Click
         Try
-            Dim statsForm As New StatisticsForm()
+            Dim statsForm As New ProductStatisticsForm()
             statsForm.ShowDialog()
         Catch ex As Exception
             lblError.Text = "Lỗi khi mở thống kê: " & ex.Message

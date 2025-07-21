@@ -1,5 +1,5 @@
 ﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
-Partial Class StatisticsForm
+Partial Class ProductStatisticsForm
     Inherits System.Windows.Forms.Form
 
     Private components As System.ComponentModel.IContainer

@@ -38,6 +38,7 @@
         _selectedProducts = New List(Of StockTransactionDetailDTO)()
 
         InitializeComponent()
+        Me.StartPosition = FormStartPosition.CenterScreen
         ConfigureForm()
         InitializeData()
     End Sub

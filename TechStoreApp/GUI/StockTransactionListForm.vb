@@ -17,12 +17,14 @@
         _myTransactionService = ServiceFactory.CreateStockTransactionService
         ' Gọi InitializeComponent trước để khởi tạo giao diện
         InitializeComponent()
-
+        Me.StartPosition = FormStartPosition.CenterScreen
         ' Cấu hình giao diện
         ConfigureControls()
 
         ' Tải dữ liệu
         LoadTransactions()
+        LoadStatistics()
+
 
 
     End Sub
@@ -37,7 +39,7 @@
             _cmbStatus.SelectedIndex = 0
         End If
 
-        ' Cấu hình nút Approve dựa trên vai trò người dùng
+
         Dim currentUser = SessionManager.GetCurrentUser()
         If currentUser IsNot Nothing AndAlso currentUser.RoleId = 1 Then
             _btnApprove.Visible = True
@@ -188,6 +190,86 @@
         LoadTransactions()
     End Sub
 
+
+    Private Sub LoadStatistics()
+        Try
+            Dim criteria As New SearchCriteriaDTO
+            If _txtSearch IsNot Nothing AndAlso Not String.IsNullOrEmpty(_txtSearch.Text) Then
+                criteria.TransactionCode = _txtSearch.Text.Trim()
+            Else
+                criteria.TransactionCode = Nothing
+            End If
+
+            If _cmbStatus IsNot Nothing AndAlso _cmbStatus.SelectedIndex > 0 AndAlso _cmbStatus.SelectedItem IsNot Nothing Then
+                criteria.Status = _cmbStatus.SelectedItem.ToString()
+            Else
+                criteria.Status = Nothing
+            End If
+
+            Dim statsData As TransactionStatisticsDTO = _myTransactionService.GetTransactionStatistics(criteria)
+            _lblTotalIn.Text = "Tổng phiếu nhập: " & statsData.TotalInTransactions.ToString()
+            _lblTotalOut.Text = "Tổng phiếu xuất: " & statsData.TotalOutTransactions.ToString()
+            _lblTotalValue.Text = "Tổng giá trị giao dịch: " & statsData.TotalTransactionValue.ToString("C")
+
+            ' Tính và hiển thị tỷ lệ trạng thái
+            Dim total As Integer = statsData.StatusBreakdown.Values.Sum()
+            Dim statusText As String = "Tình trạng: "
+            If total > 0 Then
+                Dim statusList As New List(Of String)
+                For Each kvp As KeyValuePair(Of String, Integer) In statsData.StatusBreakdown
+                    Dim percentage As Double = (kvp.Value * 100.0) / total
+                    statusList.Add(kvp.Key & ": " & String.Format("{0:F1}%", percentage))
+                Next
+                statusText &= String.Join(", ", statusList.ToArray())
+            Else
+                statusText &= "Chưa có dữ liệu"
+            End If
+            _lblStatusBreakdown.Text = statusText
+
+            _gridStats.DataSource = statsData.TopProducts
+            _gridLowStock.DataSource = statsData.LowStockProducts
+        Catch ex As Exception
+            MessageBox.Show("Lỗi khi tải thống kê: " & ex.Message & vbCrLf & ex.StackTrace, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+    End Sub
+
+    Private Sub _btnExportCsv_Click(sender As Object, e As EventArgs) Handles _btnExportCsv.Click
+        Using sfd As New SaveFileDialog()
+            sfd.Filter = "CSV Files (*.csv)|*.csv"
+            sfd.FileName = "TransactionStatistics_" & DateTime.Now.ToString("yyyyMMdd_HHmmss") & ".csv"
+            If sfd.ShowDialog() = DialogResult.OK Then
+                Try
+                    Using writer As New System.IO.StreamWriter(sfd.FileName, False, System.Text.Encoding.UTF8)
+                        ' Ghi số liệu tổng quan
+                        writer.WriteLine("Tổng phiếu nhập,Tổng phiếu xuất,Tổng giá trị giao dịch")
+                        writer.WriteLine($"{_lblTotalIn.Text.Replace("Tổng phiếu nhập: ", "")},{_lblTotalOut.Text.Replace("Tổng phiếu xuất: ", "")},{_lblTotalValue.Text.Replace("Tổng giá trị giao dịch: ", "")}")
+                        writer.WriteLine("Tình trạng," & _lblStatusBreakdown.Text.Replace("Tình trạng: ", ""))
+                        writer.WriteLine()
+
+                        ' Ghi top sản phẩm giao dịch
+                        writer.WriteLine("Top sản phẩm giao dịch")
+                        writer.WriteLine("Mã sản phẩm,Tên sản phẩm,Tổng số lượng,Tổng giá trị")
+                        For Each row As DataGridViewRow In _gridStats.Rows
+                            If row.IsNewRow Then Continue For
+                            writer.WriteLine($"{row.Cells("ProductId").Value},{row.Cells("ProductName").Value},{row.Cells("TotalQuantity").Value},{row.Cells("TotalValue").Value}")
+                        Next
+                        writer.WriteLine()
+
+                        ' Ghi sản phẩm dưới mức tồn kho
+                        writer.WriteLine("Sản phẩm dưới mức tồn kho")
+                        writer.WriteLine("Mã sản phẩm,Tên sản phẩm,Tồn kho hiện tại,Tồn kho tối thiểu")
+                        For Each row As DataGridViewRow In _gridLowStock.Rows
+                            If row.IsNewRow Then Continue For
+                            writer.WriteLine($"{row.Cells("ProductId").Value},{row.Cells("ProductName").Value},{row.Cells("CurrentStock").Value},{row.Cells("MinimumStock").Value}")
+                        Next
+                    End Using
+                    MessageBox.Show("Xuất CSV thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                Catch ex As Exception
+                    MessageBox.Show("Lỗi khi xuất CSV: " & ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                End Try
+            End If
+        End Using
+    End Sub
     Private Sub StockTransactionListForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
     End Sub

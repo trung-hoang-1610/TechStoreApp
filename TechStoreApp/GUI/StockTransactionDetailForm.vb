@@ -20,6 +20,7 @@ Public Class StockTransactionDetailForm
 
     Public Sub New(ByVal transactionId As Integer)
         InitializeComponent()
+        Me.StartPosition = FormStartPosition.CenterScreen
         _transactionId = transactionId
         _transactionService = ServiceFactory.CreateStockTransactionService()
 

@@ -50,4 +50,11 @@ Public Interface IStockTransactionRepository
     ''' <returns>Danh sách chi tiết sản phẩm thuộc phiếu</returns>
     Function GetTransactionDetails(ByVal transactionId As Integer) As List(Of StockTransactionDetail)
 
+    ''' <summary>
+    ''' Lấy thống kê giao dịch trong khoảng thời gian.
+    ''' </summary>
+    ''' <param name="criteria">Tiêu chí tìm kiếm (mã phiếu, trạng thái, ngày bắt đầu, ngày kết thúc)</param>
+    ''' <returns>Đối tượng chứa các số liệu thống kê</returns>
+    Function GetTransactionStatistics(ByVal criteria As SearchCriteriaDTO) As TransactionStatisticsDTO
+
 End Interface

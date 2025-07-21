@@ -2,7 +2,7 @@
 Imports System.IO
 Imports ClosedXML.Excel
 
-Public Class StatisticsForm
+Public Class ProductStatisticsForm
     Inherits Form
 
     Private ReadOnly _productService As IProductService
@@ -11,6 +11,7 @@ Public Class StatisticsForm
         InitializeComponent()
         _productService = ServiceFactory.CreateProductService()
         cboTimeRange.SelectedIndex = 0
+        Me.StartPosition = FormStartPosition.CenterScreen
         LoadStatistics()
     End Sub
 

@@ -9,6 +9,7 @@ Partial Public Class LoginForm
     ''' </summary>
     Public Sub New()
         InitializeComponent()
+        Me.StartPosition = FormStartPosition.CenterScreen
         _authService = ServiceFactory.CreateAuthService()
     End Sub
 

@@ -10,6 +10,7 @@
     Public Sub New()
         _supplierService = ServiceFactory.CreateSupplierService()
         InitializeComponent()
+        Me.StartPosition = FormStartPosition.CenterScreen
         LoadSuppliers()
     End Sub
 
@@ -39,14 +40,13 @@
             Return
         End If
         SelectedSupplierId = CInt(_cmbSupplier.SelectedValue)
-        Me.Hide()
+
         Dim createForm As New StockTransactionCreateForm("IN", SelectedSupplierId)
         Dim result = createForm.ShowDialog()
         If result = DialogResult.OK Then
             Me.DialogResult = DialogResult.OK
         End If
         Me.Close()
-
 
     End Sub
 

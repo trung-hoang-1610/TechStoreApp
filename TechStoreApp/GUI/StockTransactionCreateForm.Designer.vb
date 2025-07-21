@@ -87,10 +87,12 @@ Partial Class StockTransactionCreateForm
         _gridProducts.Location = New Point(10, 60)
         _gridProducts.Size = New Size(500, 170)
         _gridProducts.AutoGenerateColumns = False
+        _gridProducts.MultiSelect = False
         Dim chkSelect As New DataGridViewCheckBoxColumn()
         chkSelect.Name = "ChkSelect"
         chkSelect.HeaderText = "Chọn"
         chkSelect.Width = 50
+        chkSelect.ReadOnly = False
         _gridProducts.Columns.Add(chkSelect)
 
         Dim colProductIdProducts As New DataGridViewTextBoxColumn()
@@ -98,6 +100,7 @@ Partial Class StockTransactionCreateForm
         colProductIdProducts.HeaderText = "Mã sản phẩm"
         colProductIdProducts.DataPropertyName = "ProductId"
         colProductIdProducts.Width = 80
+        colProductIdProducts.ReadOnly = True
         _gridProducts.Columns.Add(colProductIdProducts)
 
         Dim colProductNameProducts As New DataGridViewTextBoxColumn()
@@ -105,6 +108,7 @@ Partial Class StockTransactionCreateForm
         colProductNameProducts.HeaderText = "Tên sản phẩm"
         colProductNameProducts.DataPropertyName = "ProductName"
         colProductNameProducts.Width = 200
+        colProductNameProducts.ReadOnly = True
         _gridProducts.Columns.Add(colProductNameProducts)
 
         Dim colCategoryNameProducts As New DataGridViewTextBoxColumn()
@@ -112,6 +116,7 @@ Partial Class StockTransactionCreateForm
         colCategoryNameProducts.HeaderText = "Danh mục"
         colCategoryNameProducts.DataPropertyName = "CategoryName"
         colCategoryNameProducts.Width = 100
+        colCategoryNameProducts.ReadOnly = True
         _gridProducts.Columns.Add(colCategoryNameProducts)
 
         Dim colQuantityProducts As New DataGridViewTextBoxColumn()
@@ -119,6 +124,7 @@ Partial Class StockTransactionCreateForm
         colQuantityProducts.HeaderText = "Số lượng tồn"
         colQuantityProducts.DataPropertyName = "Quantity"
         colQuantityProducts.Width = 80
+        colQuantityProducts.ReadOnly = True
         _gridProducts.Columns.Add(colQuantityProducts)
 
         grpProductSelection.Controls.Add(_gridProducts)
@@ -154,6 +160,7 @@ Partial Class StockTransactionCreateForm
         _gridSelectedProducts.Location = New Point(10, 20)
         _gridSelectedProducts.Size = New Size(620, 160)
         _gridSelectedProducts.AutoGenerateColumns = False
+        _gridSelectedProducts.ReadOnly = True
 
         Dim colProductSelectedId As New DataGridViewTextBoxColumn()
         colProductSelectedId.Name = "ProductId_Selected"

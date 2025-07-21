@@ -352,5 +352,96 @@ Public Class StockTransactionRepository
 
         Return details
     End Function
+    Public Function GetTransactionStatistics(ByVal criteria As SearchCriteriaDTO) As TransactionStatisticsDTO Implements IStockTransactionRepository.GetTransactionStatistics
+        Dim stats As New TransactionStatisticsDTO
+        stats.StatusBreakdown = New Dictionary(Of String, Integer)
+        stats.TopProducts = New List(Of ProductTransactionDTO)
+        stats.LowStockProducts = New List(Of ProductStockDTO)
 
+        Using conn As OdbcConnection = ConnectionHelper.GetConnection()
+
+            ' Tổng số phiếu nhập/xuất và trạng thái
+            Dim sql As String = "SELECT `TransactionType`, `Status`, COUNT(*) as `Count` " &
+                           "FROM `StockTransactions` " &
+                           "WHERE `CreatedAt` >= ? " &
+                           "GROUP BY `TransactionType`, `Status`"
+            Using cmd As New OdbcCommand(sql, conn)
+                cmd.Parameters.AddWithValue("?", DateTime.Now.AddDays(-30))
+                Using reader As OdbcDataReader = cmd.ExecuteReader()
+                    While reader.Read()
+                        Dim transType As String = reader.GetString(reader.GetOrdinal("TransactionType"))
+                        Dim status As String = reader.GetString(reader.GetOrdinal("Status"))
+                        Dim count As Integer = reader.GetInt32(reader.GetOrdinal("Count"))
+                        If transType = "IN" Then
+                            stats.TotalInTransactions += count
+                        ElseIf transType = "OUT" Then
+                            stats.TotalOutTransactions += count
+                        End If
+                        stats.StatusBreakdown(status) = count
+                    End While
+                End Using
+            End Using
+
+            ' Tổng giá trị giao dịch
+            sql = "SELECT SUM(d.`Quantity` * p.`Price`) as `TotalValue` " &
+              "FROM `StockTransactionDetails` d " &
+              "JOIN `StockTransactions` t ON d.`TransactionId` = t.`TransactionId` " &
+              "JOIN `Products` p ON d.`ProductId` = p.`ProductId` " &
+              "WHERE t.`CreatedAt` >= ?"
+            Using cmd As New OdbcCommand(sql, conn)
+                cmd.Parameters.AddWithValue("?", DateTime.Now.AddDays(-30))
+                Using reader As OdbcDataReader = cmd.ExecuteReader()
+                    If reader.Read() AndAlso Not reader.IsDBNull(reader.GetOrdinal("TotalValue")) Then
+                        stats.TotalTransactionValue = reader.GetDecimal(reader.GetOrdinal("TotalValue"))
+                    Else
+                        stats.TotalTransactionValue = 0
+                    End If
+                End Using
+            End Using
+
+            ' Top 10 sản phẩm giao dịch nhiều nhất
+            sql = "SELECT d.`ProductId`, p.`ProductName`, SUM(d.`Quantity`) as `TotalQuantity`, SUM(d.`Quantity` * p.`Price`) as `TotalValue` " &
+              "FROM `StockTransactionDetails` d " &
+              "JOIN `StockTransactions` t ON d.`TransactionId` = t.`TransactionId` " &
+              "JOIN `Products` p ON d.`ProductId` = p.`ProductId` " &
+              "WHERE t.`CreatedAt` >= ? " &
+              "GROUP BY d.`ProductId`, p.`ProductName` " &
+              "ORDER BY `TotalQuantity` DESC " &
+              "LIMIT 10"
+            Using cmd As New OdbcCommand(sql, conn)
+                cmd.Parameters.AddWithValue("?", DateTime.Now.AddDays(-30))
+                Using reader As OdbcDataReader = cmd.ExecuteReader()
+                    While reader.Read()
+                        stats.TopProducts.Add(New ProductTransactionDTO With {
+                        .ProductId = reader.GetInt32(reader.GetOrdinal("ProductId")),
+                        .ProductName = reader.GetString(reader.GetOrdinal("ProductName")),
+                        .TotalQuantity = reader.GetInt32(reader.GetOrdinal("TotalQuantity")),
+                        .TotalValue = reader.GetDecimal(reader.GetOrdinal("TotalValue"))
+                    })
+                    End While
+                End Using
+            End Using
+
+            ' Sản phẩm dưới mức tồn kho
+            sql = "SELECT p.`ProductId`, p.`ProductName`, p.`Quantity`, p.`MinStockLevel` " &
+              "FROM `Products` p " &
+              "WHERE p.`Quantity` < p.`MinStockLevel`"
+            Using cmd As New OdbcCommand(sql, conn)
+                Using reader As OdbcDataReader = cmd.ExecuteReader()
+                    While reader.Read()
+                        stats.LowStockProducts.Add(New ProductStockDTO With {
+                        .ProductId = reader.GetInt32(reader.GetOrdinal("ProductId")),
+                        .ProductName = reader.GetString(reader.GetOrdinal("ProductName")),
+                        .CurrentStock = reader.GetInt32(reader.GetOrdinal("Quantity")),
+                        .MinimumStock = reader.GetInt32(reader.GetOrdinal("MinStockLevel"))
+                    })
+                    End While
+                End Using
+            End Using
+
+            ConnectionHelper.CloseConnection(conn)
+        End Using
+
+        Return stats
+    End Function
 End Class

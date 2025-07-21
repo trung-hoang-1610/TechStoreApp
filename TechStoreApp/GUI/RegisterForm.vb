@@ -21,6 +21,7 @@ Public Class RegisterForm
     Public Sub New()
         _authService = ServiceFactory.CreateAuthService()
         _roleService = ServiceFactory.CreateRoleService()
+        Me.StartPosition = FormStartPosition.CenterScreen
         InitializeComponents()
         LoadRoles()
     End Sub

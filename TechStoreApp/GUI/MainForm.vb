@@ -3,6 +3,7 @@
 
     Public Sub New()
         InitializeComponent()
+        Me.StartPosition = FormStartPosition.CenterScreen
         UpdateSelectedButton(_btnStockTransaction)
         ShowFormInPanel("StockTransactionListForm")
     End Sub
@@ -54,7 +55,6 @@
 
         _currentForm.TopLevel = False
         _currentForm.FormBorderStyle = FormBorderStyle.None
-        _currentForm.Dock = DockStyle.Fill
         _contentPanel.Controls.Add(_currentForm)
         _currentForm.Show()
     End Sub

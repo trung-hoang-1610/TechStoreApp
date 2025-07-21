@@ -375,4 +375,12 @@ Public Class StockTransactionService
     Public Function GetTransactionById(transactionId As Integer) As StockTransactionDTO Implements IStockTransactionService.GetTransactionById
         Return MapToDTO(_transactionRepository.GetTransactionById(transactionId))
     End Function
+
+    Public Function GetTransactionStatistics(ByVal criteria As SearchCriteriaDTO) As TransactionStatisticsDTO Implements IStockTransactionService.GetTransactionStatistics
+        Try
+            Return _transactionRepository.GetTransactionStatistics(criteria)
+        Catch ex As Exception
+            Throw New Exception("Lỗi khi lấy thống kê giao dịch: " & ex.Message)
+        End Try
+    End Function
 End Class
