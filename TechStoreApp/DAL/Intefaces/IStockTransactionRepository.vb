@@ -38,7 +38,7 @@ Public Interface IStockTransactionRepository
     ''' <param name="createdBy">Mã người dùng, Nothing nếu muốn lấy tất cả</param>
     ''' <param name="searchCriteria">Tiêu chí tìm kiếm (mã phiếu, trạng thái, ...)</param>
     ''' <returns>Danh sách phiếu thỏa mãn tiêu chí</returns>
-    Function SearchTransactions(ByVal transactionType As String, ByVal createdBy As Integer?, ByVal searchCriteria As String) As List(Of StockTransaction)
+    Function SearchTransactions(ByVal transactionType As String, ByVal createdBy As Integer?, ByVal searchCriteria As StockTransationSearchCriterialDTO) As List(Of StockTransaction)
 
     Function CreateTransactionWithDetails(ByVal transaction As StockTransaction, ByVal details As List(Of StockTransactionDetail)) As Integer
     Function ApproveTransaction(ByVal transactionId As Integer, ByVal approvedBy As Integer, ByVal isApproved As Boolean) As Boolean
@@ -55,6 +55,6 @@ Public Interface IStockTransactionRepository
     ''' </summary>
     ''' <param name="criteria">Tiêu chí tìm kiếm (mã phiếu, trạng thái, ngày bắt đầu, ngày kết thúc)</param>
     ''' <returns>Đối tượng chứa các số liệu thống kê</returns>
-    Function GetTransactionStatistics(ByVal criteria As SearchCriteriaDTO) As TransactionStatisticsDTO
-
+    Function GetTransactionStatistics(ByVal criteria As StockTransationSearchCriterialDTO) As TransactionStatisticsDTO
+    Function CountTransactions(transactionType As String, createdBy As Integer?, criteria As StockTransationSearchCriterialDTO) As Integer
 End Interface

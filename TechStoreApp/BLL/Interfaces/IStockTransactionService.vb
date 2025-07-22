@@ -45,7 +45,7 @@ Public Interface IStockTransactionService
     ''' <param name="userId">Mã người dùng, Nothing nếu là admin</param>
     ''' <param name="criteria">Tiêu chí tìm kiếm</param>
     ''' <returns>Danh sách phiếu thỏa mãn</returns>
-    Function SearchTransactions(ByVal transactionType As String, ByVal userId As Integer?, ByVal criteria As SearchCriteriaDTO) As List(Of StockTransactionDTO)
+    Function SearchTransactions(ByVal transactionType As String, ByVal userId As Integer?, ByVal criteria As StockTransationSearchCriterialDTO) As List(Of StockTransactionDTO)
 
     ''' <summary>
     ''' Lấy chi tiết phiếu theo mã phiếu.
@@ -59,5 +59,5 @@ Public Interface IStockTransactionService
     ''' </summary>
     ''' <param name="criteria">Tiêu chí tìm kiếm (mã phiếu, trạng thái, ngày bắt đầu, ngày kết thúc)</param>
     ''' <returns>Đối tượng chứa các số liệu thống kê</returns>
-    Function GetTransactionStatistics(ByVal criteria As SearchCriteriaDTO) As TransactionStatisticsDTO
+    Function GetTransactionStatistics(ByVal criteria As StockTransationSearchCriterialDTO) As TransactionStatisticsDTO
 End Interface

@@ -86,12 +86,12 @@
         Me._gridDetails.Name = "_gridDetails"
         Me._gridDetails.ReadOnly = True
         Me._gridDetails.RowHeadersWidth = 51
-        Me._gridDetails.Size = New System.Drawing.Size(680, 260)
+        Me._gridDetails.Size = New System.Drawing.Size(659, 260)
         Me._gridDetails.TabIndex = 1
         '
         '_btnClose
         '
-        Me._btnClose.Location = New System.Drawing.Point(590, 440)
+        Me._btnClose.Location = New System.Drawing.Point(569, 446)
         Me._btnClose.Name = "_btnClose"
         Me._btnClose.Size = New System.Drawing.Size(100, 30)
         Me._btnClose.TabIndex = 2
@@ -111,12 +111,12 @@
         Me.panelInfo.Controls.Add(Me._lblApprovedAt)
         Me.panelInfo.Location = New System.Drawing.Point(10, 10)
         Me.panelInfo.Name = "panelInfo"
-        Me.panelInfo.Size = New System.Drawing.Size(680, 150)
+        Me.panelInfo.Size = New System.Drawing.Size(659, 150)
         Me.panelInfo.TabIndex = 0
         '
         '_btnApprove
         '
-        Me._btnApprove.Location = New System.Drawing.Point(454, 103)
+        Me._btnApprove.Location = New System.Drawing.Point(444, 110)
         Me._btnApprove.Name = "_btnApprove"
         Me._btnApprove.Size = New System.Drawing.Size(100, 30)
         Me._btnApprove.TabIndex = 0
@@ -125,7 +125,7 @@
         '
         '_btnReject
         '
-        Me._btnReject.Location = New System.Drawing.Point(560, 103)
+        Me._btnReject.Location = New System.Drawing.Point(550, 110)
         Me._btnReject.Name = "_btnReject"
         Me._btnReject.Size = New System.Drawing.Size(100, 30)
         Me._btnReject.TabIndex = 1
@@ -134,7 +134,7 @@
         '
         'StockTransactionDetailForm
         '
-        Me.ClientSize = New System.Drawing.Size(682, 473)
+        Me.ClientSize = New System.Drawing.Size(677, 488)
         Me.Controls.Add(Me.panelInfo)
         Me.Controls.Add(Me._gridDetails)
         Me.Controls.Add(Me._btnClose)

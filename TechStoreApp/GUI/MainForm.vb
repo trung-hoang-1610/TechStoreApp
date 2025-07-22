@@ -8,21 +8,21 @@
         ShowFormInPanel("StockTransactionListForm")
     End Sub
 
-    Private Sub Button_MouseEnter(sender As Object, e As EventArgs) Handles _btnStockTransaction.MouseEnter, _btnProductManagement.MouseEnter
+    Private Sub Button_MouseEnter(sender As Object, e As EventArgs) Handles _btnStockTransaction.MouseEnter, _btnProductManagement.MouseEnter, _btnSupplierManagement.Click
         Dim btn As Button = DirectCast(sender, Button)
         If btn IsNot _selectedButton Then
             btn.BackColor = Color.FromArgb(46, 56, 76)
         End If
     End Sub
 
-    Private Sub Button_MouseLeave(sender As Object, e As EventArgs) Handles _btnStockTransaction.MouseLeave, _btnProductManagement.MouseLeave
+    Private Sub Button_MouseLeave(sender As Object, e As EventArgs) Handles _btnStockTransaction.MouseLeave, _btnProductManagement.MouseLeave, _btnSupplierManagement.Click
         Dim btn As Button = DirectCast(sender, Button)
         If btn IsNot _selectedButton Then
             btn.BackColor = Color.FromArgb(36, 46, 66)
         End If
     End Sub
 
-    Private Sub Button_Click(sender As Object, e As EventArgs) Handles _btnStockTransaction.Click, _btnProductManagement.Click
+    Private Sub Button_Click(sender As Object, e As EventArgs) Handles _btnStockTransaction.Click, _btnProductManagement.Click, _btnSupplierManagement.Click
         Dim btn As Button = DirectCast(sender, Button)
         UpdateSelectedButton(btn)
         ShowFormInPanel(btn.Tag.ToString())
@@ -49,13 +49,25 @@
                 _currentForm = New StockTransactionListForm()
             Case "ProductManagementForm"
                 _currentForm = New ProductManagementForm(SessionManager.GetCurrentUser.UserId)
+            Case "SupplierManagementForm"
+                _currentForm = New SupplierManagementForm()
             Case Else
                 Return
         End Select
 
-        _currentForm.TopLevel = False
-        _currentForm.FormBorderStyle = FormBorderStyle.None
+        With _currentForm
+            .TopLevel = False
+            .FormBorderStyle = FormBorderStyle.None
+            .StartPosition = FormStartPosition.Manual
+            .AutoSize = True
+            .AutoSizeMode = AutoSizeMode.GrowAndShrink
+            .Location = New Point(
+                (_contentPanel.Width - .Width) \ 2
+            )
+        End With
+
         _contentPanel.Controls.Add(_currentForm)
         _currentForm.Show()
     End Sub
+
 End Class

@@ -1,5 +1,6 @@
 ﻿Imports System.Data.Odbc
 Imports System.Collections.Generic
+Imports System.ComponentModel
 
 Public Class ProductManagementForm
     Inherits Form
@@ -14,8 +15,12 @@ Public Class ProductManagementForm
     Private pageSize As Integer = 7
     Private totalPages As Integer = 0
     Private categoryLookup As Dictionary(Of String, Integer)
-    Private supplierLookup As Dictionary(Of String, Integer)
+    Dim supplierLookup As New Dictionary(Of Integer, String)
     Private searchCriteria As ProductSearchCriteriaDTO
+    Private WithEvents _backgroundWorkerProducts As BackgroundWorker
+    Private WithEvents _backgroundWorkerCategories As BackgroundWorker
+    Private WithEvents _backgroundWorkerSuppliers As BackgroundWorker
+    Private WithEvents _backgroundWorkerRolePermissions As BackgroundWorker
 
     Public Sub New(ByVal userId As Integer)
         InitializeComponent()
@@ -25,25 +30,68 @@ Public Class ProductManagementForm
         _supplierService = ServiceFactory.CreateSupplierService()
         _userId = userId
         categoryLookup = New Dictionary(Of String, Integer)
-        supplierLookup = New Dictionary(Of String, Integer)
+        supplierLookup = New Dictionary(Of Integer, String)
         searchCriteria = New ProductSearchCriteriaDTO With {
             .PageSize = pageSize,
             .PageIndex = currentPage
         }
-        ApplyRolePermissions()
-        LoadCategories()
-        LoadSuppliers()
+        InitializeBackgroundWorkers()
+        StartApplyRolePermissions()
+        StartLoadCategories()
+        StartLoadSuppliers()
         LoadSortByOptions()
         LoadStatusOptions()
-        LoadProducts()
+        StartLoadProducts()
     End Sub
 
-    Private Sub ApplyRolePermissions()
-        Try
-            Dim user = SessionManager.GetCurrentUser()
-            Dim role = ServiceFactory.CreateRoleService().GetRoleById(user.RoleId)
-            Dim roleName = role.RoleName.Trim().ToLower()
+    Private Sub InitializeBackgroundWorkers()
+        _backgroundWorkerProducts = New BackgroundWorker()
+        _backgroundWorkerProducts.WorkerSupportsCancellation = True
+        _backgroundWorkerProducts.WorkerReportsProgress = False
 
+        _backgroundWorkerCategories = New BackgroundWorker()
+        _backgroundWorkerCategories.WorkerSupportsCancellation = True
+        _backgroundWorkerCategories.WorkerReportsProgress = False
+
+        _backgroundWorkerSuppliers = New BackgroundWorker()
+        _backgroundWorkerSuppliers.WorkerSupportsCancellation = True
+        _backgroundWorkerSuppliers.WorkerReportsProgress = False
+
+        _backgroundWorkerRolePermissions = New BackgroundWorker()
+        _backgroundWorkerRolePermissions.WorkerSupportsCancellation = True
+        _backgroundWorkerRolePermissions.WorkerReportsProgress = False
+    End Sub
+
+    Private Sub StartApplyRolePermissions()
+        If _backgroundWorkerRolePermissions.IsBusy Then
+            _backgroundWorkerRolePermissions.CancelAsync()
+            While _backgroundWorkerRolePermissions.IsBusy
+                Application.DoEvents()
+            End While
+        End If
+        _backgroundWorkerRolePermissions.RunWorkerAsync()
+    End Sub
+
+    Private Sub _backgroundWorkerRolePermissions_DoWork(sender As Object, e As DoWorkEventArgs) Handles _backgroundWorkerRolePermissions.DoWork
+        If _backgroundWorkerRolePermissions.CancellationPending Then
+            e.Cancel = True
+            Return
+        End If
+        Dim user = SessionManager.GetCurrentUser()
+        Dim role = ServiceFactory.CreateRoleService().GetRoleById(user.RoleId)
+        e.Result = role.RoleName.Trim().ToLower()
+    End Sub
+
+    Private Sub _backgroundWorkerRolePermissions_RunWorkerCompleted(sender As Object, e As RunWorkerCompletedEventArgs) Handles _backgroundWorkerRolePermissions.RunWorkerCompleted
+        If e.Cancelled Then Return
+
+        If e.Error IsNot Nothing Then
+            lblError.Text = If(TypeOf e.Error Is OdbcException, "Lỗi cơ sở dữ liệu: " & e.Error.Message, "Không thể xác định quyền: " & e.Error.Message)
+            Return
+        End If
+
+        Try
+            Dim roleName = DirectCast(e.Result, String)
             If roleName = "user" Then
                 btnAdd.Visible = False
                 btnUpdate.Visible = False
@@ -57,19 +105,42 @@ Public Class ProductManagementForm
                 txtMinStockLevel.Enabled = False
                 cboCategory.Enabled = False
             End If
-        Catch ex As OdbcException
-            lblError.Text = "Lỗi cơ sở dữ liệu: " & ex.Message
         Catch ex As Exception
             lblError.Text = "Không thể xác định quyền: " & ex.Message
         End Try
     End Sub
 
-    Private Sub LoadCategories()
+    Private Sub StartLoadCategories()
+        If _backgroundWorkerCategories.IsBusy Then
+            _backgroundWorkerCategories.CancelAsync()
+            While _backgroundWorkerCategories.IsBusy
+                Application.DoEvents()
+            End While
+        End If
+        _backgroundWorkerCategories.RunWorkerAsync()
+    End Sub
+
+    Private Sub _backgroundWorkerCategories_DoWork(sender As Object, e As DoWorkEventArgs) Handles _backgroundWorkerCategories.DoWork
+        If _backgroundWorkerCategories.CancellationPending Then
+            e.Cancel = True
+            Return
+        End If
+        e.Result = _categoryService.GetAllCategories()
+    End Sub
+
+    Private Sub _backgroundWorkerCategories_RunWorkerCompleted(sender As Object, e As RunWorkerCompletedEventArgs) Handles _backgroundWorkerCategories.RunWorkerCompleted
+        If e.Cancelled Then Return
+
+        If e.Error IsNot Nothing Then
+            lblError.Text = If(TypeOf e.Error Is OdbcException, "Lỗi khi tải danh mục: " & e.Error.Message, "Lỗi hệ thống khi tải danh mục: " & e.Error.Message)
+            Return
+        End If
+
         Try
             cboCategory.Items.Clear()
             cboCategorySort.Items.Clear()
             categoryLookup.Clear()
-            Dim categories = _categoryService.GetAllCategories()
+            Dim categories = DirectCast(e.Result, List(Of Category))
             cboCategorySort.Items.Add("Tất cả")
             categoryLookup.Add("Tất cả", Nothing)
             For Each cat In categories
@@ -81,31 +152,50 @@ Public Class ProductManagementForm
                 cboCategory.SelectedIndex = 0
                 cboCategorySort.SelectedIndex = 0
             End If
-        Catch ex As OdbcException
-            lblError.Text = "Lỗi khi tải danh mục: " & ex.Message
         Catch ex As Exception
             lblError.Text = "Lỗi hệ thống khi tải danh mục: " & ex.Message
         End Try
     End Sub
 
+    Private Sub StartLoadSuppliers()
+        If _backgroundWorkerSuppliers.IsBusy Then
+            _backgroundWorkerSuppliers.CancelAsync()
+            While _backgroundWorkerSuppliers.IsBusy
+                Application.DoEvents()
+            End While
+        End If
+        _backgroundWorkerSuppliers.RunWorkerAsync()
+    End Sub
 
+    Private Sub _backgroundWorkerSuppliers_DoWork(sender As Object, e As DoWorkEventArgs) Handles _backgroundWorkerSuppliers.DoWork
+        If _backgroundWorkerSuppliers.CancellationPending Then
+            e.Cancel = True
+            Return
+        End If
+        e.Result = _supplierService.GetAllSuppliers()
+    End Sub
 
-    Private Sub LoadSuppliers()
+    Private Sub _backgroundWorkerSuppliers_RunWorkerCompleted(sender As Object, e As RunWorkerCompletedEventArgs) Handles _backgroundWorkerSuppliers.RunWorkerCompleted
+        If e.Cancelled Then Return
+
+        If e.Error IsNot Nothing Then
+            lblError.Text = If(TypeOf e.Error Is OdbcException, "Lỗi khi tải danh mục: " & e.Error.Message, "Lỗi hệ thống khi tải danh mục: " & e.Error.Message)
+            Return
+        End If
+
         Try
             cboSupplier.Items.Clear()
             supplierLookup.Clear()
-            Dim suppliers = _supplierService.GetAllSuppliers()
+            Dim suppliers = DirectCast(e.Result, List(Of Supplier))
             For Each sup In suppliers
                 cboSupplier.Items.Add(sup.SupplierName)
-                supplierLookup.Add(sup.SupplierName, sup.SupplierId)
+                supplierLookup.Add(sup.SupplierId, sup.SupplierName)
             Next
             If cboSupplier.Items.Count > 0 Then
                 cboSupplier.SelectedIndex = 0
             End If
-        Catch ex As OdbcException
-            lblError.Text = "Lỗi khi tải danh mục: " & ex.Message
         Catch ex As Exception
-            lblError.Text = "Lỗi hệ thống khi tải danh mục: " & ex.Message
+            lblError.Text = "Lỗi hệ thống khi tải nhà cung cấp: " & ex.Message
         End Try
     End Sub
 
@@ -121,10 +211,36 @@ Public Class ProductManagementForm
         cboStatus.SelectedIndex = 0
     End Sub
 
-    Private Sub LoadProducts()
+    Private Sub StartLoadProducts()
+        If _backgroundWorkerProducts.IsBusy Then
+            _backgroundWorkerProducts.CancelAsync()
+            While _backgroundWorkerProducts.IsBusy
+                Application.DoEvents()
+            End While
+        End If
+        searchCriteria.PageIndex = currentPage
+        _backgroundWorkerProducts.RunWorkerAsync(searchCriteria)
+    End Sub
+
+    Private Sub _backgroundWorkerProducts_DoWork(sender As Object, e As DoWorkEventArgs) Handles _backgroundWorkerProducts.DoWork
+        If _backgroundWorkerProducts.CancellationPending Then
+            e.Cancel = True
+            Return
+        End If
+        Dim criteria = DirectCast(e.Argument, ProductSearchCriteriaDTO)
+        e.Result = _productService.SearchProducts(criteria)
+    End Sub
+
+    Private Sub _backgroundWorkerProducts_RunWorkerCompleted(sender As Object, e As RunWorkerCompletedEventArgs) Handles _backgroundWorkerProducts.RunWorkerCompleted
+        If e.Cancelled Then Return
+
+        If e.Error IsNot Nothing Then
+            lblError.Text = If(TypeOf e.Error Is OdbcException, "Lỗi khi tải sản phẩm: " & e.Error.Message, "Lỗi hệ thống khi tải sản phẩm: " & e.Error.Message)
+            Return
+        End If
+
         Try
-            searchCriteria.PageIndex = currentPage
-            Dim products = _productService.SearchProducts(searchCriteria)
+            Dim products = DirectCast(e.Result, List(Of ProductDTO))
             totalPages = If(searchCriteria.PageSize > 0, CInt(Math.Ceiling(searchCriteria.TotalCount / searchCriteria.PageSize)), 1)
             dgvProducts.Rows.Clear()
             For Each p In products
@@ -134,8 +250,6 @@ Public Class ProductManagementForm
             lblPage.Text = $"Trang {currentPage + 1}/{totalPages}"
             btnPrev.Enabled = (currentPage > 0)
             btnNext.Enabled = (currentPage < totalPages - 1)
-        Catch ex As OdbcException
-            lblError.Text = "Lỗi khi tải sản phẩm: " & ex.Message
         Catch ex As Exception
             lblError.Text = "Lỗi hệ thống khi tải sản phẩm: " & ex.Message
         End Try
@@ -222,7 +336,7 @@ Public Class ProductManagementForm
 
             Dim result = _productService.AddProduct(product)
             If result.Success Then
-                LoadProducts()
+                StartLoadProducts()
                 ClearInputs()
                 SetEditingMode(False, False)
                 MessageBox.Show("Thêm sản phẩm thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information)
@@ -278,7 +392,7 @@ Public Class ProductManagementForm
 
             Dim result = _productService.UpdateProduct(product)
             If result.Success Then
-                LoadProducts()
+                StartLoadProducts()
                 ClearInputs()
                 SetEditingMode(False, False)
                 MessageBox.Show("Cập nhật thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information)
@@ -308,7 +422,7 @@ Public Class ProductManagementForm
 
             Dim result = _productService.DeleteProduct(productId)
             If result Then
-                LoadProducts()
+                StartLoadProducts()
                 ClearInputs()
                 SetEditingMode(False, False)
                 MessageBox.Show("Xóa sản phẩm thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information)
@@ -344,21 +458,20 @@ Public Class ProductManagementForm
             lblError.Text = "Lỗi khi chọn sản phẩm: " & ex.Message
         End Try
     End Sub
+
     Private Sub chkLowStock_CheckedChanged(sender As Object, e As EventArgs) Handles chkLowStock.CheckedChanged
         Try
-            ' Cập nhật searchCriteria.LowStockOnly dựa trên trạng thái checkbox
             searchCriteria.LowStockOnly = chkLowStock.Checked
             Debug.WriteLine($"LowStockOnly: {searchCriteria.LowStockOnly}")
-
-            ' Đặt lại trang về 0 để đảm bảo hiển thị từ đầu
             currentPage = 0
-            LoadProducts()
+            StartLoadProducts()
         Catch ex As OdbcException
             lblError.Text = "Lỗi khi lọc sản phẩm tồn kho thấp: " & ex.Message
         Catch ex As Exception
             lblError.Text = "Lỗi hệ thống khi lọc sản phẩm tồn kho thấp: " & ex.Message
         End Try
     End Sub
+
     Private Sub btnSearch_Click(sender As Object, e As EventArgs) Handles btnSearch.Click
         Try
             Dim nameValue = If(String.IsNullOrEmpty(txtSearchName.Text.Trim()), Nothing, txtSearchName.Text.Trim())
@@ -399,7 +512,7 @@ Public Class ProductManagementForm
             }
 
             currentPage = 0
-            LoadProducts()
+            StartLoadProducts()
         Catch ex As OdbcException
             lblError.Text = "Lỗi khi tìm kiếm sản phẩm: " & ex.Message
         Catch ex As Exception
@@ -424,7 +537,7 @@ Public Class ProductManagementForm
             }
 
             currentPage = 0
-            LoadProducts()
+            StartLoadProducts()
         Catch ex As OdbcException
             lblError.Text = "Lỗi khi xóa tìm kiếm: " & ex.Message
         Catch ex As Exception
@@ -435,14 +548,14 @@ Public Class ProductManagementForm
     Private Sub btnPrev_Click(sender As Object, e As EventArgs) Handles btnPrev.Click
         If currentPage > 0 Then
             currentPage -= 1
-            LoadProducts()
+            StartLoadProducts()
         End If
     End Sub
 
     Private Sub btnNext_Click(sender As Object, e As EventArgs) Handles btnNext.Click
         If currentPage < totalPages - 1 Then
             currentPage += 1
-            LoadProducts()
+            StartLoadProducts()
         End If
     End Sub
 
@@ -463,6 +576,7 @@ Public Class ProductManagementForm
             lblError.Text = "Lỗi khi mở thống kê: " & ex.Message
         End Try
     End Sub
+
     Private Sub ProductManagementForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ' Optional: Initialize additional controls here if needed
     End Sub
@@ -497,6 +611,35 @@ Public Class ProductManagementForm
     End Sub
 
     Private Sub dgvProducts_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles dgvProducts.CellContentClick
+    End Sub
 
+    Private Sub ProductManagementForm_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
+        If _backgroundWorkerProducts.IsBusy Then
+            _backgroundWorkerProducts.CancelAsync()
+            While _backgroundWorkerProducts.IsBusy
+                Application.DoEvents()
+            End While
+        End If
+
+        If _backgroundWorkerCategories.IsBusy Then
+            _backgroundWorkerCategories.CancelAsync()
+            While _backgroundWorkerCategories.IsBusy
+                Application.DoEvents()
+            End While
+        End If
+
+        If _backgroundWorkerSuppliers.IsBusy Then
+            _backgroundWorkerSuppliers.CancelAsync()
+            While _backgroundWorkerSuppliers.IsBusy
+                Application.DoEvents()
+            End While
+        End If
+
+        If _backgroundWorkerRolePermissions.IsBusy Then
+            _backgroundWorkerRolePermissions.CancelAsync()
+            While _backgroundWorkerRolePermissions.IsBusy
+                Application.DoEvents()
+            End While
+        End If
     End Sub
 End Class

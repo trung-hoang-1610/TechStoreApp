@@ -31,6 +31,15 @@
         Me._btnApprove = New System.Windows.Forms.Button()
         Me._txtSearch = New System.Windows.Forms.TextBox()
         Me._cmbStatus = New System.Windows.Forms.ComboBox()
+        Me.Label1 = New System.Windows.Forms.Label()
+
+        Me._btnPrevPageIn = New System.Windows.Forms.Button()
+        Me._btnNextPageIn = New System.Windows.Forms.Button()
+        Me._lblPagingStatusIn = New System.Windows.Forms.Label()
+
+        Me._btnPrevPageOut = New System.Windows.Forms.Button()
+        Me._btnNextPageOut = New System.Windows.Forms.Button()
+        Me._lblPagingStatusOut = New System.Windows.Forms.Label()
         Me._tabControl.SuspendLayout()
         Me.tabIn.SuspendLayout()
         CType(Me._gridIn, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -40,6 +49,42 @@
         CType(Me._gridStats, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me._gridLowStock, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
+
+        ' btnPrevPageIn
+        Me._btnPrevPageIn.Location = New System.Drawing.Point(10, 420)
+        Me._btnPrevPageIn.Name = "_btnPrevPageIn"
+        Me._btnPrevPageIn.Size = New System.Drawing.Size(80, 28)
+        Me._btnPrevPageIn.Text = "Trang trước"
+
+        ' btnNextPage
+        Me._btnNextPageIn.Location = New System.Drawing.Point(100, 420)
+        Me._btnNextPageIn.Name = "_btnNextPageIn"
+        Me._btnNextPageIn.Size = New System.Drawing.Size(80, 28)
+        Me._btnNextPageIn.Text = "Trang sau"
+
+        ' lblPagingStatus
+        Me._lblPagingStatusIn.Location = New System.Drawing.Point(200, 425)
+        Me._lblPagingStatusIn.Name = "_lblPagingStatusIn"
+        Me._lblPagingStatusIn.Size = New System.Drawing.Size(250, 22)
+        Me._lblPagingStatusIn.Text = "Trang 1 / 1 — Hiển thị 0 / 0 phiếu"
+
+        ' btnPrevPageOut
+        Me._btnPrevPageOut.Location = New System.Drawing.Point(10, 420)
+        Me._btnPrevPageOut.Name = "_btnPrevPageOut"
+        Me._btnPrevPageOut.Size = New System.Drawing.Size(80, 28)
+        Me._btnPrevPageOut.Text = "Trang trước"
+
+        ' btnNextPage
+        Me._btnNextPageOut.Location = New System.Drawing.Point(100, 420)
+        Me._btnNextPageOut.Name = "_btnNextPageOut"
+        Me._btnNextPageOut.Size = New System.Drawing.Size(80, 28)
+        Me._btnNextPageOut.Text = "Trang sau"
+
+        ' lblPagingStatus
+        Me._lblPagingStatusOut.Location = New System.Drawing.Point(200, 425)
+        Me._lblPagingStatusOut.Name = "_lblPagingStatusOut"
+        Me._lblPagingStatusOut.Size = New System.Drawing.Size(250, 22)
+        Me._lblPagingStatusOut.Text = "Trang 1 / 1 — Hiển thị 0 / 0 phiếu"
         '
         '_tabControl
         '
@@ -56,6 +101,10 @@
         '
         Me.tabIn.Controls.Add(Me._gridIn)
         Me.tabIn.Controls.Add(Me._btnCreateIn)
+        Me.tabIn.Controls.Add(Me._btnPrevPageIn)
+        Me.tabIn.Controls.Add(Me._btnNextPageIn)
+        Me.tabIn.Controls.Add(Me._lblPagingStatusIn)
+
         Me.tabIn.Location = New System.Drawing.Point(4, 25)
         Me.tabIn.Name = "tabIn"
         Me.tabIn.Size = New System.Drawing.Size(852, 471)
@@ -71,65 +120,6 @@
         Me._gridIn.RowHeadersWidth = 51
         Me._gridIn.Size = New System.Drawing.Size(830, 360)
         Me._gridIn.TabIndex = 0
-        _gridIn.AutoGenerateColumns = False
-
-        Dim colTransactionIdIn As New DataGridViewTextBoxColumn()
-        colTransactionIdIn.Name = "TransactionId"
-        colTransactionIdIn.HeaderText = "Mã phiếu"
-        colTransactionIdIn.DataPropertyName = "TransactionId"
-        colTransactionIdIn.Width = 80
-        _gridIn.Columns.Add(colTransactionIdIn)
-
-        Dim colTransactionCodeIn As New DataGridViewTextBoxColumn()
-        colTransactionCodeIn.Name = "TransactionCode"
-        colTransactionCodeIn.HeaderText = "Mã giao dịch"
-        colTransactionCodeIn.DataPropertyName = "TransactionCode"
-        colTransactionCodeIn.Width = 120
-        _gridIn.Columns.Add(colTransactionCodeIn)
-
-        Dim colCreatedByNameIn As New DataGridViewTextBoxColumn()
-        colCreatedByNameIn.Name = "CreatedByName"
-        colCreatedByNameIn.HeaderText = "Người tạo"
-        colCreatedByNameIn.DataPropertyName = "CreatedByName"
-        colCreatedByNameIn.Width = 120
-        _gridIn.Columns.Add(colCreatedByNameIn)
-
-        Dim colCreatedAtIn As New DataGridViewTextBoxColumn()
-        colCreatedAtIn.Name = "CreatedAt"
-        colCreatedAtIn.HeaderText = "Ngày tạo"
-        colCreatedAtIn.DataPropertyName = "CreatedAt"
-        colCreatedAtIn.Width = 100
-        colCreatedAtIn.DefaultCellStyle.Format = "dd/MM/yyyy"
-        _gridIn.Columns.Add(colCreatedAtIn)
-
-        Dim colSupplierNameIn As New DataGridViewTextBoxColumn()
-        colSupplierNameIn.Name = "SupplierName"
-        colSupplierNameIn.HeaderText = "Nhà cung cấp"
-        colSupplierNameIn.DataPropertyName = "SupplierName"
-        colSupplierNameIn.Width = 150
-        _gridIn.Columns.Add(colSupplierNameIn)
-
-        Dim colStatusIn As New DataGridViewTextBoxColumn()
-        colStatusIn.Name = "Status"
-        colStatusIn.HeaderText = "Trạng thái"
-        colStatusIn.DataPropertyName = "Status"
-        colStatusIn.Width = 100
-        _gridIn.Columns.Add(colStatusIn)
-
-        Dim colApprovedByNameIn As New DataGridViewTextBoxColumn()
-        colApprovedByNameIn.Name = "ApprovedByName"
-        colApprovedByNameIn.HeaderText = "Người duyệt"
-        colApprovedByNameIn.DataPropertyName = "ApprovedByName"
-        colApprovedByNameIn.Width = 120
-        _gridIn.Columns.Add(colApprovedByNameIn)
-
-        Dim colApprovedAtIn As New DataGridViewTextBoxColumn()
-        colApprovedAtIn.Name = "ApprovedAt"
-        colApprovedAtIn.HeaderText = "Ngày duyệt"
-        colApprovedAtIn.DataPropertyName = "ApprovedAtString"
-        colApprovedAtIn.Width = 100
-        colApprovedAtIn.DefaultCellStyle.Format = "dd/MM/yyyy"
-        _gridIn.Columns.Add(colApprovedAtIn)
         '
         '_btnCreateIn
         '
@@ -143,6 +133,9 @@
         '
         Me.tabOut.Controls.Add(Me._gridOut)
         Me.tabOut.Controls.Add(Me._btnCreateOut)
+        Me.tabOut.Controls.Add(Me._btnPrevPageOut)
+        Me.tabOut.Controls.Add(Me._btnNextPageOut)
+        Me.tabOut.Controls.Add(Me._lblPagingStatusOut)
         Me.tabOut.Location = New System.Drawing.Point(4, 25)
         Me.tabOut.Name = "tabOut"
         Me.tabOut.Size = New System.Drawing.Size(852, 471)
@@ -158,60 +151,6 @@
         Me._gridOut.RowHeadersWidth = 51
         Me._gridOut.Size = New System.Drawing.Size(760, 360)
         Me._gridOut.TabIndex = 0
-
-
-        _gridOut.AutoGenerateColumns = False
-
-        Dim colTransactionIdOut As New DataGridViewTextBoxColumn()
-        colTransactionIdOut.Name = "TransactionIdOut"
-        colTransactionIdOut.HeaderText = "Mã phiếu"
-        colTransactionIdOut.DataPropertyName = "TransactionId"
-        colTransactionIdOut.Width = 80
-        _gridOut.Columns.Add(colTransactionIdOut)
-
-        Dim colTransactionCodeOut As New DataGridViewTextBoxColumn()
-        colTransactionCodeOut.Name = "TransactionCodeOut"
-        colTransactionCodeOut.HeaderText = "Mã giao dịch"
-        colTransactionCodeOut.DataPropertyName = "TransactionCode"
-        colTransactionCodeOut.Width = 120
-        _gridOut.Columns.Add(colTransactionCodeOut)
-
-        Dim colCreatedByNameOut As New DataGridViewTextBoxColumn()
-        colCreatedByNameOut.Name = "CreatedByNameOut"
-        colCreatedByNameOut.HeaderText = "Người tạo"
-        colCreatedByNameOut.DataPropertyName = "CreatedByName"
-        colCreatedByNameOut.Width = 120
-        _gridOut.Columns.Add(colCreatedByNameOut)
-
-        Dim colCreatedAtOut As New DataGridViewTextBoxColumn()
-        colCreatedAtOut.Name = "CreatedAtOut"
-        colCreatedAtOut.HeaderText = "Ngày tạo"
-        colCreatedAtOut.DataPropertyName = "CreatedAt"
-        colCreatedAtOut.DefaultCellStyle.Format = "dd/MM/yyyy"
-        colCreatedAtOut.Width = 100
-        _gridOut.Columns.Add(colCreatedAtOut)
-
-        Dim colStatusOut As New DataGridViewTextBoxColumn()
-        colStatusOut.Name = "StatusOut"
-        colStatusOut.HeaderText = "Trạng thái"
-        colStatusOut.DataPropertyName = "Status"
-        colStatusOut.Width = 100
-        _gridOut.Columns.Add(colStatusOut)
-
-        Dim colApprovedByNameOut As New DataGridViewTextBoxColumn()
-        colApprovedByNameOut.Name = "ApprovedByNameOut"
-        colApprovedByNameOut.HeaderText = "Người duyệt"
-        colApprovedByNameOut.DataPropertyName = "ApprovedByName"
-        colApprovedByNameOut.Width = 120
-        _gridOut.Columns.Add(colApprovedByNameOut)
-
-        Dim colApprovedAtOut As New DataGridViewTextBoxColumn()
-        colApprovedAtOut.Name = "ApprovedAtOut"
-        colApprovedAtOut.HeaderText = "Ngày duyệt"
-        colApprovedAtOut.DataPropertyName = "ApprovedAtString"
-        colApprovedAtOut.Width = 100
-        colApprovedAtOut.DefaultCellStyle.Format = "dd/MM/yyyy"
-        _gridOut.Columns.Add(colApprovedAtOut)
         '
         '_btnCreateOut
         '
@@ -407,21 +346,31 @@
         '
         '_txtSearch
         '
-        Me._txtSearch.Location = New System.Drawing.Point(340, 10)
+        Me._txtSearch.Location = New System.Drawing.Point(427, 10)
         Me._txtSearch.Name = "_txtSearch"
         Me._txtSearch.Size = New System.Drawing.Size(200, 22)
         Me._txtSearch.TabIndex = 3
         '
         '_cmbStatus
         '
-        Me._cmbStatus.Location = New System.Drawing.Point(550, 10)
+        Me._cmbStatus.Location = New System.Drawing.Point(646, 10)
         Me._cmbStatus.Name = "_cmbStatus"
         Me._cmbStatus.Size = New System.Drawing.Size(100, 24)
         Me._cmbStatus.TabIndex = 4
         '
+        'Label1
+        '
+        Me.Label1.AutoSize = True
+        Me.Label1.Location = New System.Drawing.Point(359, 13)
+        Me.Label1.Name = "Label1"
+        Me.Label1.Size = New System.Drawing.Size(62, 16)
+        Me.Label1.TabIndex = 5
+        Me.Label1.Text = "Tìm kiếm"
+        '
         'StockTransactionListForm
         '
         Me.ClientSize = New System.Drawing.Size(882, 553)
+        Me.Controls.Add(Me.Label1)
         Me.Controls.Add(Me._tabControl)
         Me.Controls.Add(Me._btnViewDetails)
         Me.Controls.Add(Me._btnApprove)
@@ -463,4 +412,5 @@
     Friend WithEvents DataGridViewTextBoxColumn6 As DataGridViewTextBoxColumn
     Friend WithEvents DataGridViewTextBoxColumn7 As DataGridViewTextBoxColumn
     Friend WithEvents DataGridViewTextBoxColumn8 As DataGridViewTextBoxColumn
+    Friend WithEvents Label1 As Label
 End Class

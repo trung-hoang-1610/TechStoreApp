@@ -215,34 +215,35 @@ Public Class StockTransactionService
     End Function
 
     ''' <summary>
-    ''' Tìm kiếm phiếu nhập/xuất.
+    ''' Tìm kiếm phiếu nhập/xuất theo tiêu chí và phân trang.
     ''' </summary>
-    Public Function SearchTransactions(ByVal transactionType As String, ByVal userId As Integer?, ByVal criteria As SearchCriteriaDTO) As List(Of StockTransactionDTO) Implements IStockTransactionService.SearchTransactions
+    Public Function SearchTransactions(transactionType As String, userId As Integer?, criteria As StockTransationSearchCriterialDTO) As List(Of StockTransactionDTO) Implements IStockTransactionService.SearchTransactions
+        ' Kiểm tra đầu vào
         If transactionType <> "IN" AndAlso transactionType <> "OUT" Then
             Throw New ArgumentException("Loại phiếu phải là 'IN' hoặc 'OUT'.", NameOf(transactionType))
         End If
-        If userId.HasValue AndAlso userId <= 0 Then
-            Throw New ArgumentException("Mã người dùng không hợp lệ.", NameOf(userId))
-        End If
+
         If criteria Is Nothing Then
             Throw New ArgumentNullException(NameOf(criteria), "Tiêu chí tìm kiếm không được null.")
         End If
 
+        If criteria.PageIndex <= 0 Then criteria.PageIndex = 1
+        If criteria.PageSize <= 0 Then criteria.PageSize = 20
+
+        ' Xác định CreatedBy: Admin thì bỏ lọc theo UserId
         Dim currentUser = SessionManager.GetCurrentUser()
-        If userId.HasValue AndAlso currentUser IsNot Nothing AndAlso userId.Value <> currentUser.UserId Then
-            Throw New UnauthorizedAccessException("Bạn không có quyền tìm kiếm phiếu của người dùng khác.")
-        End If
+        Dim createdByFilter As Integer? = If(currentUser IsNot Nothing AndAlso currentUser.RoleId = 1, Nothing, userId)
 
-        Dim searchString = String.Empty
-        If Not String.IsNullOrEmpty(criteria.TransactionCode) Then
-            searchString = criteria.TransactionCode
-        ElseIf Not String.IsNullOrEmpty(criteria.Status) Then
-            searchString = criteria.Status
-        End If
+        ' Gọi repo: lấy danh sách có phân trang
+        Dim transactions = _transactionRepository.SearchTransactions(transactionType, createdByFilter, criteria)
 
-        Dim transactions = _transactionRepository.SearchTransactions(transactionType, If(currentUser IsNot Nothing AndAlso currentUser.RoleId = 1, Nothing, userId), searchString)
+        ' Gọi repo: lấy tổng số bản ghi phù hợp tiêu chí
+        criteria.TotalCount = _transactionRepository.CountTransactions(transactionType, createdByFilter, criteria)
+
+        ' Map sang DTO để trả về cho giao diện
         Return MapToDTOList(transactions)
     End Function
+
 
     ''' <summary>
     ''' Lấy chi tiết phiếu theo mã phiếu.
@@ -376,7 +377,7 @@ Public Class StockTransactionService
         Return MapToDTO(_transactionRepository.GetTransactionById(transactionId))
     End Function
 
-    Public Function GetTransactionStatistics(ByVal criteria As SearchCriteriaDTO) As TransactionStatisticsDTO Implements IStockTransactionService.GetTransactionStatistics
+    Public Function GetTransactionStatistics(ByVal criteria As StockTransationSearchCriterialDTO) As TransactionStatisticsDTO Implements IStockTransactionService.GetTransactionStatistics
         Try
             Return _transactionRepository.GetTransactionStatistics(criteria)
         Catch ex As Exception

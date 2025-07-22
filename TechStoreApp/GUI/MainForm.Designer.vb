@@ -27,6 +27,8 @@ Partial Class MainForm
     'Do not modify it using the code editor.
     Friend WithEvents _btnStockTransaction As Button
     Friend WithEvents _btnProductManagement As Button
+    Friend WithEvents _btnSupplierManagement As Button
+
     Friend _contentPanel As Panel
     Friend _menuPanel As Panel
     Friend _currentForm As Form
@@ -37,6 +39,8 @@ Partial Class MainForm
         Me._menuPanel = New System.Windows.Forms.Panel()
         Me._btnStockTransaction = New System.Windows.Forms.Button()
         Me._btnProductManagement = New System.Windows.Forms.Button()
+        Me._btnSupplierManagement = New System.Windows.Forms.Button()
+
         Me._contentPanel = New System.Windows.Forms.Panel()
         Me._menuPanel.SuspendLayout()
         Me.SuspendLayout()
@@ -46,6 +50,7 @@ Partial Class MainForm
         Me._menuPanel.BackColor = System.Drawing.Color.FromArgb(CType(CType(26, Byte), Integer), CType(CType(32, Byte), Integer), CType(CType(44, Byte), Integer))
         Me._menuPanel.Controls.Add(Me._btnProductManagement)
         Me._menuPanel.Controls.Add(Me._btnStockTransaction)
+        Me._menuPanel.Controls.Add(Me._btnSupplierManagement)
         Me._menuPanel.Location = New System.Drawing.Point(0, 0)
         Me._menuPanel.Name = "_menuPanel"
         Me._menuPanel.Size = New System.Drawing.Size(1200, 60)
@@ -80,6 +85,20 @@ Partial Class MainForm
         Me._btnProductManagement.Tag = "ProductManagementForm"
         Me._btnProductManagement.Text = "Quản lý sản phẩm"
         Me._btnProductManagement.UseVisualStyleBackColor = False
+
+        ' _btnSupplierManagement
+        Me._btnSupplierManagement.BackColor = System.Drawing.Color.FromArgb(36, 46, 66)
+        Me._btnSupplierManagement.FlatAppearance.BorderSize = 0
+        Me._btnSupplierManagement.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me._btnSupplierManagement.Font = New System.Drawing.Font("Segoe UI", 10.0!, FontStyle.Bold)
+        Me._btnSupplierManagement.ForeColor = Color.White
+        Me._btnSupplierManagement.Location = New System.Drawing.Point(441, 12)
+        Me._btnSupplierManagement.Name = "_btnSupplierManagement"
+        Me._btnSupplierManagement.Size = New System.Drawing.Size(200, 40)
+        Me._btnSupplierManagement.TabIndex = 2
+        Me._btnSupplierManagement.Tag = "SupplierManagementForm"
+        Me._btnSupplierManagement.Text = "Quản lý nhà cung cấp"
+        Me._btnSupplierManagement.UseVisualStyleBackColor = False
         '
         '_contentPanel
         '

@@ -1,6 +1,8 @@
 ﻿
 Imports System.Data.Odbc
 Imports System.Collections.Generic
+Imports DocumentFormat.OpenXml.Spreadsheet
+Imports DocumentFormat.OpenXml.Wordprocessing
 
 ''' <summary>
 ''' Lớp DAL cho các thao tác liên quan đến phiếu nhập/xuất kho.
@@ -128,11 +130,9 @@ Public Class StockTransactionRepository
         Return Nothing
     End Function
 
-    ''' <summary>
-    ''' Tìm kiếm phiếu theo tiêu chí.
-    ''' </summary>
-    Public Function SearchTransactions(ByVal transactionType As String, ByVal createdBy As Integer?, ByVal searchCriteria As String) As List(Of StockTransaction) Implements IStockTransactionRepository.SearchTransactions
+    Public Function SearchTransactions(transactionType As String, createdBy As Integer?, criteria As StockTransationSearchCriterialDTO) As List(Of StockTransaction) Implements IStockTransactionRepository.SearchTransactions
         Dim transactions As New List(Of StockTransaction)
+
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
             Try
                 Dim query As String = "SELECT t.TransactionId, t.TransactionCode, t.TransactionType, t.Note, t.CreatedBy, t.CreatedAt, " &
@@ -142,23 +142,73 @@ Public Class StockTransactionRepository
                                   "LEFT JOIN Users u1 ON t.CreatedBy = u1.UserId " &
                                   "LEFT JOIN Users u2 ON t.ApprovedBy = u2.UserId " &
                                   "LEFT JOIN Suppliers s ON t.SupplierId = s.SupplierId " &
-                                  "WHERE t.TransactionType = ? " &
-                                  "AND (t.TransactionCode LIKE ? OR t.Status LIKE ?)"
+                                  "WHERE t.TransactionType = ?"
 
+                ' ========== Bộ lọc tìm kiếm ==========
+                ' Mã phiếu
+                If Not String.IsNullOrEmpty(criteria.TransactionCode) Then
+                    query &= " AND t.TransactionCode LIKE ?"
+                End If
+
+                ' Trạng thái
+                If Not String.IsNullOrEmpty(criteria.Status) Then
+                    query &= " AND t.Status LIKE ?"
+                End If
+
+                ' Người tạo
                 If createdBy.HasValue Then
                     query &= " AND t.CreatedBy = ?"
                 End If
 
+                ' Ngày tạo từ
+                If criteria.StartDate.HasValue Then
+                    query &= " AND t.CreatedAt >= ?"
+                End If
+
+                ' Ngày tạo đến
+                If criteria.EndDate.HasValue Then
+                    query &= " AND t.CreatedAt <= ?"
+                End If
+
+                ' Nhà cung cấp (chỉ với phiếu nhập)
+                If criteria.SupplierId.HasValue AndAlso transactionType = "IN" Then
+                    query &= " AND t.SupplierId = ?"
+                End If
+
+                query &= " ORDER BY t.TransactionId LIMIT ? OFFSET ?"
 
                 Using command As New OdbcCommand(query, connection)
-                    ' Thứ tự tham số PHẢI khớp với dấu ? trong query
-                    command.Parameters.AddWithValue("@Type", transactionType)
-                    command.Parameters.AddWithValue("@CodeLike", "%" & searchCriteria & "%")
-                    command.Parameters.AddWithValue("@StatusLike", "%" & searchCriteria & "%")
+                    ' === Thêm tham số khớp thứ tự ===
+                    command.Parameters.AddWithValue("@TransactionType", transactionType)
+
+                    If Not String.IsNullOrEmpty(criteria.TransactionCode) Then
+                        command.Parameters.AddWithValue("@CodeLike", "%" & criteria.TransactionCode.Trim() & "%")
+                    End If
+
+                    If Not String.IsNullOrEmpty(criteria.Status) Then
+                        command.Parameters.AddWithValue("@StatusLike", "%" & criteria.Status.Trim() & "%")
+                    End If
+
                     If createdBy.HasValue Then
                         command.Parameters.AddWithValue("@CreatedBy", createdBy.Value)
                     End If
 
+                    If criteria.StartDate.HasValue Then
+                        command.Parameters.AddWithValue("@StartDate", criteria.StartDate.Value)
+                    End If
+
+                    If criteria.EndDate.HasValue Then
+                        command.Parameters.AddWithValue("@EndDate", criteria.EndDate.Value)
+                    End If
+
+                    If criteria.SupplierId.HasValue AndAlso transactionType = "IN" Then
+                        command.Parameters.AddWithValue("@SupplierId", criteria.SupplierId.Value)
+                    End If
+
+                    command.Parameters.AddWithValue("@Limit", criteria.PageSize)
+                    command.Parameters.AddWithValue("@Offset", (criteria.PageIndex - 1) * criteria.PageSize)
+
+                    ' === Mapping kết quả ===
                     Using reader As OdbcDataReader = command.ExecuteReader()
                         While reader.Read()
                             Dim transaction As New StockTransaction()
@@ -176,6 +226,7 @@ Public Class StockTransactionRepository
                         End While
                     End Using
                 End Using
+
             Catch ex As Exception
                 Console.WriteLine("ERROR: " & ex.Message & vbCrLf & ex.StackTrace)
                 Throw
@@ -183,7 +234,77 @@ Public Class StockTransactionRepository
                 ConnectionHelper.CloseConnection(connection)
             End Try
         End Using
+
         Return transactions
+    End Function
+
+
+    Public Function CountTransactions(transactionType As String, createdBy As Integer?, criteria As StockTransationSearchCriterialDTO) As Integer Implements IStockTransactionRepository.CountTransactions
+        Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            Dim count As Integer = 0
+            Try
+                Dim query As String = "SELECT COUNT(*) FROM StockTransactions t WHERE t.TransactionType = ?"
+
+                If Not String.IsNullOrEmpty(criteria.TransactionCode) Then
+                    query &= " AND t.TransactionCode LIKE ?"
+                End If
+
+                If Not String.IsNullOrEmpty(criteria.Status) Then
+                    query &= " AND t.Status LIKE ?"
+                End If
+
+                If createdBy.HasValue Then
+                    query &= " AND t.CreatedBy = ?"
+                End If
+
+                If criteria.StartDate.HasValue Then
+                    query &= " AND t.CreatedAt >= ?"
+                End If
+
+                If criteria.EndDate.HasValue Then
+                    query &= " AND t.CreatedAt <= ?"
+                End If
+
+                If criteria.SupplierId.HasValue AndAlso transactionType = "IN" Then
+                    query &= " AND t.SupplierId = ?"
+                End If
+
+                Using command As New OdbcCommand(query, connection)
+                    command.Parameters.AddWithValue("@TransactionType", transactionType)
+
+                    If Not String.IsNullOrEmpty(criteria.TransactionCode) Then
+                        command.Parameters.AddWithValue("@CodeLike", "%" & criteria.TransactionCode.Trim() & "%")
+                    End If
+
+                    If Not String.IsNullOrEmpty(criteria.Status) Then
+                        command.Parameters.AddWithValue("@StatusLike", "%" & criteria.Status.Trim() & "%")
+                    End If
+
+                    If createdBy.HasValue Then
+                        command.Parameters.AddWithValue("@CreatedBy", createdBy.Value)
+                    End If
+
+                    If criteria.StartDate.HasValue Then
+                        command.Parameters.AddWithValue("@StartDate", criteria.StartDate.Value)
+                    End If
+
+                    If criteria.EndDate.HasValue Then
+                        command.Parameters.AddWithValue("@EndDate", criteria.EndDate.Value)
+                    End If
+
+                    If criteria.SupplierId.HasValue AndAlso transactionType = "IN" Then
+                        command.Parameters.AddWithValue("@SupplierId", criteria.SupplierId.Value)
+                    End If
+
+                    count = Convert.ToInt32(command.ExecuteScalar())
+                End Using
+            Catch ex As Exception
+                Throw
+            Finally
+                ConnectionHelper.CloseConnection(connection)
+            End Try
+            Return count
+        End Using
     End Function
 
     ''' <summary>
@@ -352,7 +473,7 @@ Public Class StockTransactionRepository
 
         Return details
     End Function
-    Public Function GetTransactionStatistics(ByVal criteria As SearchCriteriaDTO) As TransactionStatisticsDTO Implements IStockTransactionRepository.GetTransactionStatistics
+    Public Function GetTransactionStatistics(ByVal criteria As StockTransationSearchCriterialDTO) As TransactionStatisticsDTO Implements IStockTransactionRepository.GetTransactionStatistics
         Dim stats As New TransactionStatisticsDTO
         stats.StatusBreakdown = New Dictionary(Of String, Integer)
         stats.TopProducts = New List(Of ProductTransactionDTO)

@@ -7,7 +7,7 @@ Partial Class StockTransactionCreateForm
 
         ' Thiết lập form
         Me.Text = "Tạo phiếu nhập/xuất"
-        Me.Size = New System.Drawing.Size(800, 600)
+        Me.Size = New System.Drawing.Size(800, 650)
         Me.FormBorderStyle = FormBorderStyle.FixedSingle
 
         ' GroupBox cho thông tin giao dịch

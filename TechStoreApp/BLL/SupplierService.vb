@@ -42,20 +42,20 @@
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi thêm vào cơ sở dữ liệu</exception>
     ''' <exception cref="ArgumentNullException">Ném ra nếu tham số Supplier là Nothing</exception>
     Public Function AddSupplier(ByVal Supplier As Supplier) As OperationResult Implements ISupplierService.AddSupplier
-        'If Supplier Is Nothing Then
-        '    Throw New ArgumentNullException("Supplier", "Đối tượng Supplier không được là Nothing.")
-        'End If
+        If Supplier Is Nothing Then
+            Throw New ArgumentNullException("Supplier", "Đối tượng Supplier không được là Nothing.")
+        End If
 
-        'Dim errors As New List(Of String)
-        'ValidationHelper.ValidateString(Supplier.SupplierName, "Tên danh mục", errors, True, 100)
-        'ValidationHelper.ValidateString(Supplier.ContactInfo, "Thông tin liên hệ", errors, False, 500)
+        Dim errors As New List(Of String)
+        ValidationHelper.ValidateString(Supplier.SupplierName, "Tên danh mục", errors, True, 100)
+        ValidationHelper.ValidateString(Supplier.ContactInfo, "Thông tin liên hệ", errors, False, 500)
 
-        'If errors.Count > 0 Then
-        '    Return New OperationResult(False, errors)
-        'End If
+        If errors.Count > 0 Then
+            Return New OperationResult(False, errors)
+        End If
 
-        'Dim newId As Integer = _SupplierRepository.Add(Supplier)
-        'Return New OperationResult(newId > 0, Nothing)
+        Dim newId As Integer = _SupplierRepository.AddSupplier(Supplier)
+        Return New OperationResult(newId > 0, Nothing)
     End Function
 
     ''' <summary>
@@ -66,21 +66,21 @@
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi cập nhật cơ sở dữ liệu</exception>
     ''' <exception cref="ArgumentNullException">Ném ra nếu tham số Supplier là Nothing</exception>
     Public Function UpdateSupplier(ByVal Supplier As Supplier) As OperationResult Implements ISupplierService.UpdateSupplier
-        'If Supplier Is Nothing Then
-        '    Throw New ArgumentNullException("Supplier", "Đối tượng Supplier không được là Nothing.")
-        'End If
+        If Supplier Is Nothing Then
+            Throw New ArgumentNullException("Supplier", "Đối tượng Supplier không được là Nothing.")
+        End If
 
-        'Dim errors As New List(Of String)
-        'ValidationHelper.ValidateString(Supplier.SupplierName, "Tên danh mục", errors, True, 100)
-        'ValidationHelper.ValidateString(Supplier.ContactInfo, "Thông tin liên lạc", errors, False, 500)
-        'ValidationHelper.ValidateInteger(Supplier.SupplierId, "Mã danh mục", errors, 1)
+        Dim errors As New List(Of String)
+        ValidationHelper.ValidateString(Supplier.SupplierName, "Tên nhà cung cấp", errors, True, 100)
+        ValidationHelper.ValidateString(Supplier.ContactInfo, "Thông tin liên lạc", errors, False, 500)
+        ValidationHelper.ValidateInteger(Supplier.SupplierId, "Mã nhà cung cấp", errors, 1)
 
-        'If errors.Count > 0 Then
-        '    Return New OperationResult(False, errors)
-        'End If
+        If errors.Count > 0 Then
+            Return New OperationResult(False, errors)
+        End If
 
-        'Dim success As Boolean = _SupplierRepository.UpdateSupplier(Supplier)
-        'Return New OperationResult(success, Nothing)
+        Dim success As Boolean = _SupplierRepository.UpdateSupplier(Supplier)
+        Return New OperationResult(success, Nothing)
     End Function
 
     ''' <summary>
@@ -90,6 +90,6 @@
     ''' <returns>True nếu xóa thành công, False nếu thất bại</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi xóa khỏi cơ sở dữ liệu</exception>
     Public Function DeleteSupplier(ByVal id As Integer) As Boolean Implements ISupplierService.DeleteSupplier
-        'Return _SupplierRepository.DeleteSupplier(id)
+        Return _SupplierRepository.DeleteSupplier(id)
     End Function
 End Class

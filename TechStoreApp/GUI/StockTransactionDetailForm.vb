@@ -58,6 +58,19 @@ Public Class StockTransactionDetailForm
 
             Dim details = _transactionService.GetTransactionDetails(_transactionId)
             _gridDetails.DataSource = details
+
+            If _gridDetails.Columns.Count > 0 Then
+                _gridDetails.Columns("DetailId").HeaderText = "Mã chi tiết phiếu"
+                _gridDetails.Columns("DetailId").Visible = False
+                _gridDetails.Columns("TransactionId").HeaderText = "Mã phiếu"
+                _gridDetails.Columns("ProductId").HeaderText = "Mã sản phẩm"
+                _gridDetails.Columns("ProductName").HeaderText = "Tên sản phẩm"
+                _gridDetails.Columns("Quantity").HeaderText = "Số lượng"
+                _gridDetails.Columns("Unit").HeaderText = "Đơn vị"
+                _gridDetails.Columns("Note").HeaderText = "Ghi chú"
+
+                ' Thêm các cột khác nếu cần
+            End If
         Catch ex As Exception
             MessageBox.Show(ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Console.WriteLine("Lỗi viewDetail: " & ex.Message)
@@ -98,5 +111,9 @@ Public Class StockTransactionDetailForm
 
     Private Sub _btnClose_Click(sender As Object, e As EventArgs) Handles _btnClose.Click
         Me.Close()
+    End Sub
+
+    Private Sub StockTransactionDetailForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+
     End Sub
 End Class
