@@ -10,8 +10,8 @@
     <RootNamespace>TechStoreApp</RootNamespace>
     <AssemblyName>TechStoreApp</AssemblyName>
     <FileAlignment>512</FileAlignment>
+    <UseApplicationFramework>false</UseApplicationFramework>
     <MyType>WindowsForms</MyType>
-    <UseApplicationFramework>true</UseApplicationFramework>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
@@ -51,7 +51,7 @@
     <ApplicationManifest>My Project\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <PropertyGroup>
-    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ClosedXML, Version=0.76.0.0, Culture=neutral, PublicKeyToken=fd1eb21b62ae805b, processorArchitecture=MSIL">
@@ -121,7 +121,7 @@
     <Compile Include="DAL\Model\StockTransactionDetails.vb" />
     <Compile Include="DAL\Model\StockTransactions.vb" />
     <Compile Include="DAL\Model\Supplier.vb" />
-    <Compile Include="DAL\Model\TransactionStatisticsDTO.vb" />
+    <Compile Include="BLL\DTOs\TransactionStatisticsDTO.vb" />
     <Compile Include="DAL\ProductRepository.vb" />
     <Compile Include="DAL\RoleRepository.vb" />
     <Compile Include="DAL\StockTransactionRepository.vb" />

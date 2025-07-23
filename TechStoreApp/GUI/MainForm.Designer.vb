@@ -66,7 +66,7 @@ Partial Class MainForm
         Me.btnLogOut.FlatStyle = System.Windows.Forms.FlatStyle.Flat
         Me.btnLogOut.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold)
         Me.btnLogOut.ForeColor = System.Drawing.Color.White
-        Me.btnLogOut.Location = New System.Drawing.Point(1055, 11)
+        Me.btnLogOut.Location = New System.Drawing.Point(1066, 11)
         Me.btnLogOut.Name = "btnLogOut"
         Me.btnLogOut.Size = New System.Drawing.Size(122, 41)
         Me.btnLogOut.TabIndex = 5
@@ -78,7 +78,7 @@ Partial Class MainForm
         Me.lbUserName.AutoSize = True
         Me.lbUserName.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold)
         Me.lbUserName.ForeColor = System.Drawing.Color.White
-        Me.lbUserName.Location = New System.Drawing.Point(1085, 21)
+        Me.lbUserName.Location = New System.Drawing.Point(968, 20)
         Me.lbUserName.Name = "lbUserName"
         Me.lbUserName.Size = New System.Drawing.Size(92, 23)
         Me.lbUserName.TabIndex = 4

@@ -16,23 +16,19 @@ Partial Public Class LoginForm
     ''' <summary>
     ''' Xử lý sự kiện nhấn nút Đăng nhập
     ''' </summary>
-    Private Sub btnLogin_Click(ByVal sender As Object, ByVal e As EventArgs) Handles btnLogin.Click
+    Private Sub btnLogin_Click(sender As Object, e As EventArgs) Handles btnLogin.Click
         Try
-            lblError.Text = String.Empty
+            lblError.Text = ""
             Dim user = _authService.ValidateUser(txtUsername.Text, txtPassword.Text)
             If user IsNot Nothing Then
-
                 SessionManager.SetCurrentUser(user)
+                Dim mainForm As New MainForm()
                 Me.Hide()
-                Dim MainForm As New MainForm()
-                MainForm.ShowDialog()
-                Me.Close()
+                mainForm.ShowDialog()
+                Me.Show() ' Khi mainForm đóng, quay lại LoginForm
             Else
                 lblError.Text = "Tên đăng nhập hoặc mật khẩu không đúng."
             End If
-
-        Catch ex As ArgumentNullException
-            lblError.Text = ex.Message
         Catch ex As Exception
             lblError.Text = "Đã xảy ra lỗi: " & ex.Message
         End Try
@@ -49,5 +45,9 @@ Partial Public Class LoginForm
 
     Private Sub LoginForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
+    End Sub
+
+    Private Sub LoginForm_FormClosed(sender As Object, e As FormClosedEventArgs) Handles Me.FormClosed
+        Application.Exit()
     End Sub
 End Class

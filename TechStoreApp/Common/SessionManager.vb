@@ -8,9 +8,9 @@ Public Class SessionManager
     ''' <param name="user">Đối tượng User chứa thông tin người dùng</param>
     ''' <exception cref="ArgumentNullException">Ném ra nếu user là Nothing</exception>
     Public Shared Sub SetCurrentUser(ByVal user As User)
-        If user Is Nothing Then
-            Throw New ArgumentNullException("user", "Đối tượng User không được là Nothing.")
-        End If
+        'If user Is Nothing Then
+        '    Throw New ArgumentNullException("user", "Đối tượng User không được là Nothing.")
+        'End If
         _currentUser = user
     End Sub
 

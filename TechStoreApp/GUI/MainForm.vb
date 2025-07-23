@@ -1,6 +1,7 @@
 ﻿Public Class MainForm
     Inherits Form
 
+    Public Property IsLogout As Boolean
     Public Sub New()
         InitializeComponent()
         lbUserName.Text = SessionManager.GetCurrentUser.Username
@@ -9,7 +10,7 @@
         ShowFormInPanel("StockTransactionListForm")
 
 
-        btnLogOut.Visible = False
+        'btnLogOut.Visible = False
     End Sub
 
     Private Sub Button_MouseEnter(sender As Object, e As EventArgs) Handles _btnStockTransaction.MouseEnter, _btnProductManagement.MouseEnter, _btnSupplierManagement.Click
@@ -79,31 +80,11 @@
     End Sub
 
     Private Sub btnLogOut_Click(sender As Object, e As EventArgs) Handles btnLogOut.Click
-        Dim result As DialogResult = MessageBox.Show(
-            "Bạn có chắc chắn muốn đăng xuất không?",
-            "Xác nhận đăng xuất",
-            MessageBoxButtons.YesNo,
-            MessageBoxIcon.Question
-        )
-
-        If result = DialogResult.Yes Then
+        If MessageBox.Show("Bạn có chắc chắn muốn đăng xuất?", "Xác nhận", MessageBoxButtons.YesNo) = DialogResult.Yes Then
             SessionManager.SetCurrentUser(Nothing)
-            Me.Hide()
-
-            ' Mở LoginForm theo modal
-            Dim loginForm As New LoginForm()
-            If loginForm.ShowDialog() = DialogResult.OK Then
-                ' Nếu đăng nhập lại thành công, khởi động lại MainForm mới
-                Dim mainForm As New MainForm()
-                mainForm.Show()
-                Me.Close() ' Đóng form hiện tại
-            Else
-                ' Nếu đăng nhập thất bại hoặc người dùng hủy, thoát app
-                Application.Exit()
-            End If
+            Me.Close() ' Sau khi Close, LoginForm sẽ hiện lại
         End If
     End Sub
-
 
 
 

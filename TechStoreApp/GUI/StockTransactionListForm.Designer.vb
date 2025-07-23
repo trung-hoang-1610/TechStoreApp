@@ -1,14 +1,44 @@
-﻿Partial Class StockTransactionListForm
-    Inherits System.Windows.Forms.Form
+﻿Imports System.ComponentModel
 
+Partial Class StockTransactionListForm
+    Inherits System.Windows.Forms.Form
+    Private WithEvents _backgroundWorkerLoad As BackgroundWorker
+    Private WithEvents _backgroundWorkerStats As BackgroundWorker
+
+    Private WithEvents _tabControl As TabControl
+    Private WithEvents _gridIn As DataGridView
+    Private WithEvents _gridOut As DataGridView
+    Private WithEvents _btnCreateIn As Button
+    Private WithEvents _btnCreateOut As Button
+    Private WithEvents _btnViewDetails As Button
+    Private WithEvents _btnApprove As Button
+    Private WithEvents _txtSearch As TextBox
+    Private WithEvents _cmbStatus As ComboBox
+
+    Friend WithEvents _btnPrevPageIn As Button
+    Friend WithEvents _btnNextPageIn As Button
+    Friend WithEvents _lblPagingStatusIn As Label
+
+    Friend WithEvents _btnPrevPageOut As Button
+    Friend WithEvents _btnNextPageOut As Button
+    Friend WithEvents _lblPagingStatusOut As Label
+
+    Private ReadOnly _criteriaIn As StockTransationSearchCriterialDTO
+    Private ReadOnly _criteriaOut As StockTransationSearchCriterialDTO
     Private Sub InitializeComponent()
         Me._tabControl = New System.Windows.Forms.TabControl()
         Me.tabIn = New System.Windows.Forms.TabPage()
         Me._gridIn = New System.Windows.Forms.DataGridView()
         Me._btnCreateIn = New System.Windows.Forms.Button()
+        Me._btnPrevPageIn = New System.Windows.Forms.Button()
+        Me._btnNextPageIn = New System.Windows.Forms.Button()
+        Me._lblPagingStatusIn = New System.Windows.Forms.Label()
         Me.tabOut = New System.Windows.Forms.TabPage()
         Me._gridOut = New System.Windows.Forms.DataGridView()
         Me._btnCreateOut = New System.Windows.Forms.Button()
+        Me._btnPrevPageOut = New System.Windows.Forms.Button()
+        Me._btnNextPageOut = New System.Windows.Forms.Button()
+        Me._lblPagingStatusOut = New System.Windows.Forms.Label()
         Me.tabStats = New System.Windows.Forms.TabPage()
         Me._lblTotalIn = New System.Windows.Forms.Label()
         Me._lblTotalOut = New System.Windows.Forms.Label()
@@ -32,14 +62,6 @@
         Me._txtSearch = New System.Windows.Forms.TextBox()
         Me._cmbStatus = New System.Windows.Forms.ComboBox()
         Me.Label1 = New System.Windows.Forms.Label()
-
-        Me._btnPrevPageIn = New System.Windows.Forms.Button()
-        Me._btnNextPageIn = New System.Windows.Forms.Button()
-        Me._lblPagingStatusIn = New System.Windows.Forms.Label()
-
-        Me._btnPrevPageOut = New System.Windows.Forms.Button()
-        Me._btnNextPageOut = New System.Windows.Forms.Button()
-        Me._lblPagingStatusOut = New System.Windows.Forms.Label()
         Me._tabControl.SuspendLayout()
         Me.tabIn.SuspendLayout()
         CType(Me._gridIn, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -49,42 +71,6 @@
         CType(Me._gridStats, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me._gridLowStock, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
-
-        ' btnPrevPageIn
-        Me._btnPrevPageIn.Location = New System.Drawing.Point(10, 420)
-        Me._btnPrevPageIn.Name = "_btnPrevPageIn"
-        Me._btnPrevPageIn.Size = New System.Drawing.Size(80, 28)
-        Me._btnPrevPageIn.Text = "Trang trước"
-
-        ' btnNextPage
-        Me._btnNextPageIn.Location = New System.Drawing.Point(100, 420)
-        Me._btnNextPageIn.Name = "_btnNextPageIn"
-        Me._btnNextPageIn.Size = New System.Drawing.Size(80, 28)
-        Me._btnNextPageIn.Text = "Trang sau"
-
-        ' lblPagingStatus
-        Me._lblPagingStatusIn.Location = New System.Drawing.Point(200, 425)
-        Me._lblPagingStatusIn.Name = "_lblPagingStatusIn"
-        Me._lblPagingStatusIn.Size = New System.Drawing.Size(250, 22)
-        Me._lblPagingStatusIn.Text = "Trang 1 / 1 — Hiển thị 0 / 0 phiếu"
-
-        ' btnPrevPageOut
-        Me._btnPrevPageOut.Location = New System.Drawing.Point(10, 420)
-        Me._btnPrevPageOut.Name = "_btnPrevPageOut"
-        Me._btnPrevPageOut.Size = New System.Drawing.Size(80, 28)
-        Me._btnPrevPageOut.Text = "Trang trước"
-
-        ' btnNextPage
-        Me._btnNextPageOut.Location = New System.Drawing.Point(100, 420)
-        Me._btnNextPageOut.Name = "_btnNextPageOut"
-        Me._btnNextPageOut.Size = New System.Drawing.Size(80, 28)
-        Me._btnNextPageOut.Text = "Trang sau"
-
-        ' lblPagingStatus
-        Me._lblPagingStatusOut.Location = New System.Drawing.Point(200, 425)
-        Me._lblPagingStatusOut.Name = "_lblPagingStatusOut"
-        Me._lblPagingStatusOut.Size = New System.Drawing.Size(250, 22)
-        Me._lblPagingStatusOut.Text = "Trang 1 / 1 — Hiển thị 0 / 0 phiếu"
         '
         '_tabControl
         '
@@ -104,7 +90,6 @@
         Me.tabIn.Controls.Add(Me._btnPrevPageIn)
         Me.tabIn.Controls.Add(Me._btnNextPageIn)
         Me.tabIn.Controls.Add(Me._lblPagingStatusIn)
-
         Me.tabIn.Location = New System.Drawing.Point(4, 25)
         Me.tabIn.Name = "tabIn"
         Me.tabIn.Size = New System.Drawing.Size(852, 471)
@@ -128,6 +113,30 @@
         Me._btnCreateIn.Size = New System.Drawing.Size(100, 30)
         Me._btnCreateIn.TabIndex = 1
         Me._btnCreateIn.Text = "Tạo phiếu nhập"
+        '
+        '_btnPrevPageIn
+        '
+        Me._btnPrevPageIn.Location = New System.Drawing.Point(10, 420)
+        Me._btnPrevPageIn.Name = "_btnPrevPageIn"
+        Me._btnPrevPageIn.Size = New System.Drawing.Size(80, 28)
+        Me._btnPrevPageIn.TabIndex = 2
+        Me._btnPrevPageIn.Text = "Trang trước"
+        '
+        '_btnNextPageIn
+        '
+        Me._btnNextPageIn.Location = New System.Drawing.Point(100, 420)
+        Me._btnNextPageIn.Name = "_btnNextPageIn"
+        Me._btnNextPageIn.Size = New System.Drawing.Size(80, 28)
+        Me._btnNextPageIn.TabIndex = 3
+        Me._btnNextPageIn.Text = "Trang sau"
+        '
+        '_lblPagingStatusIn
+        '
+        Me._lblPagingStatusIn.Location = New System.Drawing.Point(200, 425)
+        Me._lblPagingStatusIn.Name = "_lblPagingStatusIn"
+        Me._lblPagingStatusIn.Size = New System.Drawing.Size(250, 22)
+        Me._lblPagingStatusIn.TabIndex = 4
+        Me._lblPagingStatusIn.Text = "Trang 1 / 1 — Hiển thị 0 / 0 phiếu"
         '
         'tabOut
         '
@@ -159,6 +168,30 @@
         Me._btnCreateOut.Size = New System.Drawing.Size(100, 30)
         Me._btnCreateOut.TabIndex = 1
         Me._btnCreateOut.Text = "Tạo phiếu xuất"
+        '
+        '_btnPrevPageOut
+        '
+        Me._btnPrevPageOut.Location = New System.Drawing.Point(10, 420)
+        Me._btnPrevPageOut.Name = "_btnPrevPageOut"
+        Me._btnPrevPageOut.Size = New System.Drawing.Size(80, 28)
+        Me._btnPrevPageOut.TabIndex = 2
+        Me._btnPrevPageOut.Text = "Trang trước"
+        '
+        '_btnNextPageOut
+        '
+        Me._btnNextPageOut.Location = New System.Drawing.Point(100, 420)
+        Me._btnNextPageOut.Name = "_btnNextPageOut"
+        Me._btnNextPageOut.Size = New System.Drawing.Size(80, 28)
+        Me._btnNextPageOut.TabIndex = 3
+        Me._btnNextPageOut.Text = "Trang sau"
+        '
+        '_lblPagingStatusOut
+        '
+        Me._lblPagingStatusOut.Location = New System.Drawing.Point(200, 425)
+        Me._lblPagingStatusOut.Name = "_lblPagingStatusOut"
+        Me._lblPagingStatusOut.Size = New System.Drawing.Size(250, 22)
+        Me._lblPagingStatusOut.TabIndex = 4
+        Me._lblPagingStatusOut.Text = "Trang 1 / 1 — Hiển thị 0 / 0 phiếu"
         '
         'tabStats
         '
@@ -216,26 +249,26 @@
         '_gridStats
         '
         Me._gridStats.ColumnHeadersHeight = 29
-        Me._gridStats.Location = New System.Drawing.Point(10, 130)
+        Me._gridStats.Location = New System.Drawing.Point(7, 106)
         Me._gridStats.Name = "_gridStats"
         Me._gridStats.ReadOnly = True
         Me._gridStats.RowHeadersWidth = 51
-        Me._gridStats.Size = New System.Drawing.Size(820, 130)
+        Me._gridStats.Size = New System.Drawing.Size(469, 176)
         Me._gridStats.TabIndex = 4
         '
         '_gridLowStock
         '
         Me._gridLowStock.ColumnHeadersHeight = 29
-        Me._gridLowStock.Location = New System.Drawing.Point(10, 310)
+        Me._gridLowStock.Location = New System.Drawing.Point(8, 324)
         Me._gridLowStock.Name = "_gridLowStock"
         Me._gridLowStock.ReadOnly = True
         Me._gridLowStock.RowHeadersWidth = 51
-        Me._gridLowStock.Size = New System.Drawing.Size(820, 130)
+        Me._gridLowStock.Size = New System.Drawing.Size(451, 130)
         Me._gridLowStock.TabIndex = 5
         '
         '_btnExportCsv
         '
-        Me._btnExportCsv.Location = New System.Drawing.Point(730, 10)
+        Me._btnExportCsv.Location = New System.Drawing.Point(609, 3)
         Me._btnExportCsv.Name = "_btnExportCsv"
         Me._btnExportCsv.Size = New System.Drawing.Size(100, 30)
         Me._btnExportCsv.TabIndex = 6
@@ -245,7 +278,7 @@
         '
         Me._lblStatsHeader.AutoSize = True
         Me._lblStatsHeader.Font = New System.Drawing.Font("Segoe UI", 9.75!, System.Drawing.FontStyle.Bold)
-        Me._lblStatsHeader.Location = New System.Drawing.Point(10, 100)
+        Me._lblStatsHeader.Location = New System.Drawing.Point(3, 82)
         Me._lblStatsHeader.Name = "_lblStatsHeader"
         Me._lblStatsHeader.Size = New System.Drawing.Size(208, 23)
         Me._lblStatsHeader.TabIndex = 7
@@ -255,7 +288,7 @@
         '
         Me._lblLowStockHeader.AutoSize = True
         Me._lblLowStockHeader.Font = New System.Drawing.Font("Segoe UI", 9.75!, System.Drawing.FontStyle.Bold)
-        Me._lblLowStockHeader.Location = New System.Drawing.Point(10, 280)
+        Me._lblLowStockHeader.Location = New System.Drawing.Point(4, 298)
         Me._lblLowStockHeader.Name = "_lblLowStockHeader"
         Me._lblLowStockHeader.Size = New System.Drawing.Size(202, 23)
         Me._lblLowStockHeader.TabIndex = 8

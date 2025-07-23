@@ -1,40 +1,22 @@
 ﻿Imports System.ComponentModel
+Imports ClosedXML.Excel
 
 Public Class StockTransactionListForm
     Inherits System.Windows.Forms.Form
 
     Private ReadOnly _myTransactionService As IStockTransactionService
-    Private WithEvents _backgroundWorkerLoad As BackgroundWorker
-    Private WithEvents _backgroundWorkerStats As BackgroundWorker
 
-    Private WithEvents _tabControl As TabControl
-    Private WithEvents _gridIn As DataGridView
-    Private WithEvents _gridOut As DataGridView
-    Private WithEvents _btnCreateIn As Button
-    Private WithEvents _btnCreateOut As Button
-    Private WithEvents _btnViewDetails As Button
-    Private WithEvents _btnApprove As Button
-    Private WithEvents _txtSearch As TextBox
-    Private WithEvents _cmbStatus As ComboBox
-
-    Friend WithEvents _btnPrevPageIn As Button
-    Friend WithEvents _btnNextPageIn As Button
-    Friend WithEvents _lblPagingStatusIn As Label
-
-    Friend WithEvents _btnPrevPageOut As Button
-    Friend WithEvents _btnNextPageOut As Button
-    Friend WithEvents _lblPagingStatusOut As Label
-
-    Private ReadOnly _criteriaIn As StockTransationSearchCriterialDTO
-    Private ReadOnly _criteriaOut As StockTransationSearchCriterialDTO
 
     Public Sub New()
         _myTransactionService = ServiceFactory.CreateStockTransactionService
+
         InitializeComponent()
         InitializeBackgroundWorkers()
+
         _gridIn.AutoGenerateColumns = False
         _gridOut.AutoGenerateColumns = False
         Me.StartPosition = FormStartPosition.CenterScreen
+
         _criteriaIn = New StockTransationSearchCriterialDTO With {.PageIndex = 1, .PageSize = 10}
         _criteriaOut = New StockTransationSearchCriterialDTO With {.PageIndex = 1, .PageSize = 10}
         ConfigureControls()
@@ -261,40 +243,84 @@ Public Class StockTransactionListForm
         StartLoadStatistics()
     End Sub
 
-    Private Sub _btnExportCsv_Click(sender As Object, e As EventArgs) Handles _btnExportCsv.Click
+    Private Sub _btnExportExcel_Click(sender As Object, e As EventArgs) Handles _btnExportCsv.Click
         Using sfd As New SaveFileDialog()
-            sfd.Filter = "CSV Files (*.csv)|*.csv"
-            sfd.FileName = "TransactionStatistics_" & DateTime.Now.ToString("yyyyMMdd_HHmmss") & ".csv"
+            sfd.Filter = "Excel Files (*.xlsx)|*.xlsx"
+            sfd.FileName = "TransactionStatistics_" & DateTime.Now.ToString("yyyyMMdd_HHmmss") & ".xlsx"
+
             If sfd.ShowDialog() = DialogResult.OK Then
                 Try
-                    Using writer As New System.IO.StreamWriter(sfd.FileName, False, System.Text.Encoding.UTF8)
-                        writer.WriteLine("Tổng phiếu nhập,Tổng phiếu xuất,Tổng giá trị giao dịch")
-                        writer.WriteLine($"{_lblTotalIn.Text.Replace("Tổng phiếu nhập: ", "")},{_lblTotalOut.Text.Replace("Tổng phiếu xuất: ", "")},{_lblTotalValue.Text.Replace("Tổng giá trị giao dịch: ", "")}")
-                        writer.WriteLine("Tình trạng," & _lblStatusBreakdown.Text.Replace("Tình trạng: ", ""))
-                        writer.WriteLine()
+                    Dim wb As New ClosedXML.Excel.XLWorkbook()
 
-                        writer.WriteLine("Top sản phẩm giao dịch")
-                        writer.WriteLine("Mã sản phẩm,Tên sản phẩm,Tổng số lượng,Tổng giá trị")
-                        For Each row As DataGridViewRow In _gridStats.Rows
-                            If row.IsNewRow Then Continue For
-                            writer.WriteLine($"{row.Cells("ProductId").Value},{row.Cells("ProductName").Value},{row.Cells("TotalQuantity").Value},{row.Cells("TotalValue").Value}")
-                        Next
-                        writer.WriteLine()
+                    ' ====== Tổng quan ======
+                    Dim wsSummary = wb.Worksheets.Add("Tổng Quan")
+                    wsSummary.Cell("A1").Value = "Báo cáo giao dịch"
+                    wsSummary.Range("A1:B1").Merge().Style.Font.Bold = True
+                    wsSummary.Cell("A2").Value = "Tổng phiếu nhập"
+                    wsSummary.Cell("B2").Value = _lblTotalIn.Text.Replace("Tổng phiếu nhập: ", "")
+                    wsSummary.Cell("A3").Value = "Tổng phiếu xuất"
+                    wsSummary.Cell("B3").Value = _lblTotalOut.Text.Replace("Tổng phiếu xuất: ", "")
+                    wsSummary.Cell("A4").Value = "Tổng giá trị giao dịch"
+                    wsSummary.Cell("B4").Value = _lblTotalValue.Text.Replace("Tổng giá trị giao dịch: ", "")
+                    wsSummary.Cell("A5").Value = "Tình trạng"
+                    wsSummary.Cell("B5").Value = _lblStatusBreakdown.Text.Replace("Tình trạng: ", "")
+                    wsSummary.Columns().AdjustToContents()
 
-                        writer.WriteLine("Sản phẩm dưới mức tồn kho")
-                        writer.WriteLine("Mã sản phẩm,Tên sản phẩm,Tồn kho hiện tại,Tồn kho tối thiểu")
-                        For Each row As DataGridViewRow In _gridLowStock.Rows
-                            If row.IsNewRow Then Continue For
-                            writer.WriteLine($"{row.Cells("ProductId").Value},{row.Cells("ProductName").Value},{row.Cells("CurrentStock").Value},{row.Cells("MinimumStock").Value}")
-                        Next
-                    End Using
-                    MessageBox.Show("Xuất CSV thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                    ' ====== Bảng Top sản phẩm ======
+                    Dim wsTop = wb.Worksheets.Add("Top sản phẩm")
+                    wsTop.Cell("A1").Value = "Mã sản phẩm"
+                    wsTop.Cell("B1").Value = "Tên sản phẩm"
+                    wsTop.Cell("C1").Value = "Tổng số lượng"
+                    wsTop.Cell("D1").Value = "Tổng giá trị"
+                    wsTop.Range("A1:D1").Style.Font.Bold = True
+                    wsTop.Range("A1:D1").Style.Fill.BackgroundColor = XLColor.LightGray
+
+                    Dim topRow = 2
+                    For Each row As DataGridViewRow In _gridStats.Rows
+                        If row.IsNewRow Then Continue For
+                        wsTop.Cell(topRow, 1).Value = row.Cells("ProductId").Value
+                        wsTop.Cell(topRow, 2).Value = row.Cells("ProductName").Value
+                        wsTop.Cell(topRow, 3).Value = row.Cells("TotalQuantity").Value
+                        wsTop.Cell(topRow, 4).Value = row.Cells("TotalValue").Value
+                        topRow += 1
+                    Next
+                    wsTop.Range("A1:D" & topRow - 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin
+                    wsTop.Range("A1:D" & topRow - 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center
+                    wsTop.Columns().AdjustToContents()
+
+                    ' ====== Bảng Sản phẩm tồn kho thấp ======
+                    Dim wsLow = wb.Worksheets.Add("Tồn kho thấp")
+                    wsLow.Cell("A1").Value = "Mã sản phẩm"
+                    wsLow.Cell("B1").Value = "Tên sản phẩm"
+                    wsLow.Cell("C1").Value = "Tồn kho hiện tại"
+                    wsLow.Cell("D1").Value = "Tồn kho tối thiểu"
+                    wsLow.Range("A1:D1").Style.Font.Bold = True
+                    wsLow.Range("A1:D1").Style.Fill.BackgroundColor = XLColor.LightGray
+
+                    Dim lowRow = 2
+                    For Each row As DataGridViewRow In _gridLowStock.Rows
+                        If row.IsNewRow Then Continue For
+                        wsLow.Cell(lowRow, 1).Value = row.Cells("ProductId").Value
+                        wsLow.Cell(lowRow, 2).Value = row.Cells("ProductName").Value
+                        wsLow.Cell(lowRow, 3).Value = row.Cells("CurrentStock").Value
+                        wsLow.Cell(lowRow, 4).Value = row.Cells("MinimumStock").Value
+                        lowRow += 1
+                    Next
+                    wsLow.Range("A1:D" & lowRow - 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin
+                    wsLow.Range("A1:D" & lowRow - 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center
+                    wsLow.Columns().AdjustToContents()
+
+                    ' ====== Lưu file Excel ======
+                    wb.SaveAs(sfd.FileName)
+                    MessageBox.Show("Xuất Excel thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
                 Catch ex As Exception
-                    MessageBox.Show("Lỗi khi xuất CSV: " & ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                    MessageBox.Show("Lỗi khi xuất Excel: " & ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
                 End Try
             End If
         End Using
     End Sub
+
 
     Private Sub StockTransactionListForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ConfigureGridColumns(_gridIn, {
@@ -395,4 +421,12 @@ Public Class StockTransactionListForm
         Public InData As Object
         Public OutData As Object
     End Class
+
+    Private Sub _gridLowStock_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles _gridLowStock.CellContentClick
+
+    End Sub
+
+    Private Sub _gridStats_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles _gridStats.CellContentClick
+
+    End Sub
 End Class
