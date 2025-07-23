@@ -73,7 +73,7 @@ Public Interface IProductRepository
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
     Function SearchProducts(ByVal criteria As ProductSearchCriteriaDTO) As List(Of Product)
 
-    Function GetProductStatistics(timeRange As String) As ProductStatistics
+    Function GetProductStatistics(timeRange As String) As ProductStatisticsDTO
 
     ''' <summary>
     ''' Cập nhật số lượng tồn kho của sản phẩm.

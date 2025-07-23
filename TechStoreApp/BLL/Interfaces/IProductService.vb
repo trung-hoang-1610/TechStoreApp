@@ -68,6 +68,6 @@ Public Interface IProductService
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
     Function SearchProducts(ByVal criteria As ProductSearchCriteriaDTO) As List(Of ProductDTO)
 
-    Function GetProductStatistics(timeRange As String) As ProductStatistics
+    Function GetProductStatistics(timeRange As String) As ProductStatisticsDTO
 
 End Interface

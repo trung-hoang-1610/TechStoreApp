@@ -50,6 +50,9 @@
   <PropertyGroup>
     <ApplicationManifest>My Project\app.manifest</ApplicationManifest>
   </PropertyGroup>
+  <PropertyGroup>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="ClosedXML, Version=0.76.0.0, Culture=neutral, PublicKeyToken=fd1eb21b62ae805b, processorArchitecture=MSIL">
       <HintPath>..\packages\ClosedXML.0.76.0\lib\net35-client\ClosedXML.dll</HintPath>
@@ -114,7 +117,7 @@
     <Compile Include="DAL\Intefaces\ISupplierRepository.vb" />
     <Compile Include="DAL\Intefaces\IUserRepository.vb" />
     <Compile Include="BLL\DTOs\ProductSearchCriteriaDTO.vb" />
-    <Compile Include="DAL\Model\ProductStatistics.vb" />
+    <Compile Include="BLL\DTOs\ProductStatisticsDTO.vb" />
     <Compile Include="DAL\Model\StockTransactionDetails.vb" />
     <Compile Include="DAL\Model\StockTransactions.vb" />
     <Compile Include="DAL\Model\Supplier.vb" />

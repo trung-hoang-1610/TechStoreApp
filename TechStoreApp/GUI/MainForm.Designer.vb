@@ -37,10 +37,11 @@ Partial Class MainForm
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me._menuPanel = New System.Windows.Forms.Panel()
-        Me._btnStockTransaction = New System.Windows.Forms.Button()
+        Me.btnLogOut = New System.Windows.Forms.Button()
+        Me.lbUserName = New System.Windows.Forms.Label()
         Me._btnProductManagement = New System.Windows.Forms.Button()
+        Me._btnStockTransaction = New System.Windows.Forms.Button()
         Me._btnSupplierManagement = New System.Windows.Forms.Button()
-
         Me._contentPanel = New System.Windows.Forms.Panel()
         Me._menuPanel.SuspendLayout()
         Me.SuspendLayout()
@@ -48,6 +49,8 @@ Partial Class MainForm
         '_menuPanel
         '
         Me._menuPanel.BackColor = System.Drawing.Color.FromArgb(CType(CType(26, Byte), Integer), CType(CType(32, Byte), Integer), CType(CType(44, Byte), Integer))
+        Me._menuPanel.Controls.Add(Me.btnLogOut)
+        Me._menuPanel.Controls.Add(Me.lbUserName)
         Me._menuPanel.Controls.Add(Me._btnProductManagement)
         Me._menuPanel.Controls.Add(Me._btnStockTransaction)
         Me._menuPanel.Controls.Add(Me._btnSupplierManagement)
@@ -55,6 +58,46 @@ Partial Class MainForm
         Me._menuPanel.Name = "_menuPanel"
         Me._menuPanel.Size = New System.Drawing.Size(1200, 60)
         Me._menuPanel.TabIndex = 0
+        '
+        'btnLogOut
+        '
+        Me.btnLogOut.BackColor = System.Drawing.Color.FromArgb(CType(CType(36, Byte), Integer), CType(CType(46, Byte), Integer), CType(CType(66, Byte), Integer))
+        Me.btnLogOut.FlatAppearance.BorderSize = 0
+        Me.btnLogOut.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnLogOut.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold)
+        Me.btnLogOut.ForeColor = System.Drawing.Color.White
+        Me.btnLogOut.Location = New System.Drawing.Point(1055, 11)
+        Me.btnLogOut.Name = "btnLogOut"
+        Me.btnLogOut.Size = New System.Drawing.Size(122, 41)
+        Me.btnLogOut.TabIndex = 5
+        Me.btnLogOut.Text = "Đăng xuất"
+        Me.btnLogOut.UseVisualStyleBackColor = False
+        '
+        'lbUserName
+        '
+        Me.lbUserName.AutoSize = True
+        Me.lbUserName.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold)
+        Me.lbUserName.ForeColor = System.Drawing.Color.White
+        Me.lbUserName.Location = New System.Drawing.Point(1085, 21)
+        Me.lbUserName.Name = "lbUserName"
+        Me.lbUserName.Size = New System.Drawing.Size(92, 23)
+        Me.lbUserName.TabIndex = 4
+        Me.lbUserName.Text = "UserName"
+        '
+        '_btnProductManagement
+        '
+        Me._btnProductManagement.BackColor = System.Drawing.Color.FromArgb(CType(CType(36, Byte), Integer), CType(CType(46, Byte), Integer), CType(CType(66, Byte), Integer))
+        Me._btnProductManagement.FlatAppearance.BorderSize = 0
+        Me._btnProductManagement.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me._btnProductManagement.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold)
+        Me._btnProductManagement.ForeColor = System.Drawing.Color.White
+        Me._btnProductManagement.Location = New System.Drawing.Point(235, 12)
+        Me._btnProductManagement.Name = "_btnProductManagement"
+        Me._btnProductManagement.Size = New System.Drawing.Size(200, 40)
+        Me._btnProductManagement.TabIndex = 1
+        Me._btnProductManagement.Tag = "ProductManagementForm"
+        Me._btnProductManagement.Text = "Quản lý sản phẩm"
+        Me._btnProductManagement.UseVisualStyleBackColor = False
         '
         '_btnStockTransaction
         '
@@ -71,27 +114,13 @@ Partial Class MainForm
         Me._btnStockTransaction.Text = "Quản lý phiếu nhập/xuất"
         Me._btnStockTransaction.UseVisualStyleBackColor = False
         '
-        '_btnProductManagement
+        '_btnSupplierManagement
         '
-        Me._btnProductManagement.BackColor = System.Drawing.Color.FromArgb(CType(CType(36, Byte), Integer), CType(CType(46, Byte), Integer), CType(CType(66, Byte), Integer))
-        Me._btnProductManagement.FlatAppearance.BorderSize = 0
-        Me._btnProductManagement.FlatStyle = System.Windows.Forms.FlatStyle.Flat
-        Me._btnProductManagement.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold)
-        Me._btnProductManagement.ForeColor = System.Drawing.Color.White
-        Me._btnProductManagement.Location = New System.Drawing.Point(235, 12)
-        Me._btnProductManagement.Name = "_btnProductManagement"
-        Me._btnProductManagement.Size = New System.Drawing.Size(200, 40)
-        Me._btnProductManagement.TabIndex = 1
-        Me._btnProductManagement.Tag = "ProductManagementForm"
-        Me._btnProductManagement.Text = "Quản lý sản phẩm"
-        Me._btnProductManagement.UseVisualStyleBackColor = False
-
-        ' _btnSupplierManagement
-        Me._btnSupplierManagement.BackColor = System.Drawing.Color.FromArgb(36, 46, 66)
+        Me._btnSupplierManagement.BackColor = System.Drawing.Color.FromArgb(CType(CType(36, Byte), Integer), CType(CType(46, Byte), Integer), CType(CType(66, Byte), Integer))
         Me._btnSupplierManagement.FlatAppearance.BorderSize = 0
         Me._btnSupplierManagement.FlatStyle = System.Windows.Forms.FlatStyle.Flat
-        Me._btnSupplierManagement.Font = New System.Drawing.Font("Segoe UI", 10.0!, FontStyle.Bold)
-        Me._btnSupplierManagement.ForeColor = Color.White
+        Me._btnSupplierManagement.Font = New System.Drawing.Font("Segoe UI", 10.0!, System.Drawing.FontStyle.Bold)
+        Me._btnSupplierManagement.ForeColor = System.Drawing.Color.White
         Me._btnSupplierManagement.Location = New System.Drawing.Point(441, 12)
         Me._btnSupplierManagement.Name = "_btnSupplierManagement"
         Me._btnSupplierManagement.Size = New System.Drawing.Size(200, 40)
@@ -120,7 +149,11 @@ Partial Class MainForm
         Me.Name = "MainForm"
         Me.Text = "Quản lý kho"
         Me._menuPanel.ResumeLayout(False)
+        Me._menuPanel.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
+
+    Friend WithEvents lbUserName As Label
+    Friend WithEvents btnLogOut As Button
 End Class

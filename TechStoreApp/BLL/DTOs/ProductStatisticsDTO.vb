@@ -1,4 +1,4 @@
-﻿Public Class ProductStatistics
+﻿Public Class ProductStatisticsDTO
     Public Property TotalProducts As Integer
     Public Property ActiveProducts As Integer
     Public Property InactiveProducts As Integer

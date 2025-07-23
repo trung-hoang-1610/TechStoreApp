@@ -389,8 +389,8 @@ Public Class ProductRepository
         End Try
     End Sub
 
-    Public Function GetProductStatistics(timeRange As String) As ProductStatistics Implements IProductRepository.GetProductStatistics
-        Dim stats As New ProductStatistics
+    Public Function GetProductStatistics(timeRange As String) As ProductStatisticsDTO Implements IProductRepository.GetProductStatistics
+        Dim stats As New ProductStatisticsDTO
         stats.ProductsByCategory = New Dictionary(Of String, Integer)
         Try
             Using conn As OdbcConnection = ConnectionHelper.GetConnection()

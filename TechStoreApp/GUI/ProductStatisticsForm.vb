@@ -57,7 +57,7 @@ Public Class ProductStatisticsForm
         End Try
     End Sub
 
-    Private Sub ExportToExcel(stats As ProductStatistics, filePath As String)
+    Private Sub ExportToExcel(stats As ProductStatisticsDTO, filePath As String)
         Using workbook As New XLWorkbook()
             ' Sheet 1: Tổng quan thống kê
             Dim wsOverview = workbook.Worksheets.Add("Tổng quan")

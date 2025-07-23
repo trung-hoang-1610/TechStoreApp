@@ -263,7 +263,7 @@ Public Class ProductService
         Return products.Select(Function(p) MapToDTO(p)).ToList()
     End Function
 
-    Public Function GetProductStatistics(timeRange As String) As ProductStatistics Implements IProductService.GetProductStatistics
+    Public Function GetProductStatistics(timeRange As String) As ProductStatisticsDTO Implements IProductService.GetProductStatistics
         Return _productRepository.GetProductStatistics(timeRange)
     End Function
 

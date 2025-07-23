@@ -21,24 +21,16 @@ Partial Public Class LoginForm
             lblError.Text = String.Empty
             Dim user = _authService.ValidateUser(txtUsername.Text, txtPassword.Text)
             If user IsNot Nothing Then
-                SessionManager.SetCurrentUser(user)
 
+                SessionManager.SetCurrentUser(user)
                 Me.Hide()
                 Dim MainForm As New MainForm()
                 MainForm.ShowDialog()
                 Me.Close()
-                'Me.Hide()
-                'Dim StockTransactionListForm As New StockTransactionListForm()
-                'StockTransactionListForm.ShowDialog()
-                'Me.Close()
-                'Me.Hide()
-                'Dim ProductManagementForm As New ProductManagementForm(user.UserId)
-                'ProductManagementForm.ShowDialog()
-
-                'Me.Close()
             Else
                 lblError.Text = "Tên đăng nhập hoặc mật khẩu không đúng."
             End If
+
         Catch ex As ArgumentNullException
             lblError.Text = ex.Message
         Catch ex As Exception
