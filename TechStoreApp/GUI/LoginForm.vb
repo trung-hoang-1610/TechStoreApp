@@ -25,7 +25,7 @@ Partial Public Class LoginForm
                 Dim mainForm As New MainForm()
                 Me.Hide()
                 mainForm.ShowDialog()
-                Me.Show() ' Khi mainForm đóng, quay lại LoginForm
+                Me.Close() ' Khi mainForm đóng, quay lại LoginForm
             Else
                 lblError.Text = "Tên đăng nhập hoặc mật khẩu không đúng."
             End If

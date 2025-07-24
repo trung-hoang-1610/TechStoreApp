@@ -82,12 +82,28 @@
     Private Sub btnLogOut_Click(sender As Object, e As EventArgs) Handles btnLogOut.Click
         If MessageBox.Show("Bạn có chắc chắn muốn đăng xuất?", "Xác nhận", MessageBoxButtons.YesNo) = DialogResult.Yes Then
             SessionManager.SetCurrentUser(Nothing)
-            Me.Close() ' Sau khi Close, LoginForm sẽ hiện lại
+            Me.DialogResult = DialogResult.Cancel ' quay lại login trong Sub Main
+            Me.Hide()
+            Me.Close()
+            Dim loginform = New LoginForm()
+            loginform.ShowDialog()
         End If
     End Sub
 
 
+    Private Sub MainForm_FormClosing(sender As Object, e As FormClosingEventArgs) Handles Me.FormClosing
 
+        Dim result As DialogResult = MessageBox.Show(
+                "Bạn có chắc chắn muốn thoát chương trình?",
+                "Xác nhận thoát",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            )
+            If result = DialogResult.No Then
+                e.Cancel = True ' Ngăn không cho form đóng
+            End If
+
+    End Sub
 
 
 End Class
