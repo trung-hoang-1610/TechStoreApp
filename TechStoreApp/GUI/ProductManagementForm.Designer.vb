@@ -193,7 +193,7 @@ Partial Class ProductManagementForm
         Me.MinStockLevel.MinimumWidth = 6
         Me.MinStockLevel.Name = "MinStockLevel"
         Me.MinStockLevel.ReadOnly = True
-        Me.MinStockLevel.Width = 80
+        Me.MinStockLevel.Width = 90
         '
         'CategoryName
         '

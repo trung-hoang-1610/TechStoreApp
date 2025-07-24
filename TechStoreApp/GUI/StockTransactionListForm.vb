@@ -15,6 +15,8 @@ Public Class StockTransactionListForm
 
         _gridIn.AutoGenerateColumns = False
         _gridOut.AutoGenerateColumns = False
+        _gridStats.AutoGenerateColumns = False
+        _gridLowStock.AutoGenerateColumns = False
         Me.StartPosition = FormStartPosition.CenterScreen
 
         _criteriaIn = New StockTransationSearchCriterialDTO With {.PageIndex = 1, .PageSize = 10}
@@ -343,6 +345,20 @@ Public Class StockTransactionListForm
             New String() {"ApprovedByNameOut", "Người duyệt", "120", "ApprovedByName"},
             New String() {"ApprovedAtOut", "Ngày duyệt", "100", "ApprovedAtString", "dd/MM/yyyy"}
         })
+
+        ConfigureGridColumns(_gridStats, {
+           New String() {"Top10ProductStatsId", "Mã sản phẩm", "120", "ProductId"},
+           New String() {"Top10ProductStatsName", "Tên sản phẩm", "150", "ProductName"},
+           New String() {"Top10ProductStatsTotalQuantity", "Tổng số lượng", "150", "TotalQuantity"},
+           New String() {"Top10ProductStatsTotalValue", "Tổng giá trị", "100", "TotalValue"}
+       })
+
+        ConfigureGridColumns(_gridLowStock, {
+           New String() {"LowStocStatsProductId", "Mã sản phẩm", "120", "ProductId"},
+           New String() {"LowStockStatsProductName", "Tên sản phẩm", "150", "ProductName"},
+           New String() {"LowStockStatsCurrentStock", "Số lượng hiện tại", "150", "CurrentStock"},
+           New String() {"LowStockStatsMimimumStock", "Tồn tối thiểu", "100", "MinimumStock"}
+       })
     End Sub
 
     Private Sub ConfigureGridColumns(grid As DataGridView, columns As String()())

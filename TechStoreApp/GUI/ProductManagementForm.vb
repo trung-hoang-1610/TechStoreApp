@@ -321,6 +321,9 @@ Public Class ProductManagementForm
                 Return
             End If
 
+            Dim selectedSupplierName As String = cboSupplier.SelectedItem.ToString()
+            Dim selectedSupplierId As Integer = supplierLookup.First(Function(pair) pair.Value = selectedSupplierName).Key
+
             Dim product As New Product With {
                 .ProductName = txtProductName.Text.Trim(),
                 .Description = txtDescription.Text.Trim(),
@@ -329,7 +332,7 @@ Public Class ProductManagementForm
                 .Quantity = Integer.Parse(txtQuantity.Text),
                 .MinStockLevel = Integer.Parse(txtMinStockLevel.Text),
                 .CategoryId = categoryLookup(cboCategory.SelectedItem.ToString()),
-                .SupplierId = supplierLookup(cboSupplier.SelectedItem.ToString()),
+                .SupplierId = selectedSupplierId,
                 .CreatedBy = _userId,
                 .IsActive = True
             }
@@ -371,6 +374,8 @@ Public Class ProductManagementForm
             Dim productId = Convert.ToInt32(row.Cells("ProductId").Value)
             Dim isActive As Boolean = (cboIsActive.SelectedItem.ToString() = "Hoạt động")
 
+            Dim selectedSupplierName As String = cboSupplier.SelectedItem.ToString()
+            Dim selectedSupplierId As Integer = supplierLookup.First(Function(pair) pair.Value = selectedSupplierName).Key
             Dim product As New Product With {
                 .ProductName = txtProductName.Text.Trim(),
                 .Description = txtDescription.Text.Trim(),
@@ -379,7 +384,7 @@ Public Class ProductManagementForm
                 .Quantity = Integer.Parse(txtQuantity.Text),
                 .MinStockLevel = Integer.Parse(txtMinStockLevel.Text),
                 .CategoryId = categoryLookup(cboCategory.SelectedItem.ToString()),
-                .SupplierId = supplierLookup(cboSupplier.SelectedItem.ToString()),
+                .SupplierId = selectedSupplierId,
                 .CreatedBy = _userId,
                 .IsActive = isActive
             }

@@ -253,7 +253,7 @@ Partial Class StockTransactionListForm
         Me._gridStats.Name = "_gridStats"
         Me._gridStats.ReadOnly = True
         Me._gridStats.RowHeadersWidth = 51
-        Me._gridStats.Size = New System.Drawing.Size(469, 176)
+        Me._gridStats.Size = New System.Drawing.Size(585, 176)
         Me._gridStats.TabIndex = 4
         '
         '_gridLowStock
@@ -263,7 +263,7 @@ Partial Class StockTransactionListForm
         Me._gridLowStock.Name = "_gridLowStock"
         Me._gridLowStock.ReadOnly = True
         Me._gridLowStock.RowHeadersWidth = 51
-        Me._gridLowStock.Size = New System.Drawing.Size(451, 130)
+        Me._gridLowStock.Size = New System.Drawing.Size(584, 130)
         Me._gridLowStock.TabIndex = 5
         '
         '_btnExportCsv
@@ -280,9 +280,9 @@ Partial Class StockTransactionListForm
         Me._lblStatsHeader.Font = New System.Drawing.Font("Segoe UI", 9.75!, System.Drawing.FontStyle.Bold)
         Me._lblStatsHeader.Location = New System.Drawing.Point(3, 82)
         Me._lblStatsHeader.Name = "_lblStatsHeader"
-        Me._lblStatsHeader.Size = New System.Drawing.Size(208, 23)
+        Me._lblStatsHeader.Size = New System.Drawing.Size(338, 23)
         Me._lblStatsHeader.TabIndex = 7
-        Me._lblStatsHeader.Text = "Thống kê theo sản phẩm"
+        Me._lblStatsHeader.Text = "Top 10 sản phẩm có nhiều giao dịch nhất"
         '
         '_lblLowStockHeader
         '
