@@ -216,7 +216,20 @@
 
     Private Sub _btnAddProduct_Click(sender As Object, e As EventArgs) Handles _btnAddProduct.Click
         If _gridProducts Is Nothing OrElse _gridSelectedProducts Is Nothing OrElse _numQuantity Is Nothing Then Return
+        Dim isAnyChecked As Boolean = False
 
+        For Each row As DataGridViewRow In _gridProducts.Rows
+            Dim cellValue = Convert.ToBoolean(row.Cells("ChkSelect").Value)
+            If cellValue Then
+                isAnyChecked = True
+                Exit For
+            End If
+        Next
+
+        If Not isAnyChecked Then
+            MessageBox.Show("Vui lòng chọn ít nhất một sản phẩm để thêm.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Return
+        End If
         Try
             If Not _gridProducts.Columns.Contains("ChkSelect") Then
                 ShowErrorMessage("Cột 'ChkSelect' không tồn tại trong lưới sản phẩm.")
@@ -260,6 +273,13 @@
         Catch ex As Exception
             ShowErrorMessage("Lỗi khi thêm sản phẩm: " & ex.Message)
         End Try
+    End Sub
+    Private Sub dgvProducts_CellDoubleClick(sender As Object, e As DataGridViewCellEventArgs) Handles _gridProducts.CellDoubleClick
+        If e.RowIndex >= 0 Then ' Bỏ qua nếu click vào header
+            Dim row As DataGridViewRow = _gridProducts.Rows(e.RowIndex)
+            Dim currentValue As Boolean = Convert.ToBoolean(row.Cells("ChkSelect").Value)
+            row.Cells("ChkSelect").Value = Not currentValue
+        End If
     End Sub
 
     Private Sub _btnRemoveProduct_Click(sender As Object, e As EventArgs) Handles _btnRemoveProduct.Click
