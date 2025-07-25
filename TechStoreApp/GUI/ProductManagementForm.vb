@@ -276,40 +276,52 @@ Public Class ProductManagementForm
     End Sub
 
     Private Function ValidateInputs() As Boolean
-        Dim errors As New List(Of String)
+        ' Xóa lỗi cũ
+        ErrorProvider1.Clear()
+        ErrorProvider1.BlinkStyle = ErrorBlinkStyle.NeverBlink
+        Dim isValid As Boolean = True
 
+        ' Tên sản phẩm
         If String.IsNullOrEmpty(txtProductName.Text) Then
-            errors.Add("Tên sản phẩm không được để trống.")
+            ErrorProvider1.SetError(txtProductName, "Tên sản phẩm không được để trống.")
+            isValid = False
         End If
 
+        ' Danh mục
         Dim categoryName = cboCategory.SelectedItem?.ToString()
         If String.IsNullOrEmpty(categoryName) OrElse Not categoryLookup.ContainsKey(categoryName) Then
-            errors.Add("Vui lòng chọn danh mục hợp lệ.")
+            ErrorProvider1.SetError(cboCategory, "Vui lòng chọn danh mục hợp lệ.")
+            isValid = False
         End If
 
+        ' Giá sản phẩm
         Dim price As Decimal
         If Not Decimal.TryParse(txtPrice.Text, price) OrElse price < 0 Then
-            errors.Add("Giá sản phẩm phải là số hợp lệ và không âm.")
+            ErrorProvider1.SetError(txtPrice, "Giá sản phẩm phải là số hợp lệ và không âm.")
+            isValid = False
         End If
 
+        ' Số lượng
         Dim quantity As Integer
         If Not Integer.TryParse(txtQuantity.Text, quantity) OrElse quantity < 0 Then
-            errors.Add("Số lượng phải là số nguyên hợp lệ và không âm.")
+            ErrorProvider1.SetError(txtQuantity, "Số lượng phải là số nguyên hợp lệ và không âm.")
+            isValid = False
         End If
 
+        ' Mức tồn tối thiểu
         Dim minStockLevel As Integer
         If Not Integer.TryParse(txtMinStockLevel.Text, minStockLevel) OrElse minStockLevel < 0 Then
-            errors.Add("Mức tồn tối thiểu phải là số nguyên hợp lệ và không âm.")
+            ErrorProvider1.SetError(txtMinStockLevel, "Mức tồn tối thiểu phải là số nguyên hợp lệ và không âm.")
+            isValid = False
         End If
 
-        If errors.Count > 0 Then
-            MessageBox.Show(String.Join(Environment.NewLine, errors.ToArray()), "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-            Return False
-        End If
-        Return True
+        Return isValid
     End Function
 
+
     Private Sub btnAdd_Click(sender As Object, e As EventArgs) Handles btnAdd.Click
+        ErrorProvider1.Clear()
+
         If Not isEditing Then
             ClearInputs()
             SetEditingMode(True, True)
@@ -443,6 +455,8 @@ Public Class ProductManagementForm
     End Sub
 
     Private Sub dgvProducts_Click(sender As Object, e As EventArgs) Handles dgvProducts.Click
+        ErrorProvider1.Clear()
+
         Try
             If dgvProducts.SelectedRows.Count > 0 Then
                 Dim row = dgvProducts.SelectedRows(0)
@@ -565,6 +579,8 @@ Public Class ProductManagementForm
     End Sub
 
     Private Sub btnCancel_Click(sender As Object, e As EventArgs) Handles btnCancel.Click
+        ErrorProvider1.Clear()
+
         If isAdding Then
             ClearInputs()
         ElseIf dgvProducts.SelectedRows.Count > 0 Then
@@ -583,7 +599,16 @@ Public Class ProductManagementForm
     End Sub
 
     Private Sub ProductManagementForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        ' Optional: Initialize additional controls here if needed
+        txtProductName.Enabled = False
+        txtDescription.Enabled = False
+        txtUnit.Enabled = False
+        txtPrice.Enabled = False
+        txtQuantity.Enabled = False
+        txtMinStockLevel.Enabled = False
+        cboCategory.Enabled = False
+        cboIsActive.Enabled = False
+        cboSupplier.Enabled = False
+
     End Sub
 
     Private Sub SetEditingMode(editing As Boolean, adding As Boolean)

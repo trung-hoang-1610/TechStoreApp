@@ -68,7 +68,8 @@ Partial Class ProductManagementForm
 
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        Dim DataGridViewCellStyle2 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Me.components = New System.ComponentModel.Container()
+        Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Me.dgvProducts = New System.Windows.Forms.DataGridView()
         Me.ProductId = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.ProductName = New System.Windows.Forms.DataGridViewTextBoxColumn()
@@ -120,7 +121,9 @@ Partial Class ProductManagementForm
         Me.chkLowStock = New System.Windows.Forms.CheckBox()
         Me.cboIsActive = New System.Windows.Forms.ComboBox()
         Me.lblIsActive = New System.Windows.Forms.Label()
+        Me.ErrorProvider1 = New System.Windows.Forms.ErrorProvider(Me.components)
         CType(Me.dgvProducts, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.ErrorProvider1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'dgvProducts
@@ -221,8 +224,8 @@ Partial Class ProductManagementForm
         '
         'CreatedAt
         '
-        DataGridViewCellStyle2.Format = "dd/MM/yyyy"
-        Me.CreatedAt.DefaultCellStyle = DataGridViewCellStyle2
+        DataGridViewCellStyle1.Format = "dd/MM/yyyy"
+        Me.CreatedAt.DefaultCellStyle = DataGridViewCellStyle1
         Me.CreatedAt.HeaderText = "Ngày tạo"
         Me.CreatedAt.MinimumWidth = 6
         Me.CreatedAt.Name = "CreatedAt"
@@ -549,6 +552,10 @@ Partial Class ProductManagementForm
         Me.lblIsActive.TabIndex = 41
         Me.lblIsActive.Text = "Trạng thái:"
         '
+        'ErrorProvider1
+        '
+        Me.ErrorProvider1.ContainerControl = Me
+        '
         'ProductManagementForm
         '
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None
@@ -598,8 +605,11 @@ Partial Class ProductManagementForm
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         Me.Text = "Quản Lý Sản Phẩm"
         CType(Me.dgvProducts, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.ErrorProvider1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
     End Sub
+
+    Friend WithEvents ErrorProvider1 As ErrorProvider
 End Class
