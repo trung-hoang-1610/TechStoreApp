@@ -175,7 +175,7 @@ Public Class StockTransactionRepository
                     query &= " AND t.SupplierId = ?"
                 End If
 
-                query &= " ORDER BY t.TransactionId LIMIT ? OFFSET ?"
+                query &= " ORDER BY t.TransactionId DESC LIMIT ? OFFSET ?"
 
                 Using command As New OdbcCommand(query, connection)
                     ' === Thêm tham số khớp thứ tự ===
