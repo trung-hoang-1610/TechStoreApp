@@ -1,4 +1,5 @@
-﻿Imports System.Text
+﻿Imports System.Data.Odbc
+Imports System.Text
 
 Public Class RegisterForm
     Inherits Form
@@ -194,6 +195,12 @@ Public Class RegisterForm
                 Else
                     DisplayServiceErrors(result.Errors, fieldErrorMap)
                 End If
+            End If
+        Catch ex As OdbcException
+            If ex.Message.Contains("Duplicate entry") AndAlso ex.Message.Contains("for key 'Username'") Then
+                lblUsernameError.Text = "Tên đăng nhập đã tồn tại."
+            Else
+                lblUsernameError.Text = "Lỗi kết nối cơ sở dữ liệu: " & ex.Message
             End If
         Catch ex As Exception
             lblUsernameError.Text = "Đã xảy ra lỗi: " & ex.Message
