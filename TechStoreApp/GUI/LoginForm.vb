@@ -39,8 +39,8 @@ Partial Public Class LoginForm
     ''' </summary>
     Private Sub btnRegister_Click(ByVal sender As Object, ByVal e As EventArgs) Handles btnRegister.Click
         Dim registerForm As New RegisterForm()
-        registerForm.Show()
-        Me.Hide()
+
+        registerForm.ShowDialog()
     End Sub
 
     Private Sub LoginForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
