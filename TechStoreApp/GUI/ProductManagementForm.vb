@@ -402,6 +402,36 @@ Public Class ProductManagementForm
             }
 
             product.GetType().GetField("_productId", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).SetValue(product, productId)
+            Dim oldName As String = row.Cells("ProductName").Value.ToString()
+            Dim oldDescription As String = row.Cells("Description").Value.ToString()
+            Dim oldUnit As String = row.Cells("Unit").Value.ToString()
+            Dim oldPrice As Decimal = Convert.ToDecimal(row.Cells("Price").Value)
+            Dim oldQuantity As Integer = Convert.ToInt32(row.Cells("Quantity").Value)
+            Dim oldMinStock As Integer = Convert.ToInt32(row.Cells("MinStockLevel").Value)
+            Dim oldCategoryName As String = row.Cells("CategoryName").Value.ToString()
+            Dim oldSupplierName As String = row.Cells("SupplierName").Value.ToString()
+            Dim isActiveText As String = row.Cells("IsActive").Value.ToString().Trim().ToLower()
+
+            Dim oldIsActive As Boolean = (isActiveText = "active")
+
+            Dim oldCategoryId As Integer = categoryLookup(oldCategoryName)
+
+            ' Ánh xạ SupplierName → Id (tìm key từ value)
+            Dim oldSupplierId As Integer = supplierLookup.First(Function(pair) pair.Value = oldSupplierName).Key
+            ' So sánh toàn bộ các trường
+            If product.ProductName = oldName AndAlso
+               product.Description = oldDescription AndAlso
+               product.Unit = oldUnit AndAlso
+               product.Price = oldPrice AndAlso
+               product.Quantity = oldQuantity AndAlso
+               product.MinStockLevel = oldMinStock AndAlso
+               product.CategoryId = oldCategoryId AndAlso
+               product.SupplierId = oldSupplierId AndAlso
+               product.IsActive = oldIsActive Then
+
+                MessageBox.Show("Thông tin không có thay đổi nào. Không cần cập nhật.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                Return
+            End If
 
             If MessageBox.Show("Bạn có chắc chắn muốn cập nhật sản phẩm này?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.No Then
                 Return
@@ -448,7 +478,11 @@ Public Class ProductManagementForm
                 MessageBox.Show("Xóa sản phẩm thất bại!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
             End If
         Catch ex As OdbcException
-            lblError.Text = "Lỗi cơ sở dữ liệu: " & ex.Message
+            If ex.Message.ToLower().Contains("constraint") OrElse ex.Message.ToLower().Contains("foreign key") Then
+                MessageBox.Show("Không thể xóa sản phẩm  vì đang được liên kết với đơn hàng hoặc dữ liệu khác.", "Thông báo")
+            Else
+                MessageBox.Show("Đã xảy ra lỗi kết nối cơ sở dữ liệu.", "Lỗi hệ thống")
+            End If
         Catch ex As Exception
             lblError.Text = "Lỗi hệ thống khi xóa: " & ex.Message
         End Try
