@@ -237,6 +237,8 @@
             End If
 
             For Each row As DataGridViewRow In _gridProducts.Rows
+
+
                 If row.Cells("ChkSelect")?.Value IsNot Nothing AndAlso CBool(row.Cells("ChkSelect").Value) Then
                     Dim productId = If(row.Cells("ProductId_Products")?.Value IsNot Nothing, CInt(row.Cells("ProductId_Products").Value), 0)
                     If productId = 0 Then Continue For
@@ -248,23 +250,43 @@
                     End If
 
                     Dim quantity = CInt(_numQuantity.Value)
-                    If _transactionType = "OUT" AndAlso product.Quantity < quantity Then
-                        ShowErrorMessage($"Sản phẩm {product.ProductName} không đủ tồn kho (hiện có: {product.Quantity}, yêu cầu: {quantity}).")
+                    Dim existingDetail = _selectedProducts.FirstOrDefault(Function(p) p.ProductId = productId)
+
+                    Dim newTotalQuantity As Integer = quantity
+                    If existingDetail IsNot Nothing Then
+                        newTotalQuantity += existingDetail.Quantity
+                    End If
+                    If _transactionType = "OUT" AndAlso product.Quantity < newTotalQuantity Then
+                        Dim existingQuantityText As String = If(existingDetail IsNot Nothing, existingDetail.Quantity.ToString(), "0")
+                        ShowErrorMessage(
+                            $"Sản phẩm '{product.ProductName}' không đủ tồn kho để xuất." & Environment.NewLine &
+                            $"Tồn kho hiện tại: {product.Quantity}" & Environment.NewLine &
+                            $"Đã chọn trước đó: {existingQuantityText}" & Environment.NewLine &
+                            $"Đang cố gắng thêm: {quantity}" & Environment.NewLine &
+                            $"Tổng cần xuất: {newTotalQuantity}"
+                        )
                         Continue For
                     End If
+
                     If _transactionType = "IN" AndAlso quantity > 10000 Then
                         ShowErrorMessage($"Số lượng nhập cho sản phẩm {product.ProductName} vượt quá giới hạn (tối đa 10,000).")
                         Continue For
                     End If
 
-                    Dim detail As New StockTransactionDetailDTO With {
+                    If existingDetail IsNot Nothing Then
+                        ' Đã tồn tại -> cộng dồn số lượng
+                        existingDetail.Quantity = newTotalQuantity
+                    Else
+                        ' Chưa có -> thêm mới
+                        Dim detail As New StockTransactionDetailDTO With {
                         .ProductId = productId,
                         .ProductName = product.ProductName,
                         .Unit = product.Unit,
                         .Quantity = quantity,
                         .Note = String.Empty
                     }
-                    _selectedProducts.Add(detail)
+                        _selectedProducts.Add(detail)
+                    End If
                     row.Cells("ChkSelect").Value = False
                 End If
             Next
