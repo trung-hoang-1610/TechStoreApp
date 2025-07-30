@@ -1,6 +1,6 @@
 ﻿' DAL/CategoryRepository.vb
 Imports System.Data.Odbc
-
+Imports System.Threading.Tasks
 
 Public Class CategoryRepository
     Implements ICategoryRepository
@@ -10,13 +10,13 @@ Public Class CategoryRepository
     ''' </summary>
     ''' <returns>Danh sách các đối tượng Category</returns>
     ''' <exception cref="OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
-    Public Function GetAllCategories() As List(Of Category) Implements ICategoryRepository.GetAllCategories
+    Public Async Function GetAllCategoriesAsync() As Task(Of List(Of Category)) Implements ICategoryRepository.GetAllCategoriesAsync
         Dim categories As New List(Of Category)
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
             Dim query As String = "SELECT CategoryId, CategoryName, Description FROM Categories"
             Using command As New OdbcCommand(query, connection)
-                Using reader As OdbcDataReader = command.ExecuteReader()
-                    While reader.Read()
+                Using reader As OdbcDataReader = Await command.ExecuteReaderAsync()
+                    While Await reader.ReadAsync()
                         Dim category As New Category
                         category.GetType().GetField("_categoryId", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).SetValue(category, reader.GetInt32(0))
                         category.CategoryName = reader.GetString(1)
@@ -36,13 +36,13 @@ Public Class CategoryRepository
     ''' <param name="id">Mã định danh của danh mục</param>
     ''' <returns>Đối tượng Category hoặc Nothing nếu không tìm thấy</returns>
     ''' <exception cref="OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
-    Public Function GetCategoryById(ByVal id As Integer) As Category Implements ICategoryRepository.GetCategoryById
+    Public Async Function GetCategoryByIdAsync(ByVal id As Integer) As Task(Of Category) Implements ICategoryRepository.GetCategoryByIdAsync
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
             Dim query As String = "SELECT CategoryId, CategoryName, Description FROM Categories WHERE CategoryId = ?"
             Using command As New OdbcCommand(query, connection)
                 command.Parameters.AddWithValue("id", id)
-                Using reader As OdbcDataReader = command.ExecuteReader()
-                    If reader.Read() Then
+                Using reader As OdbcDataReader = Await command.ExecuteReaderAsync()
+                    If Await reader.ReadAsync() Then
                         Dim category As New Category
                         category.GetType().GetField("_categoryId", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).SetValue(category, reader.GetInt32(0))
                         category.CategoryName = reader.GetString(1)
@@ -62,13 +62,13 @@ Public Class CategoryRepository
     ''' <param name="category">Đối tượng Category cần thêm</param>
     ''' <returns>Mã định danh của danh mục mới</returns>
     ''' <exception cref="OdbcException">Ném ra nếu có lỗi khi thêm vào cơ sở dữ liệu</exception>
-    Public Function AddCategory(ByVal category As Category) As Integer Implements ICategoryRepository.AddCategory
+    Public Async Function AddCategoryAsync(ByVal category As Category) As Task(Of Integer) Implements ICategoryRepository.AddCategoryAsync
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
             Dim insertQuery As String = "INSERT INTO Categories (CategoryName, Description) VALUES (?, ?)"
             Using insertCommand As New OdbcCommand(insertQuery, connection)
                 insertCommand.Parameters.AddWithValue("name", category.CategoryName)
                 insertCommand.Parameters.AddWithValue("description", If(String.IsNullOrEmpty(category.Description), DBNull.Value, category.Description))
-                insertCommand.ExecuteNonQuery()
+                Await insertCommand.ExecuteNonQueryAsync()
             End Using
 
             ' Bước 2: lấy ID mới nhất
@@ -88,14 +88,14 @@ Public Class CategoryRepository
     ''' <param name="category">Đối tượng Category cần cập nhật</param>
     ''' <returns>True nếu cập nhật thành công, False nếu thất bại</returns>
     ''' <exception cref="OdbcException">Ném ra nếu có lỗi khi cập nhật cơ sở dữ liệu</exception>
-    Public Function UpdateCategory(ByVal category As Category) As Boolean Implements ICategoryRepository.UpdateCategory
+    Public Async Function UpdateCategoryAsync(ByVal category As Category) As Task(Of Boolean) Implements ICategoryRepository.UpdateCategoryAsync
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
             Dim query As String = "UPDATE Categories SET CategoryName = ?, Description = ? WHERE CategoryId = ?"
             Using command As New OdbcCommand(query, connection)
                 command.Parameters.AddWithValue("name", category.CategoryName)
                 command.Parameters.AddWithValue("description", If(String.IsNullOrEmpty(category.Description), DBNull.Value, category.Description))
                 command.Parameters.AddWithValue("id", category.CategoryId)
-                Return command.ExecuteNonQuery() > 0
+                Return Await command.ExecuteNonQueryAsync() > 0
             End Using
             ConnectionHelper.CloseConnection(connection)
         End Using
@@ -107,12 +107,12 @@ Public Class CategoryRepository
     ''' <param name="id">Mã định danh của danh mục</param>
     ''' <returns>True nếu xóa thành công, False nếu thất bại</returns>
     ''' <exception cref="OdbcException">Ném ra nếu có lỗi khi xóa khỏi cơ sở dữ liệu</exception>
-    Public Function DeleteCategory(ByVal id As Integer) As Boolean Implements ICategoryRepository.DeleteCategory
+    Public Async Function DeleteCategoryAsync(ByVal id As Integer) As Task(Of Boolean) Implements ICategoryRepository.DeleteCategoryAsync
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
             Dim query As String = "DELETE FROM Categories WHERE CategoryId = ?"
             Using command As New OdbcCommand(query, connection)
                 command.Parameters.AddWithValue("id", id)
-                Return command.ExecuteNonQuery() > 0
+                Return Await command.ExecuteNonQueryAsync() > 0
             End Using
             ConnectionHelper.CloseConnection(connection)
         End Using

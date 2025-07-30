@@ -1,5 +1,5 @@
 ﻿' BLL/ProductService.vb
-
+Imports System.Threading.Tasks
 
 Public Class ProductService
     Implements IProductService
@@ -8,9 +8,9 @@ Public Class ProductService
     Private ReadOnly _categoryRepository As ICategoryRepository
     Private ReadOnly _supplierRepository As ISupplierRepository
     Private ReadOnly _userRepository As IUserRepository
-    Private ReadOnly _categoryCache As Dictionary(Of Integer, Category)
-    Private ReadOnly _supplierCache As Dictionary(Of Integer, Supplier)
-    Private ReadOnly _userCache As Dictionary(Of Integer, User)
+    Private _categoryCache As Dictionary(Of Integer, Category)
+    Private _supplierCache As Dictionary(Of Integer, Supplier)
+    Private _userCache As Dictionary(Of Integer, User)
 
     ''' <summary>
     ''' Khởi tạo ProductService với repository tương ứng
@@ -29,32 +29,32 @@ Public Class ProductService
         _categoryRepository = categoryRepository
         _supplierRepository = supplierRepository
         _userRepository = userRepository
-        _categoryCache = LoadCategoryCache()
-        _supplierCache = LoadSupplierCache()
-        _userCache = LoadUserCache()
 
+        _categoryCache = New Dictionary(Of Integer, Category)
+        _supplierCache = New Dictionary(Of Integer, Supplier)
+        _userCache = New Dictionary(Of Integer, User)
     End Sub
 
     ''' <summary>
     ''' Tải danh sách danh mục vào bộ nhớ cache để cải thiện hiệu suất
     ''' </summary>
     ''' <returns>Danh sách danh mục dưới dạng Dictionary</returns>
-    Private Function LoadCategoryCache() As Dictionary(Of Integer, Category)
+    Private Async Function LoadCategoryCache() As Task(Of Dictionary(Of Integer, Category))
 
-        Dim categories = _categoryRepository.GetAllCategories()
+        Dim categories = Await _categoryRepository.GetAllCategoriesAsync()
         Return categories.ToDictionary(Function(c) c.CategoryId, Function(c) c)
 
     End Function
 
-    Private Function LoadSupplierCache() As Dictionary(Of Integer, Supplier)
+    Private Async Function LoadSupplierCache() As Task(Of Dictionary(Of Integer, Supplier))
 
-        Dim suppliers = _supplierRepository.GetAllSuppliers()
+        Dim suppliers = Await _supplierRepository.GetAllSuppliersAsync()
         Return suppliers.ToDictionary(Function(s) s.SupplierId, Function(s) s)
 
     End Function
-    Private Function LoadUserCache() As Dictionary(Of Integer, User)
+    Private Async Function LoadUserCache() As Task(Of Dictionary(Of Integer, User))
 
-        Dim users = _userRepository.GetAllUsers()
+        Dim users = Await _userRepository.GetAllUsersAsync()
         Return users.ToDictionary(Function(u) u.UserId, Function(u) u)
 
     End Function
@@ -63,9 +63,9 @@ Public Class ProductService
     ''' </summary>
     ''' <returns>Danh sách ProductDTO</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
-    Public Function GetAllProducts() As List(Of ProductDTO) Implements IProductService.GetAllProducts
-        Dim products = _productRepository.GetAllProducts()
-        Return MapToDTOList(products)
+    Public Async Function GetAllProducts() As Task(Of List(Of ProductDTO)) Implements IProductService.GetAllProductsAsync
+        Dim products = Await _productRepository.GetAllProductsAsync()
+        Return Await MapToDTOList(products)
     End Function
 
     ''' <summary>
@@ -74,10 +74,10 @@ Public Class ProductService
     ''' <param name="id">Mã sản phẩm</param>
     ''' <returns>ProductDTO hoặc Nothing nếu không tìm thấy</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
-    Public Function GetProductById(id As Integer) As ProductDTO Implements IProductService.GetProductById
-        Dim p = _productRepository.GetProductById(id)
+    Public Async Function GetProductById(id As Integer) As Task(Of ProductDTO) Implements IProductService.GetProductByIdAsync
+        Dim p = Await _productRepository.GetProductByIdAsync(id)
         If p Is Nothing Then Return Nothing
-        Return MapToDTO(p)
+        Return Await MapToDTO(p)
     End Function
 
     ''' <summary>
@@ -88,7 +88,7 @@ Public Class ProductService
     ''' <returns>Danh sách ProductDTO</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
     ''' <exception cref="ArgumentException">Ném ra nếu pageIndex hoặc pageSize không hợp lệ</exception>
-    Public Function GetProductsByPage(pageIndex As Integer, pageSize As Integer) As List(Of ProductDTO) Implements IProductService.GetProductsByPage
+    Public Async Function GetProductsByPage(pageIndex As Integer, pageSize As Integer) As Task(Of List(Of ProductDTO)) Implements IProductService.GetProductsByPageAsync
         Console.WriteLine("NCC: " + _supplierCache.ToList().ToString())
         If pageIndex < 0 Then
             Throw New ArgumentException("Chỉ số trang không được nhỏ hơn 0.", NameOf(pageIndex))
@@ -96,8 +96,8 @@ Public Class ProductService
         If pageSize <= 0 Then
             Throw New ArgumentException("Kích thước trang phải lớn hơn 0.", NameOf(pageSize))
         End If
-        Dim products = _productRepository.GetProductsByPage(pageIndex, pageSize)
-        Return MapToDTOList(products)
+        Dim products = Await _productRepository.GetProductsByPageAsync(pageIndex, pageSize)
+        Return Await MapToDTOList(products)
     End Function
 
     ''' <summary>
@@ -105,8 +105,8 @@ Public Class ProductService
     ''' </summary>
     ''' <returns>Tổng số sản phẩm</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
-    Public Function GetTotalProductCount() As Integer Implements IProductService.GetTotalProductCount
-        Return _productRepository.GetTotalProductCount()
+    Public Async Function GetTotalProductCount() As Task(Of Integer) Implements IProductService.GetTotalProductCountAsync
+        Return Await _productRepository.GetTotalProductCountAsync()
     End Function
 
     ''' <summary>
@@ -116,7 +116,9 @@ Public Class ProductService
     ''' <returns>OperationResult chứa trạng thái thành công và danh sách lỗi (nếu có)</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi thêm vào cơ sở dữ liệu</exception>
     ''' <exception cref="ArgumentNullException">Ném ra nếu product là Nothing</exception>
-    Public Function AddProduct(product As Product) As OperationResult Implements IProductService.AddProduct
+    Public Async Function AddProduct(product As Product) As Task(Of OperationResult) Implements IProductService.AddProductAsync
+        _categoryCache = Await LoadCategoryCache()
+        _supplierCache = Await LoadSupplierCache()
         If product Is Nothing Then
             Throw New ArgumentNullException(NameOf(product), "Đối tượng Product rỗng.")
         End If
@@ -143,7 +145,7 @@ Public Class ProductService
             Return New OperationResult(False, errors)
         End If
 
-        Dim newId = _productRepository.AddProduct(product)
+        Dim newId = Await _productRepository.AddProductAsync(product)
         Return New OperationResult(newId > 0, Nothing)
     End Function
 
@@ -154,7 +156,7 @@ Public Class ProductService
     ''' <returns>OperationResult chứa trạng thái thành công và danh sách lỗi (nếu có)</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi cập nhật cơ sở dữ liệu</exception>
     ''' <exception cref="ArgumentNullException">Ném ra nếu product là Nothing</exception>
-    Public Function UpdateProduct(product As Product) As OperationResult Implements IProductService.UpdateProduct
+    Public Async Function UpdateProduct(product As Product) As Task(Of OperationResult) Implements IProductService.UpdateProductAsync
         If product Is Nothing Then
             Throw New ArgumentNullException(NameOf(product), "Đối tượng Product không được là Nothing.")
         End If
@@ -170,7 +172,8 @@ Public Class ProductService
         ValidationHelper.ValidateInteger(product.MinStockLevel, "Mức tồn tối thiểu", errors, 0)
         ValidationHelper.ValidateString(product.Unit, "Đơn vị", errors, False, 50)
 
-
+        _categoryCache = Await LoadCategoryCache()
+        _supplierCache = Await LoadSupplierCache()
         ' Kiểm tra CategoryId tồn tại
         If Not _categoryCache.ContainsKey(product.CategoryId) Then
             errors.Add("Danh mục không tồn tại.")
@@ -184,7 +187,7 @@ Public Class ProductService
             Return New OperationResult(False, errors)
         End If
 
-        Dim success = _productRepository.UpdateProduct(product)
+        Dim success = Await _productRepository.UpdateProductAsync(product)
         Return New OperationResult(success, Nothing)
     End Function
 
@@ -194,80 +197,84 @@ Public Class ProductService
     ''' <param name="id">Mã sản phẩm</param>
     ''' <returns>True nếu xóa thành công, False nếu thất bại</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi xóa khỏi cơ sở dữ liệu</exception>
-    Public Function DeleteProduct(id As Integer) As Boolean Implements IProductService.DeleteProduct
-        Return _productRepository.DeleteProduct(id)
+    Public Async Function DeleteProduct(id As Integer) As Task(Of Boolean) Implements IProductService.DeleteProductAsync
+        Return Await _productRepository.DeleteProductAsync(id)
     End Function
 
 
-    Public Function SearchProducts(ByVal criteria As ProductSearchCriteriaDTO) As List(Of ProductDTO) Implements IProductService.SearchProducts
+    Public Async Function SearchProducts(ByVal criteria As ProductSearchCriteriaDTO) As Task(Of List(Of ProductDTO)) Implements IProductService.SearchProductsAsync
         If criteria Is Nothing Then
             Throw New ArgumentNullException(NameOf(criteria), "Tiêu chí tìm kiếm không được null.")
         End If
         Dim userRoleId = SessionManager.GetCurrentUser.RoleId
 
-        Dim products = _productRepository.SearchProducts(criteria)
-        Return MapToDTOList(products)
+        Dim products = Await _productRepository.SearchProductsAsync(criteria)
+        Return Await MapToDTOList(products)
     End Function
     ''' <summary>
     ''' Chuyển đổi đối tượng Product sang ProductDTO
     ''' </summary>
-    Private Function MapToDTO(p As Product) As ProductDTO
+    Private Async Function MapToDTO(p As Product) As Task(Of ProductDTO)
         Dim category As Category = Nothing
         Dim supplier As Supplier = Nothing
         Dim user As User = Nothing
         If Not _categoryCache.TryGetValue(p.CategoryId, category) Then
-            category = _categoryRepository.GetCategoryById(p.CategoryId)
+            category = Await _categoryRepository.GetCategoryByIdAsync(p.CategoryId)
             If category IsNot Nothing Then
                 _categoryCache(p.CategoryId) = category
             End If
         End If
 
         If Not _supplierCache.TryGetValue(p.SupplierId, supplier) Then
-            supplier = _supplierRepository.GetSupplierById(p.SupplierId)
+            supplier = Await _supplierRepository.GetSupplierByIdAsync(p.SupplierId)
             If category IsNot Nothing Then
                 _supplierCache(p.SupplierId) = supplier
             End If
         End If
 
         If Not _userCache.TryGetValue(p.CreatedBy, user) Then
-            user = _userRepository.GetUserById(p.CreatedBy)
+            user = Await _userRepository.GetUserByIdAsync(p.CreatedBy)
             If user IsNot Nothing Then
                 _userCache(p.CreatedBy) = user
             End If
         End If
 
         Return New ProductDTO With {
-        .ProductId = p.ProductId,
-        .ProductName = p.ProductName,
-        .Description = p.Description,
-        .Unit = p.Unit,
-        .MinStockLevel = p.MinStockLevel,
-        .CreatedBy = p.CreatedBy,
-        .CreatedAt = p.CreatedAt,
-        .IsActive = p.IsActive,
-        .Price = p.Price,
-        .Quantity = p.Quantity,
-        .CategoryName = If(category IsNot Nothing, category.CategoryName, "Không xác định"),
-        .SupplierName = If(supplier IsNot Nothing, supplier.SupplierName, "Không xác định"),
-        .CreatedByName = If(user IsNot Nothing, user.Username, "Không xác định")
-    }
+            .ProductId = p.ProductId,
+            .ProductName = p.ProductName,
+            .Description = p.Description,
+            .Unit = p.Unit,
+            .MinStockLevel = p.MinStockLevel,
+            .CreatedBy = p.CreatedBy,
+            .CreatedAt = p.CreatedAt,
+            .IsActive = p.IsActive,
+            .Price = p.Price,
+            .Quantity = p.Quantity,
+            .CategoryName = If(category IsNot Nothing, category.CategoryName, "Không xác định"),
+            .SupplierName = If(supplier IsNot Nothing, supplier.SupplierName, "Không xác định"),
+            .CreatedByName = If(user IsNot Nothing, user.Username, "Không xác định")
+        }
     End Function
 
 
     ''' <summary>
     ''' Chuyển đổi danh sách Product sang danh sách ProductDTO
     ''' </summary>
-    Private Function MapToDTOList(products As List(Of Product)) As List(Of ProductDTO)
+    Private Async Function MapToDTOList(products As List(Of Product)) As Task(Of List(Of ProductDTO))
         If products Is Nothing Then Return New List(Of ProductDTO)
-        Return products.Select(Function(p) MapToDTO(p)).ToList()
+
+        Dim dtoTasks As IEnumerable(Of Task(Of ProductDTO)) = products.Select(Function(p) MapToDTO(p))
+        Dim dtoList As ProductDTO() = Await Task.WhenAll(dtoTasks)
+
+        Return dtoList.ToList()
     End Function
 
-    Public Function GetProductStatistics(timeRange As String) As ProductStatisticsDTO Implements IProductService.GetProductStatistics
-        Return _productRepository.GetProductStatistics(timeRange)
+    Public Async Function GetProductStatistics(timeRange As String) As Task(Of ProductStatisticsDTO) Implements IProductService.GetProductStatisticsAsync
+        Return Await _productRepository.GetProductStatisticsAsync(timeRange)
     End Function
 
-    Public Function GetProductsBySupplierId(supplierId As Integer) As List(Of ProductDTO) Implements IProductService.GetProductsBySupplierId
-        Dim products = _productRepository.GetProductsBySupplierId(supplierId)
-        Return MapToDTOList(products)
+    Public Async Function GetProductsBySupplierId(supplierId As Integer) As Task(Of List(Of ProductDTO)) Implements IProductService.GetProductsBySupplierIdAsync
+        Dim products = Await _productRepository.GetProductsBySupplierIdAsync(supplierId)
+        Return Await MapToDTOList(products)
     End Function
 End Class

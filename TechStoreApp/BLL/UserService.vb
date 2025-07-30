@@ -1,5 +1,5 @@
 ﻿' BLL/UserService.vb
-
+Imports System.Threading.Tasks
 Public Class UserService
     Implements IUserService
 
@@ -23,8 +23,8 @@ Public Class UserService
     ''' <param name="id">Mã định danh của người dùng</param>
     ''' <returns>Đối tượng User hoặc Nothing nếu không tìm thấy</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
-    Public Function GetUserById(ByVal id As Integer) As User Implements IUserService.GetUserById
-        Return _userRepository.GetUserById(id)
+    Public Async Function GetUserById(ByVal id As Integer) As Task(Of User) Implements IUserService.GetUserById
+        Return Await _userRepository.GetUserByIdAsync(id)
     End Function
 
     ''' <summary>
@@ -34,7 +34,7 @@ Public Class UserService
     ''' <returns>OperationResult chứa trạng thái thành công và danh sách lỗi (nếu có)</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi thêm vào cơ sở dữ liệu</exception>
     ''' <exception cref="ArgumentNullException">Ném ra nếu tham số user là Nothing</exception>
-    Public Function AddUser(ByVal user As User) As OperationResult Implements IUserService.AddUser
+    Public Async Function AddUser(ByVal user As User) As Task(Of OperationResult) Implements IUserService.AddUser
         If user Is Nothing Then
             Throw New ArgumentNullException("user", "Đối tượng User không được là Nothing.")
         End If
@@ -49,7 +49,7 @@ Public Class UserService
             Return New OperationResult(False, errors)
         End If
 
-        Dim newId As Integer = _userRepository.AddUser(user)
+        Dim newId As Integer = Await _userRepository.AddUserAsync(user)
         Return New OperationResult(newId > 0, Nothing)
     End Function
 
@@ -61,7 +61,7 @@ Public Class UserService
     ''' <returns>Đối tượng User nếu xác thực thành công, Nothing nếu thất bại</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
     ''' <exception cref="ArgumentNullException">Ném ra nếu username hoặc password là Nothing</exception>
-    Public Function ValidateUser(ByVal username As String, ByVal password As String) As User Implements IUserService.ValidateUser
+    Public Async Function ValidateUser(ByVal username As String, ByVal password As String) As Task(Of User) Implements IUserService.ValidateUser
         If username Is Nothing Then
             Throw New ArgumentNullException("username", "Tên đăng nhập không được là Nothing.")
         End If
@@ -69,6 +69,6 @@ Public Class UserService
             Throw New ArgumentNullException("password", "Mật khẩu không được là Nothing.")
         End If
 
-        Return _userRepository.ValidateUser(username, password)
+        Return Await _userRepository.ValidateUserAsync(username, password)
     End Function
 End Class

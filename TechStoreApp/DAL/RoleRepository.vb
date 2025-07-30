@@ -1,6 +1,6 @@
 ﻿' DAL/RoleRepository.vb
 Imports System.Data.Odbc
-
+Imports System.Threading.Tasks
 Public Class RoleRepository
     Implements IRoleRepository
 
@@ -9,13 +9,13 @@ Public Class RoleRepository
     ''' </summary>
     ''' <returns>Danh sách các đối tượng Role</returns>
     ''' <exception cref="OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
-    Public Function GetAllRoles() As List(Of Role) Implements IRoleRepository.GetAllRoles
+    Public Async Function GetAllRolesAsync() As Task(Of List(Of Role)) Implements IRoleRepository.GetAllRolesAsync
         Dim roles As New List(Of Role)
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
             Dim query As String = "SELECT RoleId, RoleName FROM Roles"
             Using command As New OdbcCommand(query, connection)
-                Using reader As OdbcDataReader = command.ExecuteReader()
-                    While reader.Read()
+                Using reader As OdbcDataReader = Await command.ExecuteReaderAsync()
+                    While Await reader.ReadAsync()
                         Dim role As New Role
                         role.GetType().GetField("_roleId", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).SetValue(role, reader.GetInt32(0))
                         role.RoleName = reader.GetString(1)
@@ -34,13 +34,13 @@ Public Class RoleRepository
     ''' <param name="id">Mã định danh của vai trò</param>
     ''' <returns>Đối tượng Role hoặc Nothing nếu không tìm thấy</returns>
     ''' <exception cref="OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
-    Public Function GetRoleById(ByVal id As Integer) As Role Implements IRoleRepository.GetRoleById
+    Public Async Function GetRoleByIdAsync(ByVal id As Integer) As Task(Of Role) Implements IRoleRepository.GetRoleByIdAsync
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
             Dim query As String = "SELECT RoleId, RoleName FROM Roles WHERE RoleId = ?"
             Using command As New OdbcCommand(query, connection)
                 command.Parameters.AddWithValue("id", id)
-                Using reader As OdbcDataReader = command.ExecuteReader()
-                    If reader.Read() Then
+                Using reader As OdbcDataReader = Await command.ExecuteReaderAsync()
+                    If Await reader.ReadAsync() Then
                         Dim role As New Role
                         role.GetType().GetField("_roleId", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).SetValue(role, reader.GetInt32(0))
                         role.RoleName = reader.GetString(1)

@@ -43,11 +43,11 @@
         InitializeData()
     End Sub
 
-    Private Sub ConfigureForm()
+    Private Async Sub ConfigureForm()
         If _txtTransactionCode Is Nothing OrElse _cmbSupplier Is Nothing Then Return
 
         Me.Text = If(_transactionType = "IN", "Tạo phiếu nhập", "Tạo phiếu xuất")
-        _txtTransactionCode.Text = GenerateTransactionCode()
+        _txtTransactionCode.Text = Await GenerateTransactionCode()
         _txtTransactionCode.Enabled = False  ' Vô hiệu hóa chỉnh sửa mã giao dịch
 
         If _transactionType = "IN" Then
@@ -94,12 +94,12 @@
         If _txtProductSearch IsNot Nothing Then AddHandler _txtProductSearch.TextChanged, AddressOf OnProductSearchTextChanged
     End Sub
 
-    Private Function GenerateTransactionCode() As String
+    Private Async Function GenerateTransactionCode() As Threading.Tasks.Task(Of String)
         Try
             If _transactionService Is Nothing Then Return String.Empty
             Dim prefix = If(_transactionType = "IN", "IN", "OUT")
             Dim datePart = DateTime.Now.ToString("yyyyMMdd")
-            Dim transactions = _transactionService.GetTransactions(_transactionType, Nothing)
+            Dim transactions = Await _transactionService.GetTransactionsAsync(_transactionType, Nothing)
             Dim sequence = If(transactions IsNot Nothing, transactions.Count + 1, 1)
             Return String.Format("{0}-{1}-{2:D3}", prefix, datePart, sequence)
         Catch ex As Exception
@@ -108,7 +108,7 @@
         End Try
     End Function
 
-    Private Sub LoadSuppliers()
+    Private Async Sub LoadSuppliers()
         If _cmbSupplier Is Nothing OrElse _supplierService Is Nothing Then
             ShowErrorMessage("ComboBox nhà cung cấp hoặc SupplierService không được khởi tạo.")
             Return
@@ -118,7 +118,7 @@
             If _transactionType = "OUT" Then
                 _cmbSupplier.Items.Clear()
 
-                Dim suppliers = _supplierService.GetAllSuppliers()
+                Dim suppliers = Await _supplierService.GetAllSuppliers()
                 _cmbSupplier.Items.Add("Tất cả")  ' Thêm tùy chọn "Tất cả" cho phiếu xuất
                 For Each sup In suppliers
                     _cmbSupplier.Items.Add(sup.SupplierName)
@@ -135,12 +135,12 @@
         End Try
     End Sub
 
-    Private Sub LoadCategories()
+    Private Async Sub LoadCategories()
         If _cmbCategory Is Nothing OrElse _categoryService Is Nothing Then Return
 
         Try
             _cmbCategory.Items.Clear()
-            Dim categories = _categoryService.GetAllCategories()
+            Dim categories = Await _categoryService.GetAllCategoriesAsync()
             _cmbCategory.Items.Add("Tất cả")  ' Thêm tùy chọn "Tất cả"
 
             For Each cat In categories
@@ -156,17 +156,17 @@
         End Try
     End Sub
 
-    Private Sub LoadProducts()
+    Private Async Sub LoadProducts()
         If _gridProducts Is Nothing OrElse _productService Is Nothing Then Return
 
         Try
             Dim products As List(Of ProductDTO)
             If _transactionType = "IN" AndAlso _supplierId.HasValue Then
-                products = _productService.GetProductsBySupplierId(_supplierId.Value)
+                products = Await _productService.GetProductsBySupplierIdAsync(_supplierId.Value)
             ElseIf _transactionType = "OUT" AndAlso _cmbSupplier.SelectedIndex > 0 AndAlso _cmbSupplier.SelectedValue IsNot Nothing Then
-                products = _productService.GetProductsBySupplierId(CInt(_cmbSupplier.SelectedValue))
+                products = Await _productService.GetProductsBySupplierIdAsync(CInt(_cmbSupplier.SelectedValue))
             Else
-                products = _productService.GetAllProducts()
+                products = Await _productService.GetAllProductsAsync()
             End If
 
             If products Is Nothing OrElse Not products.Any() Then
@@ -214,7 +214,7 @@
         LoadProducts()
     End Sub
 
-    Private Sub _btnAddProduct_Click(sender As Object, e As EventArgs) Handles _btnAddProduct.Click
+    Private Async Sub _btnAddProduct_Click(sender As Object, e As EventArgs) Handles _btnAddProduct.Click
         If _gridProducts Is Nothing OrElse _gridSelectedProducts Is Nothing OrElse _numQuantity Is Nothing Then Return
         Dim isAnyChecked As Boolean = False
 
@@ -243,7 +243,7 @@
                     Dim productId = If(row.Cells("ProductId_Products")?.Value IsNot Nothing, CInt(row.Cells("ProductId_Products").Value), 0)
                     If productId = 0 Then Continue For
 
-                    Dim product = _productService.GetProductById(productId)
+                    Dim product = Await _productService.GetProductByIdAsync(productId)
                     If product Is Nothing Then
                         ShowErrorMessage($"Không tìm thấy sản phẩm với ProductId: {productId}")
                         Continue For
@@ -329,7 +329,7 @@
         End Try
     End Sub
 
-    Private Sub _btnSave_Click(sender As Object, e As EventArgs) Handles _btnSave.Click
+    Private Async Sub _btnSave_Click(sender As Object, e As EventArgs) Handles _btnSave.Click
         Try
             If _selectedProducts Is Nothing OrElse _selectedProducts.Count = 0 Then
                 ShowErrorMessage("Vui lòng chọn ít nhất một sản phẩm.")
@@ -353,8 +353,8 @@
             }
 
             Dim result = If(_transactionType = "IN",
-                _transactionService.CreateStockInTransaction(transaction, _selectedProducts),
-                _transactionService.CreateStockOutTransaction(transaction, _selectedProducts))
+               Await _transactionService.CreateStockInTransactionAsync(transaction, _selectedProducts),
+               Await _transactionService.CreateStockOutTransactionAsync(transaction, _selectedProducts))
 
             If result.Success Then
                 MessageBox.Show("Tạo phiếu thành công.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information)

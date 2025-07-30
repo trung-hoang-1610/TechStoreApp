@@ -1,9 +1,6 @@
 ﻿
 Imports System.Data.Odbc
-Imports System.Collections.Generic
-Imports DocumentFormat.OpenXml.Spreadsheet
-Imports DocumentFormat.OpenXml.Wordprocessing
-
+Imports System.Threading.Tasks
 ''' <summary>
 ''' Lớp DAL cho các thao tác liên quan đến phiếu nhập/xuất kho.
 ''' </summary>
@@ -13,8 +10,11 @@ Public Class StockTransactionRepository
     ''' <summary>
     ''' Tạo một phiếu nhập/xuất kho mới.
     ''' </summary>
-    Public Function CreateTransaction(ByVal transaction As StockTransaction) As Integer Implements IStockTransactionRepository.CreateTransaction
+    Public Async Function CreateTransactionAsync(ByVal transaction As StockTransaction) As Task(Of Integer) Implements IStockTransactionRepository.CreateTransactionAsync
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim query As String = "INSERT INTO StockTransactions (TransactionCode, TransactionType, Note, CreatedBy, SupplierId, Status) VALUES (?, ?, ?, ?, ?, ?)"
             Using command As New OdbcCommand(query, connection)
                 command.Parameters.AddWithValue("?", transaction.TransactionCode)
@@ -23,11 +23,12 @@ Public Class StockTransactionRepository
                 command.Parameters.AddWithValue("?", transaction.CreatedBy)
                 command.Parameters.AddWithValue("?", If(transaction.SupplierId = 0, DBNull.Value, transaction.SupplierId))
                 command.Parameters.AddWithValue("?", transaction.Status)
-                command.ExecuteNonQuery()
+                Await command.ExecuteNonQueryAsync()
 
                 ' Lấy TransactionId vừa tạo
                 command.CommandText = "SELECT LAST_INSERT_ID()"
-                Return Convert.ToInt32(command.ExecuteScalar())
+                Dim lastId = Await command.ExecuteScalarAsync()
+                Return If(lastId IsNot Nothing, Convert.ToInt32(lastId), 0)
             End Using
             ConnectionHelper.CloseConnection(connection)
         End Using
@@ -36,15 +37,18 @@ Public Class StockTransactionRepository
     ''' <summary>
     ''' Cập nhật thông tin phiếu nhập/xuất.
     ''' </summary>
-    Public Function UpdateTransaction(ByVal transaction As StockTransaction) As Boolean Implements IStockTransactionRepository.UpdateTransaction
+    Public Async Function UpdateTransaction(ByVal transaction As StockTransaction) As Task(Of Boolean) Implements IStockTransactionRepository.UpdateTransactionAsync
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim query As String = "UPDATE StockTransactions SET Status = ?, ApprovedBy = ?, ApprovedAt = ? WHERE TransactionId = ?"
             Using command As New OdbcCommand(query, connection)
                 command.Parameters.AddWithValue("?", transaction.Status)
                 command.Parameters.AddWithValue("?", If(transaction.ApprovedBy = 0, DBNull.Value, transaction.ApprovedBy))
                 command.Parameters.AddWithValue("?", If(transaction.ApprovedAt = DateTime.MinValue, DBNull.Value, transaction.ApprovedAt))
                 command.Parameters.AddWithValue("?", transaction.TransactionId)
-                Return command.ExecuteNonQuery() > 0
+                Return Await command.ExecuteNonQueryAsync() > 0
             End Using
             ConnectionHelper.CloseConnection(connection)
 
@@ -54,9 +58,12 @@ Public Class StockTransactionRepository
     ''' <summary>
     ''' Lấy danh sách phiếu nhập/xuất theo loại và người tạo.
     ''' </summary>
-    Public Function GetTransactions(ByVal transactionType As String, ByVal createdBy As Integer?) As List(Of StockTransaction) Implements IStockTransactionRepository.GetTransactions
+    Public Async Function GetTransactions(ByVal transactionType As String, ByVal createdBy As Integer?) As Task(Of List(Of StockTransaction)) Implements IStockTransactionRepository.GetTransactionsAsync
         Dim transactions As New List(Of StockTransaction)
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim query As String = "SELECT t.*, u1.Username AS CreatedByName, u2.Username AS ApprovedByName, s.SupplierName " &
                                  "FROM StockTransactions t " &
                                  "LEFT JOIN Users u1 ON t.CreatedBy = u1.UserId " &
@@ -72,7 +79,7 @@ Public Class StockTransactionRepository
                     command.Parameters.AddWithValue("?", createdBy.Value)
                 End If
                 Using reader As OdbcDataReader = command.ExecuteReader()
-                    While reader.Read()
+                    While Await reader.ReadAsync()
                         Dim transaction As New StockTransaction()
                         transaction.SetTransactionId(reader.GetInt32(reader.GetOrdinal("TransactionId")))
                         transaction.TransactionCode = reader.GetString(reader.GetOrdinal("TransactionCode"))
@@ -97,8 +104,11 @@ Public Class StockTransactionRepository
     ''' <summary>
     ''' Lấy thông tin phiếu theo mã phiếu.
     ''' </summary>
-    Public Function GetTransactionById(ByVal transactionId As Integer) As StockTransaction Implements IStockTransactionRepository.GetTransactionById
+    Public Async Function GetTransactionById(ByVal transactionId As Integer) As Task(Of StockTransaction) Implements IStockTransactionRepository.GetTransactionByIdAsync
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim query As String = "SELECT t.*, u1.Username AS CreatedByName, u2.Username AS ApprovedByName, s.SupplierName " &
                                  "FROM StockTransactions t " &
                                  "LEFT JOIN Users u1 ON t.CreatedBy = u1.UserId " &
@@ -107,8 +117,8 @@ Public Class StockTransactionRepository
                                  "WHERE t.TransactionId = ?"
             Using command As New OdbcCommand(query, connection)
                 command.Parameters.AddWithValue("?", transactionId)
-                Using reader As OdbcDataReader = command.ExecuteReader()
-                    If reader.Read() Then
+                Using reader As OdbcDataReader = Await command.ExecuteReaderAsync()
+                    If Await reader.ReadAsync() Then
                         Dim transaction As New StockTransaction()
                         transaction.SetTransactionId(reader.GetInt32(reader.GetOrdinal("TransactionId")))
                         transaction.TransactionCode = reader.GetString(reader.GetOrdinal("TransactionCode"))
@@ -130,10 +140,13 @@ Public Class StockTransactionRepository
         Return Nothing
     End Function
 
-    Public Function SearchTransactions(transactionType As String, createdBy As Integer?, criteria As StockTransationSearchCriterialDTO) As List(Of StockTransaction) Implements IStockTransactionRepository.SearchTransactions
+    Public Async Function SearchTransactions(transactionType As String, createdBy As Integer?, criteria As StockTransationSearchCriterialDTO) As Task(Of List(Of StockTransaction)) Implements IStockTransactionRepository.SearchTransactionsAsync
         Dim transactions As New List(Of StockTransaction)
 
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
 
             Dim query As String = "SELECT t.TransactionId, t.TransactionCode, t.TransactionType, t.Note, t.CreatedBy, t.CreatedAt, " &
                                   "t.ApprovedBy, t.ApprovedAt, t.Status, t.SupplierId, " &
@@ -144,156 +157,160 @@ Public Class StockTransactionRepository
                                   "LEFT JOIN Suppliers s ON t.SupplierId = s.SupplierId " &
                                   "WHERE t.TransactionType = ?"
 
-                ' ========== Bộ lọc tìm kiếm ==========
-                ' Mã phiếu
+            ' ========== Bộ lọc tìm kiếm ==========
+            ' Mã phiếu
+            If Not String.IsNullOrEmpty(criteria.TransactionCode) Then
+                query &= " AND t.TransactionCode LIKE ?"
+            End If
+
+            ' Trạng thái
+            If Not String.IsNullOrEmpty(criteria.Status) Then
+                query &= " AND t.Status LIKE ?"
+            End If
+
+            ' Người tạo
+            If createdBy.HasValue Then
+                query &= " AND t.CreatedBy = ?"
+            End If
+
+            ' Ngày tạo từ
+            If criteria.StartDate.HasValue Then
+                query &= " AND t.CreatedAt >= ?"
+            End If
+
+            ' Ngày tạo đến
+            If criteria.EndDate.HasValue Then
+                query &= " AND t.CreatedAt <= ?"
+            End If
+
+            ' Nhà cung cấp (chỉ với phiếu nhập)
+            If criteria.SupplierId.HasValue AndAlso transactionType = "IN" Then
+                query &= " AND t.SupplierId = ?"
+            End If
+
+            query &= " ORDER BY t.TransactionId DESC LIMIT ? OFFSET ?"
+
+            Using command As New OdbcCommand(query, connection)
+                ' === Thêm tham số khớp thứ tự ===
+                command.Parameters.AddWithValue("@TransactionType", transactionType)
+
                 If Not String.IsNullOrEmpty(criteria.TransactionCode) Then
-                    query &= " AND t.TransactionCode LIKE ?"
+                    command.Parameters.AddWithValue("@CodeLike", "%" & criteria.TransactionCode.Trim() & "%")
                 End If
 
-                ' Trạng thái
                 If Not String.IsNullOrEmpty(criteria.Status) Then
-                    query &= " AND t.Status LIKE ?"
+                    command.Parameters.AddWithValue("@StatusLike", "%" & criteria.Status.Trim() & "%")
                 End If
 
-                ' Người tạo
                 If createdBy.HasValue Then
-                    query &= " AND t.CreatedBy = ?"
+                    command.Parameters.AddWithValue("@CreatedBy", createdBy.Value)
                 End If
 
-                ' Ngày tạo từ
                 If criteria.StartDate.HasValue Then
-                    query &= " AND t.CreatedAt >= ?"
+                    command.Parameters.AddWithValue("@StartDate", criteria.StartDate.Value)
                 End If
 
-                ' Ngày tạo đến
                 If criteria.EndDate.HasValue Then
-                    query &= " AND t.CreatedAt <= ?"
+                    command.Parameters.AddWithValue("@EndDate", criteria.EndDate.Value)
                 End If
 
-                ' Nhà cung cấp (chỉ với phiếu nhập)
                 If criteria.SupplierId.HasValue AndAlso transactionType = "IN" Then
-                    query &= " AND t.SupplierId = ?"
+                    command.Parameters.AddWithValue("@SupplierId", criteria.SupplierId.Value)
                 End If
 
-                query &= " ORDER BY t.TransactionId DESC LIMIT ? OFFSET ?"
+                command.Parameters.AddWithValue("@Limit", criteria.PageSize)
+                command.Parameters.AddWithValue("@Offset", (criteria.PageIndex - 1) * criteria.PageSize)
 
-                Using command As New OdbcCommand(query, connection)
-                    ' === Thêm tham số khớp thứ tự ===
-                    command.Parameters.AddWithValue("@TransactionType", transactionType)
-
-                    If Not String.IsNullOrEmpty(criteria.TransactionCode) Then
-                        command.Parameters.AddWithValue("@CodeLike", "%" & criteria.TransactionCode.Trim() & "%")
-                    End If
-
-                    If Not String.IsNullOrEmpty(criteria.Status) Then
-                        command.Parameters.AddWithValue("@StatusLike", "%" & criteria.Status.Trim() & "%")
-                    End If
-
-                    If createdBy.HasValue Then
-                        command.Parameters.AddWithValue("@CreatedBy", createdBy.Value)
-                    End If
-
-                    If criteria.StartDate.HasValue Then
-                        command.Parameters.AddWithValue("@StartDate", criteria.StartDate.Value)
-                    End If
-
-                    If criteria.EndDate.HasValue Then
-                        command.Parameters.AddWithValue("@EndDate", criteria.EndDate.Value)
-                    End If
-
-                    If criteria.SupplierId.HasValue AndAlso transactionType = "IN" Then
-                        command.Parameters.AddWithValue("@SupplierId", criteria.SupplierId.Value)
-                    End If
-
-                    command.Parameters.AddWithValue("@Limit", criteria.PageSize)
-                    command.Parameters.AddWithValue("@Offset", (criteria.PageIndex - 1) * criteria.PageSize)
-
-                    ' === Mapping kết quả ===
-                    Using reader As OdbcDataReader = command.ExecuteReader()
-                        While reader.Read()
-                            Dim transaction As New StockTransaction()
-                            transaction.SetTransactionId(reader.GetInt32(reader.GetOrdinal("TransactionId")))
-                            transaction.TransactionCode = reader.GetString(reader.GetOrdinal("TransactionCode"))
-                            transaction.TransactionType = reader.GetString(reader.GetOrdinal("TransactionType"))
-                            transaction.Note = If(reader.IsDBNull(reader.GetOrdinal("Note")), Nothing, reader.GetString(reader.GetOrdinal("Note")))
-                            transaction.CreatedBy = reader("CreatedBy")
-                            transaction.CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"))
-                            transaction.ApprovedBy = If(reader.IsDBNull(reader.GetOrdinal("ApprovedBy")), 0, reader.GetInt32(reader.GetOrdinal("ApprovedBy")))
-                            transaction.ApprovedAt = If(reader.IsDBNull(reader.GetOrdinal("ApprovedAt")), DateTime.MinValue, reader.GetDateTime(reader.GetOrdinal("ApprovedAt")))
-                            transaction.Status = reader.GetString(reader.GetOrdinal("Status"))
-                            transaction.SupplierId = If(reader.IsDBNull(reader.GetOrdinal("SupplierId")), 0, reader.GetInt32(reader.GetOrdinal("SupplierId")))
-                            transactions.Add(transaction)
-                        End While
-                    End Using
+                ' === Mapping kết quả ===
+                Using reader As OdbcDataReader = Await command.ExecuteReaderAsync()
+                    While Await reader.ReadAsync()
+                        Dim transaction As New StockTransaction()
+                        transaction.SetTransactionId(reader.GetInt32(reader.GetOrdinal("TransactionId")))
+                        transaction.TransactionCode = reader.GetString(reader.GetOrdinal("TransactionCode"))
+                        transaction.TransactionType = reader.GetString(reader.GetOrdinal("TransactionType"))
+                        transaction.Note = If(reader.IsDBNull(reader.GetOrdinal("Note")), Nothing, reader.GetString(reader.GetOrdinal("Note")))
+                        transaction.CreatedBy = reader("CreatedBy")
+                        transaction.CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"))
+                        transaction.ApprovedBy = If(reader.IsDBNull(reader.GetOrdinal("ApprovedBy")), 0, reader.GetInt32(reader.GetOrdinal("ApprovedBy")))
+                        transaction.ApprovedAt = If(reader.IsDBNull(reader.GetOrdinal("ApprovedAt")), DateTime.MinValue, reader.GetDateTime(reader.GetOrdinal("ApprovedAt")))
+                        transaction.Status = reader.GetString(reader.GetOrdinal("Status"))
+                        transaction.SupplierId = If(reader.IsDBNull(reader.GetOrdinal("SupplierId")), 0, reader.GetInt32(reader.GetOrdinal("SupplierId")))
+                        transactions.Add(transaction)
+                    End While
                 End Using
+            End Using
 
 
-                ConnectionHelper.CloseConnection(connection)
+            ConnectionHelper.CloseConnection(connection)
         End Using
 
         Return transactions
     End Function
 
 
-    Public Function CountTransactions(transactionType As String, createdBy As Integer?, criteria As StockTransationSearchCriterialDTO) As Integer Implements IStockTransactionRepository.CountTransactions
+    Public Async Function CountTransactions(transactionType As String, createdBy As Integer?, criteria As StockTransationSearchCriterialDTO) As Task(Of Integer) Implements IStockTransactionRepository.CountTransactionsAsync
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim count As Integer = 0
 
             Dim query As String = "SELECT COUNT(*) FROM StockTransactions t WHERE t.TransactionType = ?"
 
+            If Not String.IsNullOrEmpty(criteria.TransactionCode) Then
+                query &= " AND t.TransactionCode LIKE ?"
+            End If
+
+            If Not String.IsNullOrEmpty(criteria.Status) Then
+                query &= " AND t.Status LIKE ?"
+            End If
+
+            If createdBy.HasValue Then
+                query &= " AND t.CreatedBy = ?"
+            End If
+
+            If criteria.StartDate.HasValue Then
+                query &= " AND t.CreatedAt >= ?"
+            End If
+
+            If criteria.EndDate.HasValue Then
+                query &= " AND t.CreatedAt <= ?"
+            End If
+
+            If criteria.SupplierId.HasValue AndAlso transactionType = "IN" Then
+                query &= " AND t.SupplierId = ?"
+            End If
+
+            Using command As New OdbcCommand(query, connection)
+                command.Parameters.AddWithValue("@TransactionType", transactionType)
+
                 If Not String.IsNullOrEmpty(criteria.TransactionCode) Then
-                    query &= " AND t.TransactionCode LIKE ?"
+                    command.Parameters.AddWithValue("@CodeLike", "%" & criteria.TransactionCode.Trim() & "%")
                 End If
 
                 If Not String.IsNullOrEmpty(criteria.Status) Then
-                    query &= " AND t.Status LIKE ?"
+                    command.Parameters.AddWithValue("@StatusLike", "%" & criteria.Status.Trim() & "%")
                 End If
 
                 If createdBy.HasValue Then
-                    query &= " AND t.CreatedBy = ?"
+                    command.Parameters.AddWithValue("@CreatedBy", createdBy.Value)
                 End If
 
                 If criteria.StartDate.HasValue Then
-                    query &= " AND t.CreatedAt >= ?"
+                    command.Parameters.AddWithValue("@StartDate", criteria.StartDate.Value)
                 End If
 
                 If criteria.EndDate.HasValue Then
-                    query &= " AND t.CreatedAt <= ?"
+                    command.Parameters.AddWithValue("@EndDate", criteria.EndDate.Value)
                 End If
 
                 If criteria.SupplierId.HasValue AndAlso transactionType = "IN" Then
-                    query &= " AND t.SupplierId = ?"
+                    command.Parameters.AddWithValue("@SupplierId", criteria.SupplierId.Value)
                 End If
 
-                Using command As New OdbcCommand(query, connection)
-                    command.Parameters.AddWithValue("@TransactionType", transactionType)
 
-                    If Not String.IsNullOrEmpty(criteria.TransactionCode) Then
-                        command.Parameters.AddWithValue("@CodeLike", "%" & criteria.TransactionCode.Trim() & "%")
-                    End If
-
-                    If Not String.IsNullOrEmpty(criteria.Status) Then
-                        command.Parameters.AddWithValue("@StatusLike", "%" & criteria.Status.Trim() & "%")
-                    End If
-
-                    If createdBy.HasValue Then
-                        command.Parameters.AddWithValue("@CreatedBy", createdBy.Value)
-                    End If
-
-                    If criteria.StartDate.HasValue Then
-                        command.Parameters.AddWithValue("@StartDate", criteria.StartDate.Value)
-                    End If
-
-                    If criteria.EndDate.HasValue Then
-                        command.Parameters.AddWithValue("@EndDate", criteria.EndDate.Value)
-                    End If
-
-                    If criteria.SupplierId.HasValue AndAlso transactionType = "IN" Then
-                        command.Parameters.AddWithValue("@SupplierId", criteria.SupplierId.Value)
-                    End If
-
-                    count = Convert.ToInt32(command.ExecuteScalar())
-                End Using
+                count = Await command.ExecuteScalarAsync()
+            End Using
 
             ConnectionHelper.CloseConnection(connection)
             Return count
@@ -303,8 +320,11 @@ Public Class StockTransactionRepository
     ''' <summary>
     ''' Tạo phiếu nhập/xuất kho cùng với chi tiết trong một transaction.
     ''' </summary>
-    Public Function CreateTransactionWithDetails(ByVal transaction As StockTransaction, ByVal details As List(Of StockTransactionDetail)) As Integer Implements IStockTransactionRepository.CreateTransactionWithDetails
+    Public Async Function CreateTransactionWithDetails(ByVal transaction As StockTransaction, ByVal details As List(Of StockTransactionDetail)) As Task(Of Integer) Implements IStockTransactionRepository.CreateTransactionWithDetailsAsync
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim transactionScope As OdbcTransaction = connection.BeginTransaction()
             Dim query As String = "INSERT INTO StockTransactions (TransactionCode, TransactionType, Note, CreatedBy, SupplierId, Status) VALUES (?, ?, ?, ?, ?, ?)"
             Using command As New OdbcCommand(query, connection, transactionScope)
@@ -314,7 +334,7 @@ Public Class StockTransactionRepository
                 command.Parameters.AddWithValue("?", transaction.CreatedBy)
                 command.Parameters.AddWithValue("?", If(transaction.SupplierId = 0, DBNull.Value, transaction.SupplierId))
                 command.Parameters.AddWithValue("?", transaction.Status)
-                command.ExecuteNonQuery()
+                Await command.ExecuteNonQueryAsync()
                 command.CommandText = "SELECT LAST_INSERT_ID()"
                 Dim transactionId = Convert.ToInt32(command.ExecuteScalar())
 
@@ -326,7 +346,7 @@ Public Class StockTransactionRepository
                     command.Parameters.AddWithValue("?", detail.ProductId)
                     command.Parameters.AddWithValue("?", detail.Quantity)
                     command.Parameters.AddWithValue("?", If(String.IsNullOrEmpty(detail.Note), DBNull.Value, detail.Note))
-                    command.ExecuteNonQuery()
+                    Await command.ExecuteNonQueryAsync()
                 Next
 
                 transactionScope.Commit()
@@ -340,14 +360,17 @@ Public Class StockTransactionRepository
     ''' <summary>
     ''' Duyệt phiếu nhập/xuất và cập nhật tồn kho.
     ''' </summary>
-    Public Function ApproveTransaction(ByVal transactionId As Integer, ByVal approvedBy As Integer, ByVal isApproved As Boolean) As Boolean Implements IStockTransactionRepository.ApproveTransaction
+    Public Async Function ApproveTransaction(ByVal transactionId As Integer, ByVal approvedBy As Integer, ByVal isApproved As Boolean) As Task(Of Boolean) Implements IStockTransactionRepository.ApproveTransactionAsync
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim transactionScope As OdbcTransaction = connection.BeginTransaction()
             Dim query As String = "SELECT * FROM StockTransactions WHERE TransactionId = ?"
             Using command As New OdbcCommand(query, connection, transactionScope)
                 command.Parameters.AddWithValue("?", transactionId)
-                Using reader As OdbcDataReader = command.ExecuteReader()
-                    If Not reader.Read() Then
+                Using reader As OdbcDataReader = Await command.ExecuteReaderAsync()
+                    If Not Await reader.ReadAsync() Then
                         transactionScope.Rollback()
                         Throw New InvalidOperationException("Phiếu không tồn tại.")
                     End If
@@ -371,8 +394,8 @@ Public Class StockTransactionRepository
                         command.Parameters.Clear()
                         command.Parameters.AddWithValue("?", transactionId)
 
-                        Using checkReader As OdbcDataReader = command.ExecuteReader()
-                            While checkReader.Read()
+                        Using checkReader As OdbcDataReader = Await command.ExecuteReaderAsync()
+                            While Await checkReader.ReadAsync()
                                 Dim productId = checkReader.GetInt32(checkReader.GetOrdinal("ProductId"))
                                 Dim quantity = checkReader.GetInt32(checkReader.GetOrdinal("Quantity"))
                                 Dim currentStock = checkReader.GetInt32(checkReader.GetOrdinal("CurrentStock"))
@@ -392,7 +415,7 @@ Public Class StockTransactionRepository
                     command.Parameters.AddWithValue("?", approvedBy)
                     command.Parameters.AddWithValue("?", DateTime.Now)
                     command.Parameters.AddWithValue("?", transactionId)
-                    If command.ExecuteNonQuery() = 0 Then
+                    If Await command.ExecuteNonQueryAsync() = 0 Then
                         transactionScope.Rollback()
                         Throw New InvalidOperationException("Lỗi khi cập nhật trạng thái phiếu.")
                     End If
@@ -404,8 +427,8 @@ Public Class StockTransactionRepository
                         command.Parameters.Clear()
                         command.Parameters.AddWithValue("?", transactionId)
 
-                        Using detailReader As OdbcDataReader = command.ExecuteReader()
-                            While detailReader.Read()
+                        Using detailReader As OdbcDataReader = Await command.ExecuteReaderAsync()
+                            While Await detailReader.ReadAsync()
                                 Dim productId = detailReader.GetInt32(detailReader.GetOrdinal("ProductId"))
                                 Dim quantity = detailReader.GetInt32(detailReader.GetOrdinal("Quantity"))
                                 Dim quantityChange = If(transactionType = "IN", quantity, -quantity)
@@ -436,17 +459,20 @@ Public Class StockTransactionRepository
     ''' </summary>
     ''' <param name="transactionId">Mã phiếu</param>
     ''' <returns>Danh sách chi tiết</returns>
-    Public Function GetTransactionDetails(ByVal transactionId As Integer) As List(Of StockTransactionDetail) Implements IStockTransactionRepository.GetTransactionDetails
+    Public Async Function GetTransactionDetails(ByVal transactionId As Integer) As Task(Of List(Of StockTransactionDetail)) Implements IStockTransactionRepository.GetTransactionDetailsAsync
         Dim details As New List(Of StockTransactionDetail)
 
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim query As String = "SELECT DetailId, TransactionId, ProductId, Quantity, Note FROM StockTransactionDetails WHERE TransactionId = ?"
 
             Using command As New OdbcCommand(query, connection)
                 command.Parameters.AddWithValue("?", transactionId)
 
-                Using reader As OdbcDataReader = command.ExecuteReader()
-                    While reader.Read()
+                Using reader As OdbcDataReader = Await command.ExecuteReaderAsync()
+                    While Await reader.ReadAsync()
                         Dim detail As New StockTransactionDetail()
 
                         detail.SetDetailId(reader.GetInt32(reader.GetOrdinal("DetailId")))
@@ -466,13 +492,16 @@ Public Class StockTransactionRepository
 
         Return details
     End Function
-    Public Function GetTransactionStatistics(ByVal criteria As StockTransationSearchCriterialDTO) As TransactionStatisticsDTO Implements IStockTransactionRepository.GetTransactionStatistics
+    Public Async Function GetTransactionStatistics(ByVal criteria As StockTransationSearchCriterialDTO) As Task(Of TransactionStatisticsDTO) Implements IStockTransactionRepository.GetTransactionStatisticsAsync
         Dim stats As New TransactionStatisticsDTO
         stats.StatusBreakdown = New Dictionary(Of String, Integer)
         stats.TopProducts = New List(Of ProductTransactionDTO)
         stats.LowStockProducts = New List(Of ProductStockDTO)
 
         Using conn As OdbcConnection = ConnectionHelper.GetConnection()
+            If conn.State <> ConnectionState.Open Then
+                Await conn.OpenAsync()
+            End If
 
             ' Tổng số phiếu nhập/xuất và trạng thái
             Dim sql As String = "SELECT `TransactionType`, `Status`, COUNT(*) as `Count` " &
@@ -481,8 +510,8 @@ Public Class StockTransactionRepository
                            "GROUP BY `TransactionType`, `Status`"
             Using cmd As New OdbcCommand(sql, conn)
                 cmd.Parameters.AddWithValue("?", DateTime.Now.AddDays(-30))
-                Using reader As OdbcDataReader = cmd.ExecuteReader()
-                    While reader.Read()
+                Using reader As OdbcDataReader = Await cmd.ExecuteReaderAsync()
+                    While Await reader.ReadAsync()
                         Dim transType As String = reader.GetString(reader.GetOrdinal("TransactionType"))
                         Dim status As String = reader.GetString(reader.GetOrdinal("Status"))
                         Dim count As Integer = reader.GetInt32(reader.GetOrdinal("Count"))
@@ -504,8 +533,8 @@ Public Class StockTransactionRepository
               "WHERE t.`CreatedAt` >= ?"
             Using cmd As New OdbcCommand(sql, conn)
                 cmd.Parameters.AddWithValue("?", DateTime.Now.AddDays(-30))
-                Using reader As OdbcDataReader = cmd.ExecuteReader()
-                    If reader.Read() AndAlso Not reader.IsDBNull(reader.GetOrdinal("TotalValue")) Then
+                Using reader As OdbcDataReader = Await cmd.ExecuteReaderAsync()
+                    If Await reader.ReadAsync() AndAlso Not reader.IsDBNull(reader.GetOrdinal("TotalValue")) Then
                         stats.TotalTransactionValue = reader.GetDecimal(reader.GetOrdinal("TotalValue"))
                     Else
                         stats.TotalTransactionValue = 0
@@ -524,8 +553,8 @@ Public Class StockTransactionRepository
               "LIMIT 10"
             Using cmd As New OdbcCommand(sql, conn)
                 cmd.Parameters.AddWithValue("?", DateTime.Now.AddDays(-30))
-                Using reader As OdbcDataReader = cmd.ExecuteReader()
-                    While reader.Read()
+                Using reader As OdbcDataReader = Await cmd.ExecuteReaderAsync()
+                    While Await reader.ReadAsync()
                         stats.TopProducts.Add(New ProductTransactionDTO With {
                         .ProductId = reader.GetInt32(reader.GetOrdinal("ProductId")),
                         .ProductName = reader.GetString(reader.GetOrdinal("ProductName")),
@@ -541,8 +570,8 @@ Public Class StockTransactionRepository
               "FROM `Products` p " &
               "WHERE p.`Quantity` < p.`MinStockLevel`"
             Using cmd As New OdbcCommand(sql, conn)
-                Using reader As OdbcDataReader = cmd.ExecuteReader()
-                    While reader.Read()
+                Using reader As OdbcDataReader = Await cmd.ExecuteReaderAsync()
+                    While Await reader.ReadAsync()
                         stats.LowStockProducts.Add(New ProductStockDTO With {
                         .ProductId = reader.GetInt32(reader.GetOrdinal("ProductId")),
                         .ProductName = reader.GetString(reader.GetOrdinal("ProductName")),

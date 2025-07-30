@@ -1,4 +1,4 @@
-﻿Imports System.Windows.Forms
+﻿Imports System.Threading.Tasks
 Imports System.Data.Odbc
 
 Partial Public Class SupplierManagementForm
@@ -59,10 +59,10 @@ Partial Public Class SupplierManagementForm
         End Select
     End Sub
 
-    Private Sub LoadSuppliers()
+    Private Async Sub LoadSuppliers()
         Try
             dgvSuppliers.Rows.Clear()
-            Dim suppliers = _supplierService.GetAllSuppliers()
+            Dim suppliers = Await _supplierService.GetAllSuppliers()
 
             For Each s In suppliers
                 dgvSuppliers.Rows.Add(s.SupplierId, s.SupplierName, s.ContactInfo)
@@ -83,7 +83,7 @@ Partial Public Class SupplierManagementForm
         SetFormState(FormMode.None)
     End Sub
 
-    Private Sub btnAdd_Click(sender As Object, e As EventArgs) Handles btnAdd.Click
+    Private Async Sub btnAdd_Click(sender As Object, e As EventArgs) Handles btnAdd.Click
         If _formState = FormMode.None Then
             SetFormState(FormMode.Add)
             txtName.Text = ""
@@ -95,13 +95,13 @@ Partial Public Class SupplierManagementForm
                 .SupplierName = txtName.Text.Trim(),
                 .ContactInfo = txtContact.Text.Trim()
                 }
-                If IsDuplicateName(newSupplier.SupplierName) Then
+                If Await IsDuplicateName(newSupplier.SupplierName) Then
                     Dim _result = MessageBox.Show("Tên nhà cung cấp đã tồn tại. Bạn có muốn tiếp tục thêm?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
                     If _result = DialogResult.No Then Exit Sub
                 End If
 
 
-                Dim result = _supplierService.AddSupplier(newSupplier)
+                Dim result = Await _supplierService.AddSupplier(newSupplier)
 
                 If result.Success Then
                     MessageBox.Show("Thêm nhà cung cấp thành công!", "Thông báo")
@@ -116,7 +116,7 @@ Partial Public Class SupplierManagementForm
         End If
     End Sub
 
-    Private Sub btnUpdate_Click(sender As Object, e As EventArgs) Handles btnUpdate.Click
+    Private Async Sub btnUpdate_Click(sender As Object, e As EventArgs) Handles btnUpdate.Click
         If _formState = FormMode.None Then
             If _currentSupplierId <= 0 Then
                 MessageBox.Show("Vui lòng chọn nhà cung cấp để cập nhật.", "Thông báo")
@@ -145,13 +145,13 @@ Partial Public Class SupplierManagementForm
             .SupplierName = newName,
             .ContactInfo = newContact
             }
-            If IsDuplicateName(newName, _currentSupplierId) Then
+            If Await IsDuplicateName(newName, _currentSupplierId) Then
                 Dim result = MessageBox.Show("Tên nhà cung cấp đã tồn tại. Bạn có muốn tiếp tục thêm?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
                 If result = DialogResult.No Then Exit Sub
             End If
 
             Try
-                Dim result = _supplierService.UpdateSupplier(updatedSupplier)
+                Dim result = Await _supplierService.UpdateSupplier(updatedSupplier)
 
                 If result.Success Then
                     MessageBox.Show("Cập nhật thành công!", "Thông báo")
@@ -166,7 +166,7 @@ Partial Public Class SupplierManagementForm
         End If
     End Sub
 
-    Private Sub btnDelete_Click(sender As Object, e As EventArgs) Handles btnDelete.Click
+    Private Async Sub btnDelete_Click(sender As Object, e As EventArgs) Handles btnDelete.Click
         If _currentSupplierId <= 0 Then
             MessageBox.Show("Vui lòng chọn nhà cung cấp để xóa.", "Thông báo")
             Return
@@ -174,7 +174,7 @@ Partial Public Class SupplierManagementForm
 
         If MessageBox.Show("Bạn có chắc chắn muốn xóa?", "Xác nhận", MessageBoxButtons.YesNo) = DialogResult.Yes Then
             Try
-                Dim result = _supplierService.DeleteSupplier(_currentSupplierId)
+                Dim result = Await _supplierService.DeleteSupplier(_currentSupplierId)
 
                 If result Then
                     MessageBox.Show("Xóa thành công!", "Thông báo")
@@ -226,8 +226,8 @@ Partial Public Class SupplierManagementForm
         End If
     End Sub
 
-    Private Function IsDuplicateName(supplierName As String, Optional excludeId As Integer = -1) As Boolean
-        Dim allSuppliers = _supplierService.GetAllSuppliers()
+    Private Async Function IsDuplicateName(supplierName As String, Optional excludeId As Integer = -1) As Task(Of Boolean)
+        Dim allSuppliers = Await _supplierService.GetAllSuppliers()
         Return allSuppliers.Any(Function(s) s.SupplierName.Trim().ToLower() = supplierName.Trim().ToLower() AndAlso s.SupplierId <> excludeId)
     End Function
 End Class

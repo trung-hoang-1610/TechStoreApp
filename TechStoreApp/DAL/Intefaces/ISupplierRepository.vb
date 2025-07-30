@@ -1,15 +1,16 @@
-﻿Public Interface ISupplierRepository
+﻿Imports System.Threading.Tasks
+Public Interface ISupplierRepository
     ' Read operations
-    Function GetAllSuppliers() As List(Of Supplier)
-    Function GetSupplierById(supplierId As Integer) As Supplier
+    Function GetAllSuppliersAsync() As Task(Of List(Of Supplier))
+    Function GetSupplierByIdAsync(supplierId As Integer) As Task(Of Supplier)
 
 
     ' Create operation
-    Function AddSupplier(supplier As Supplier) As Integer
+    Function AddSupplierAsync(supplier As Supplier) As Task(Of Integer)
 
     ' Update operation
-    Function UpdateSupplier(supplier As Supplier) As Boolean
+    Function UpdateSupplierAsync(supplier As Supplier) As Task(Of Boolean)
 
     ' Delete operation
-    Function DeleteSupplier(supplierId As Integer) As Boolean
+    Function DeleteSupplierAsync(supplierId As Integer) As Task(Of Boolean)
 End Interface

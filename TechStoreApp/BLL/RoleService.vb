@@ -1,5 +1,5 @@
 ﻿' BLL/RoleService.vb
-
+Imports System.Threading.Tasks
 Public Class RoleService
     Implements IRoleService
 
@@ -22,8 +22,8 @@ Public Class RoleService
     ''' </summary>
     ''' <returns>Danh sách các đối tượng Role</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
-    Public Function GetAllRoles() As List(Of Role) Implements IRoleService.GetAllRoles
-        Return _roleRepository.GetAllRoles()
+    Public Async Function GetAllRoles() As Task(Of List(Of Role)) Implements IRoleService.GetAllRoles
+        Return Await _roleRepository.GetAllRolesAsync()
     End Function
 
     ''' <summary>
@@ -32,7 +32,7 @@ Public Class RoleService
     ''' <param name="id">Mã định danh của vai trò</param>
     ''' <returns>Đối tượng Role hoặc Nothing nếu không tìm thấy</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
-    Public Function GetRoleById(ByVal id As Integer) As Role Implements IRoleService.GetRoleById
-        Return _roleRepository.GetRoleById(id)
+    Public Async Function GetRoleById(ByVal id As Integer) As Task(Of Role) Implements IRoleService.GetRoleById
+        Return Await _roleRepository.GetRoleByIdAsync(id)
     End Function
 End Class

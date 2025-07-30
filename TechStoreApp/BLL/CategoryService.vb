@@ -1,4 +1,5 @@
-﻿Public Class CategoryService
+﻿Imports System.Threading.Tasks
+Public Class CategoryService
     Implements ICategoryService
 
     Private ReadOnly _categoryRepository As ICategoryRepository
@@ -20,8 +21,8 @@
     ''' </summary>
     ''' <returns>Danh sách các đối tượng Category</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
-    Public Function GetAllCategories() As List(Of Category) Implements ICategoryService.GetAllCategories
-        Return _categoryRepository.GetAllCategories()
+    Public Async Function GetAllCategoriesAsync() As Task(Of List(Of Category)) Implements ICategoryService.GetAllCategoriesAsync
+        Return Await _categoryRepository.GetAllCategoriesAsync()
     End Function
 
     ''' <summary>
@@ -30,8 +31,8 @@
     ''' <param name="id">Mã định danh của danh mục</param>
     ''' <returns>Đối tượng Category hoặc Nothing nếu không tìm thấy</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
-    Public Function GetCategoryById(ByVal id As Integer) As Category Implements ICategoryService.GetCategoryById
-        Return _categoryRepository.GetCategoryById(id)
+    Public Async Function GetCategoryByIdAsync(ByVal id As Integer) As Task(Of Category) Implements ICategoryService.GetCategoryByIdAsync
+        Return Await _categoryRepository.GetCategoryByIdAsync(id)
     End Function
 
     ''' <summary>
@@ -41,7 +42,7 @@
     ''' <returns>OperationResult chứa trạng thái thành công và danh sách lỗi (nếu có)</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi thêm vào cơ sở dữ liệu</exception>
     ''' <exception cref="ArgumentNullException">Ném ra nếu tham số category là Nothing</exception>
-    Public Function AddCategory(ByVal category As Category) As OperationResult Implements ICategoryService.AddCategory
+    Public Async Function AddCategoryAsync(ByVal category As Category) As Task(Of OperationResult) Implements ICategoryService.AddCategoryAsync
         If category Is Nothing Then
             Throw New ArgumentNullException("category", "Đối tượng Category không được là Nothing.")
         End If
@@ -54,7 +55,7 @@
             Return New OperationResult(False, errors)
         End If
 
-        Dim newId As Integer = _categoryRepository.AddCategory(category)
+        Dim newId As Integer = Await _categoryRepository.AddCategoryAsync(category)
         Return New OperationResult(newId > 0, Nothing)
     End Function
 
@@ -65,7 +66,7 @@
     ''' <returns>OperationResult chứa trạng thái thành công và danh sách lỗi (nếu có)</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi cập nhật cơ sở dữ liệu</exception>
     ''' <exception cref="ArgumentNullException">Ném ra nếu tham số category là Nothing</exception>
-    Public Function UpdateCategory(ByVal category As Category) As OperationResult Implements ICategoryService.UpdateCategory
+    Public Async Function UpdateCategoryAsync(ByVal category As Category) As Task(Of OperationResult) Implements ICategoryService.UpdateCategoryAsync
         If category Is Nothing Then
             Throw New ArgumentNullException("category", "Đối tượng Category không được là Nothing.")
         End If
@@ -79,7 +80,7 @@
             Return New OperationResult(False, errors)
         End If
 
-        Dim success As Boolean = _categoryRepository.UpdateCategory(category)
+        Dim success As Boolean = Await _categoryRepository.UpdateCategoryAsync(category)
         Return New OperationResult(success, Nothing)
     End Function
 
@@ -89,7 +90,7 @@
     ''' <param name="id">Mã định danh của danh mục</param>
     ''' <returns>True nếu xóa thành công, False nếu thất bại</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi xóa khỏi cơ sở dữ liệu</exception>
-    Public Function DeleteCategory(ByVal id As Integer) As Boolean Implements ICategoryService.DeleteCategory
-        Return _categoryRepository.DeleteCategory(id)
+    Public Async Function DeleteCategoryAsync(ByVal id As Integer) As Task(Of Boolean) Implements ICategoryService.DeleteCategoryAsync
+        Return Await _categoryRepository.DeleteCategoryAsync(id)
     End Function
 End Class

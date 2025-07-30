@@ -15,9 +15,9 @@ Public Class ProductStatisticsForm
         LoadStatistics()
     End Sub
 
-    Private Sub LoadStatistics()
+    Private Async Sub LoadStatistics()
         Try
-            Dim stats = _productService.GetProductStatistics(cboTimeRange.SelectedItem?.ToString())
+            Dim stats = Await _productService.GetProductStatisticsAsync(cboTimeRange.SelectedItem?.ToString())
             lblTotalProducts.Text = $"Tổng số sản phẩm: {stats.TotalProducts}"
             lblActiveProducts.Text = $"Sản phẩm hoạt động: {stats.ActiveProducts}"
             lblInactiveProducts.Text = $"Sản phẩm ngưng hoạt động: {stats.InactiveProducts}"
@@ -40,9 +40,9 @@ Public Class ProductStatisticsForm
         LoadStatistics()
     End Sub
 
-    Private Sub btnExportCsv_Click(sender As Object, e As EventArgs) Handles btnExportCsv.Click
+    Private Async Sub btnExportCsv_Click(sender As Object, e As EventArgs) Handles btnExportCsv.Click
         Try
-            Dim stats = _productService.GetProductStatistics(cboTimeRange.SelectedItem?.ToString())
+            Dim stats = Await _productService.GetProductStatisticsAsync(cboTimeRange.SelectedItem?.ToString())
             Using saveFileDialog As New SaveFileDialog()
                 saveFileDialog.Filter = "Excel Files|*.xlsx"
                 saveFileDialog.Title = "Chọn nơi lưu file Excel"

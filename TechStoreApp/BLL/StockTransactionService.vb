@@ -1,4 +1,4 @@
-﻿Imports System.Collections.Generic
+﻿Imports System.Threading.Tasks
 
 ''' <summary>
 ''' Lớp BLL cho các thao tác liên quan đến phiếu nhập/xuất kho.
@@ -10,7 +10,7 @@ Public Class StockTransactionService
     Private ReadOnly _productRepository As IProductRepository
     Private ReadOnly _userRepository As IUserRepository
     Private ReadOnly _supplierRepository As ISupplierRepository
-    Private ReadOnly _supplierCache As Dictionary(Of Integer, Supplier)
+    Private _supplierCache As Dictionary(Of Integer, Supplier)
 
     ''' <summary>
     ''' Khởi tạo StockTransactionService với các repository tương ứng.
@@ -32,21 +32,22 @@ Public Class StockTransactionService
         _productRepository = productRepository
         _userRepository = userRepository
         _supplierRepository = supplierRepository
-        _supplierCache = LoadSupplierCache()
+        _supplierCache = New Dictionary(Of Integer, Supplier)()
     End Sub
+
 
     ''' <summary>
     ''' Tải danh sách nhà cung cấp vào bộ nhớ cache.
     ''' </summary>
-    Private Function LoadSupplierCache() As Dictionary(Of Integer, Supplier)
-        Dim suppliers = _supplierRepository.GetAllSuppliers()
+    Private Async Function LoadSupplierCache() As Task(Of Dictionary(Of Integer, Supplier))
+        Dim suppliers = Await _supplierRepository.GetAllSuppliersAsync()
         Return suppliers.ToDictionary(Function(s) s.SupplierId, Function(s) s)
     End Function
 
     ''' <summary>
     ''' Tạo phiếu nhập kho.
     ''' </summary>
-    Public Function CreateStockInTransaction(ByVal transaction As StockTransactionDTO, ByVal details As List(Of StockTransactionDetailDTO)) As OperationResult Implements IStockTransactionService.CreateStockInTransaction
+    Public Async Function CreateStockInTransactionAsync(ByVal transaction As StockTransactionDTO, ByVal details As List(Of StockTransactionDetailDTO)) As Task(Of OperationResult) Implements IStockTransactionService.CreateStockInTransactionAsync
         If transaction Is Nothing Then
             Throw New ArgumentNullException(NameOf(transaction), "Đối tượng StockTransactionDTO không được là Nothing.")
         End If
@@ -72,7 +73,7 @@ Public Class StockTransactionService
             errors.Add("Nhà cung cấp không tồn tại.")
         End If
         For Each detail In details
-            If Not _productRepository.GetProductById(detail.ProductId) IsNot Nothing Then
+            If Not Await _productRepository.GetProductByIdAsync(detail.ProductId) IsNot Nothing Then
                 errors.Add($"Sản phẩm với ID {detail.ProductId} không tồn tại.")
             End If
         Next
@@ -90,17 +91,17 @@ Public Class StockTransactionService
                 .SupplierId = transaction.SupplierId,
                 .Status = "Pending"
             }
-            Dim stockDetails As New List(Of StockTransactionDetail)
-            For Each detail In details
-                stockDetails.Add(New StockTransactionDetail With {
+        Dim stockDetails As New List(Of StockTransactionDetail)
+        For Each detail In details
+            stockDetails.Add(New StockTransactionDetail With {
                     .TransactionId = 0, ' Sẽ được gán trong DAL
                     .ProductId = detail.ProductId,
                     .Quantity = detail.Quantity,
                     .Note = detail.Note
                 })
-            Next
-            Dim transactionId = _transactionRepository.CreateTransactionWithDetails(stockTransaction, stockDetails)
-            If transactionId > 0 Then Return New OperationResult(True, transactionId, Nothing)
+        Next
+        Dim transactionId = Await _transactionRepository.CreateTransactionWithDetailsAsync(stockTransaction, stockDetails)
+        If transactionId > 0 Then Return New OperationResult(True, transactionId, Nothing)
 
         Return New OperationResult(False, Nothing, New List(Of String) From {"Không thể tạo phiếu giao dịch."})
 
@@ -111,7 +112,7 @@ Public Class StockTransactionService
     ''' <summary>
     ''' Tạo phiếu xuất kho.
     ''' </summary>
-    Public Function CreateStockOutTransaction(ByVal transaction As StockTransactionDTO, ByVal details As List(Of StockTransactionDetailDTO)) As OperationResult Implements IStockTransactionService.CreateStockOutTransaction
+    Public Async Function CreateStockOutTransactionAsync(ByVal transaction As StockTransactionDTO, ByVal details As List(Of StockTransactionDetailDTO)) As Task(Of OperationResult) Implements IStockTransactionService.CreateStockOutTransactionAsync
         If transaction Is Nothing Then
             Throw New ArgumentNullException(NameOf(transaction), "Đối tượng StockTransactionDTO không được là Nothing.")
         End If
@@ -134,7 +135,7 @@ Public Class StockTransactionService
         End If
 
         For Each detail In details
-            Dim product = _productRepository.GetProductById(detail.ProductId)
+            Dim product = Await _productRepository.GetProductByIdAsync(detail.ProductId)
             If product Is Nothing Then
                 errors.Add($"Sản phẩm với ID {detail.ProductId} không tồn tại.")
             ElseIf product.Quantity < detail.Quantity Then
@@ -155,16 +156,16 @@ Public Class StockTransactionService
                 .SupplierId = 0,
                 .Status = "Pending"
             }
-            Dim stockDetails As New List(Of StockTransactionDetail)
-            For Each detail In details
-                stockDetails.Add(New StockTransactionDetail With {
+        Dim stockDetails As New List(Of StockTransactionDetail)
+        For Each detail In details
+            stockDetails.Add(New StockTransactionDetail With {
                     .TransactionId = 0, ' Sẽ được gán trong DAL
                     .ProductId = detail.ProductId,
                     .Quantity = detail.Quantity,
                     .Note = detail.Note
                 })
-            Next
-            Dim transactionId = _transactionRepository.CreateTransactionWithDetails(stockTransaction, stockDetails)
+        Next
+        Dim transactionId = Await _transactionRepository.CreateTransactionWithDetailsAsync(stockTransaction, stockDetails)
         If transactionId > 0 Then Return New OperationResult(True, transactionId, Nothing)
 
         Return New OperationResult(False, Nothing, New List(Of String) From {"Không thể tạo phiếu giao dịch."})
@@ -175,7 +176,7 @@ Public Class StockTransactionService
     ''' <summary>
     ''' Duyệt phiếu nhập/xuất (chỉ admin).
     ''' </summary>
-    Public Function ApproveTransaction(ByVal transactionId As Integer, ByVal approvedBy As Integer, ByVal isApproved As Boolean) As OperationResult Implements IStockTransactionService.ApproveTransaction
+    Public Async Function ApproveTransactionAsync(ByVal transactionId As Integer, ByVal approvedBy As Integer, ByVal isApproved As Boolean) As Task(Of OperationResult) Implements IStockTransactionService.ApproveTransactionAsync
         Dim currentUser = SessionManager.GetCurrentUser()
         If currentUser Is Nothing OrElse currentUser.RoleId <> 1 Then
             Return New OperationResult(False, Nothing, New List(Of String) From {"Chỉ admin mới có quyền duyệt phiếu."})
@@ -187,14 +188,14 @@ Public Class StockTransactionService
             Return New OperationResult(False, Nothing, New List(Of String) From {"Mã người duyệt không hợp lệ."})
         End If
 
-        Dim success = _transactionRepository.ApproveTransaction(transactionId, approvedBy, isApproved)
+        Dim success = Await _transactionRepository.ApproveTransactionAsync(transactionId, approvedBy, isApproved)
         Return New OperationResult(success, transactionId, Nothing)
     End Function
 
     ''' <summary>
     ''' Lấy danh sách phiếu nhập/xuất.
     ''' </summary>
-    Public Function GetTransactions(ByVal transactionType As String, ByVal userId As Integer?) As List(Of StockTransactionDTO) Implements IStockTransactionService.GetTransactions
+    Public Async Function GetTransactionsAsync(ByVal transactionType As String, ByVal userId As Integer?) As Task(Of List(Of StockTransactionDTO)) Implements IStockTransactionService.GetTransactionsAsync
         If transactionType <> "IN" AndAlso transactionType <> "OUT" Then
             Throw New ArgumentException("Loại phiếu phải là 'IN' hoặc 'OUT'.", NameOf(transactionType))
         End If
@@ -207,14 +208,15 @@ Public Class StockTransactionService
             Throw New UnauthorizedAccessException("Bạn không có quyền xem phiếu của người dùng khác.")
         End If
 
-        Dim transactions = _transactionRepository.GetTransactions(transactionType, If(currentUser IsNot Nothing AndAlso currentUser.RoleId = 1, Nothing, userId))
-        Return MapToDTOList(transactions)
+        Dim transactions = Await _transactionRepository.GetTransactionsAsync(transactionType, If(currentUser IsNot Nothing AndAlso currentUser.RoleId = 1, Nothing, userId))
+        Return Await MapToDTOList(transactions)
     End Function
 
     ''' <summary>
     ''' Tìm kiếm phiếu nhập/xuất theo tiêu chí và phân trang.
     ''' </summary>
-    Public Function SearchTransactions(transactionType As String, userId As Integer?, criteria As StockTransationSearchCriterialDTO) As List(Of StockTransactionDTO) Implements IStockTransactionService.SearchTransactions
+    Public Async Function SearchTransactionsAsync(transactionType As String, userId As Integer?, criteria As StockTransationSearchCriterialDTO) As Task(Of List(Of StockTransactionDTO)) Implements IStockTransactionService.SearchTransactionsAsync
+        _supplierCache = Await LoadSupplierCache()
         ' Kiểm tra đầu vào
         If transactionType <> "IN" AndAlso transactionType <> "OUT" Then
             Throw New ArgumentException("Loại phiếu phải là 'IN' hoặc 'OUT'.", NameOf(transactionType))
@@ -232,25 +234,25 @@ Public Class StockTransactionService
         Dim createdByFilter As Integer? = If(currentUser IsNot Nothing AndAlso currentUser.RoleId = 1, Nothing, userId)
 
         ' Gọi repo: lấy danh sách có phân trang
-        Dim transactions = _transactionRepository.SearchTransactions(transactionType, createdByFilter, criteria)
+        Dim transactions = Await _transactionRepository.SearchTransactionsAsync(transactionType, createdByFilter, criteria)
 
         ' Gọi repo: lấy tổng số bản ghi phù hợp tiêu chí
-        criteria.TotalCount = _transactionRepository.CountTransactions(transactionType, createdByFilter, criteria)
+        criteria.TotalCount = Await _transactionRepository.CountTransactionsAsync(transactionType, createdByFilter, criteria)
 
         ' Map sang DTO để trả về cho giao diện
-        Return MapToDTOList(transactions)
+        Return Await Task.Run(Function() MapToDTOList(transactions))
     End Function
 
 
     ''' <summary>
     ''' Lấy chi tiết phiếu theo mã phiếu.
     ''' </summary>
-    Public Function GetTransactionDetails(ByVal transactionId As Integer) As List(Of StockTransactionDetailDTO) Implements IStockTransactionService.GetTransactionDetails
+    Public Async Function GetTransactionDetailsAsync(ByVal transactionId As Integer) As Threading.Tasks.Task(Of List(Of StockTransactionDetailDTO)) Implements IStockTransactionService.GetTransactionDetailsAsync
         If transactionId <= 0 Then
             Throw New ArgumentException("Mã phiếu không hợp lệ.", NameOf(transactionId))
         End If
 
-        Dim transaction = _transactionRepository.GetTransactionById(transactionId)
+        Dim transaction = Await _transactionRepository.GetTransactionByIdAsync(transactionId)
         If transaction Is Nothing Then
             Throw New InvalidOperationException("Phiếu không tồn tại.")
         End If
@@ -261,20 +263,20 @@ Public Class StockTransactionService
         End If
 
         ' Gọi StockTransactionDetailDAL để lấy chi tiết phiếu
-        Dim details = _transactionRepository.GetTransactionDetails(transactionId)
-        Return MapToDetailDTOList(details)
+        Dim details = Await _transactionRepository.GetTransactionDetailsAsync(transactionId)
+        Return Await MapToDetailDTOList(details)
     End Function
 
     ''' <summary>
     ''' Chuyển đổi đối tượng StockTransaction sang StockTransactionDTO.
     ''' </summary>
-    Private Function MapToDTO(ByVal transaction As StockTransaction) As StockTransactionDTO
-
-        Dim createdByUser As User = _userRepository.GetUserById(transaction.CreatedBy)
+    Private Async Function MapToDTO(ByVal transaction As StockTransaction) As Task(Of StockTransactionDTO)
+        _supplierCache = Await LoadSupplierCache()
+        Dim createdByUser As User = Await _userRepository.GetUserByIdAsync(transaction.CreatedBy)
 
         Dim approvedByUser As User = Nothing
         If transaction.ApprovedBy > 0 Then
-            approvedByUser = _userRepository.GetUserById(transaction.ApprovedBy)
+            approvedByUser = Await _userRepository.GetUserByIdAsync(transaction.ApprovedBy)
             If approvedByUser IsNot Nothing Then
                 Console.WriteLine($"ApprovedByUser: ID = {approvedByUser.UserId}, Username = {approvedByUser.Username}")
             Else
@@ -290,7 +292,7 @@ Public Class StockTransactionService
                 supplier = _supplierCache(transaction.SupplierId)
                 Console.WriteLine($"Supplier (from cache): ID = {supplier.SupplierId}, Name = {supplier.SupplierName}")
             Else
-                supplier = _supplierRepository.GetSupplierById(transaction.SupplierId)
+                supplier = Await _supplierRepository.GetSupplierByIdAsync(transaction.SupplierId)
                 If supplier IsNot Nothing Then
                     _supplierCache(transaction.SupplierId) = supplier
                     Console.WriteLine($"Supplier (from DB): ID = {supplier.SupplierId}, Name = {supplier.SupplierName}")
@@ -328,19 +330,24 @@ Public Class StockTransactionService
     ''' <summary>
     ''' Chuyển đổi danh sách StockTransaction sang danh sách StockTransactionDTO.
     ''' </summary>
-    Private Function MapToDTOList(ByVal transactions As List(Of StockTransaction)) As List(Of StockTransactionDTO)
+
+    Private Async Function MapToDTOList(transactions As List(Of StockTransaction)) As Task(Of List(Of StockTransactionDTO))
         If transactions Is Nothing Then Return New List(Of StockTransactionDTO)
-        Return transactions.Select(Function(t) MapToDTO(t)).ToList()
+
+        Dim dtoTasks As IEnumerable(Of Task(Of StockTransactionDTO)) = transactions.Select(Function(p) MapToDTO(p))
+        Dim dtoList As StockTransactionDTO() = Await Task.WhenAll(dtoTasks)
+
+        Return dtoList.ToList()
     End Function
 
     ''' <summary>
     ''' Chuyển đổi danh sách StockTransactionDetail sang danh sách StockTransactionDetailDTO.
     ''' </summary>
-    Private Function MapToDetailDTOList(ByVal details As List(Of StockTransactionDetail)) As List(Of StockTransactionDetailDTO)
+    Private Async Function MapToDetailDTOList(ByVal details As List(Of StockTransactionDetail)) As Threading.Tasks.Task(Of List(Of StockTransactionDetailDTO))
         If details Is Nothing Then Return New List(Of StockTransactionDetailDTO)
         Dim result As New List(Of StockTransactionDetailDTO)
         For Each detail In details
-            Dim product = _productRepository.GetProductById(detail.ProductId)
+            Dim product = Await _productRepository.GetProductByIdAsync(detail.ProductId)
             result.Add(New StockTransactionDetailDTO With {
                 .DetailId = detail.DetailId,
                 .TransactionId = detail.TransactionId,
@@ -354,13 +361,13 @@ Public Class StockTransactionService
         Return result
     End Function
 
-    Public Function GetTransactionById(transactionId As Integer) As StockTransactionDTO Implements IStockTransactionService.GetTransactionById
-        Return MapToDTO(_transactionRepository.GetTransactionById(transactionId))
+    Public Async Function GetTransactionByIdAsync(transactionId As Integer) As Task(Of StockTransactionDTO) Implements IStockTransactionService.GetTransactionByIdAsync
+        Return Await MapToDTO(Await _transactionRepository.GetTransactionByIdAsync(transactionId))
     End Function
 
-    Public Function GetTransactionStatistics(ByVal criteria As StockTransationSearchCriterialDTO) As TransactionStatisticsDTO Implements IStockTransactionService.GetTransactionStatistics
+    Public Async Function GetTransactionStatistics(ByVal criteria As StockTransationSearchCriterialDTO) As Task(Of TransactionStatisticsDTO) Implements IStockTransactionService.GetTransactionStatisticsAsync
         Try
-            Return _transactionRepository.GetTransactionStatistics(criteria)
+            Return Await _transactionRepository.GetTransactionStatisticsAsync(criteria)
         Catch ex As Exception
             Throw New Exception("Lỗi khi lấy thống kê giao dịch: " & ex.Message)
         End Try

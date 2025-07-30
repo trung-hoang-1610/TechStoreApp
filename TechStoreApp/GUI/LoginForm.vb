@@ -16,10 +16,10 @@ Partial Public Class LoginForm
     ''' <summary>
     ''' Xử lý sự kiện nhấn nút Đăng nhập
     ''' </summary>
-    Private Sub btnLogin_Click(sender As Object, e As EventArgs) Handles btnLogin.Click
+    Private Async Sub btnLogin_Click(sender As Object, e As EventArgs) Handles btnLogin.Click
         Try
             lblError.Text = ""
-            Dim user = _authService.ValidateUser(txtUsername.Text, txtPassword.Text)
+            Dim user = Await _authService.ValidateUser(txtUsername.Text, txtPassword.Text)
             If user IsNot Nothing Then
                 SessionManager.SetCurrentUser(user)
                 Dim mainForm As New MainForm()

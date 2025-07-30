@@ -97,10 +97,10 @@ Public Class RegisterForm
         })
     End Sub
 
-    Private Sub LoadRoles()
+    Private Async Sub LoadRoles()
         Try
             cboRole.Items.Clear()
-            Dim roles = _roleService.GetAllRoles()
+            Dim roles = Await _roleService.GetAllRoles()
             For Each role In roles
                 cboRole.Items.Add(New With {.Text = role.RoleName, .Value = role.RoleId})
             Next
@@ -165,7 +165,7 @@ Public Class RegisterForm
         End If
     End Sub
 
-    Private Sub btnRegister_Click(ByVal sender As Object, ByVal e As EventArgs) Handles btnRegister.Click
+    Private Async Sub btnRegister_Click(ByVal sender As Object, ByVal e As EventArgs) Handles btnRegister.Click
         Try
             ' Xóa các lỗi trước đó
             Dim fieldErrorMap As New Dictionary(Of String, Label) From {
@@ -186,7 +186,7 @@ Public Class RegisterForm
             }
 
             If ValidateFields(user, fieldErrorMap) Then
-                Dim result = _authService.RegisterUser(user)
+                Dim result = Await _authService.RegisterUser(user)
                 If result.Success Then
                     MessageBox.Show("Đăng ký thành công! Vui lòng đăng nhập.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information)
                     Dim loginForm As New LoginForm()

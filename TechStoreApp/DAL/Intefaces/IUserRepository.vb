@@ -1,7 +1,8 @@
 ﻿' DAL/Interfaces/IUserRepository.vb
+Imports System.Threading.Tasks
 Public Interface IUserRepository
-    Function GetAllUsers() As List(Of User)
-    Function GetUserByUsername(ByVal username As String) As User
+    Function GetAllUsersAsync() As Task(Of List(Of User))
+    Function GetUserByUsernameAsync(ByVal username As String) As Task(Of User)
 
     ''' <summary>
     ''' Lấy người dùng theo mã định danh
@@ -9,7 +10,7 @@ Public Interface IUserRepository
     ''' <param name="id">Mã định danh của người dùng</param>
     ''' <returns>Đối tượng User hoặc Nothing nếu không tìm thấy</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
-    Function GetUserById(ByVal id As Integer) As User
+    Function GetUserByIdAsync(ByVal id As Integer) As Task(Of User)
 
     ''' <summary>
     ''' Thêm người dùng mới vào cơ sở dữ liệu
@@ -17,7 +18,7 @@ Public Interface IUserRepository
     ''' <param name="user">Đối tượng User cần thêm</param>
     ''' <returns>Mã định danh của người dùng mới</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi thêm vào cơ sở dữ liệu</exception>
-    Function AddUser(ByVal user As User) As Integer
+    Function AddUserAsync(ByVal user As User) As Task(Of Integer)
 
     ''' <summary>
     ''' Xác thực người dùng dựa trên tên đăng nhập và mật khẩu
@@ -26,5 +27,5 @@ Public Interface IUserRepository
     ''' <param name="password">Mật khẩu chưa mã hóa</param>
     ''' <returns>Đối tượng User nếu xác thực thành công, Nothing nếu thất bại</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
-    Function ValidateUser(ByVal username As String, ByVal password As String) As User
+    Function ValidateUserAsync(ByVal username As String, ByVal password As String) As Task(Of User)
 End Interface

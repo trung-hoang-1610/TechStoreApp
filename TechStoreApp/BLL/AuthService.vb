@@ -1,7 +1,7 @@
 ﻿' BLL/AuthService.vb
 Imports System.Security.Cryptography
 Imports System.Text
-Imports System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel
+Imports System.Threading.Tasks
 Public Class AuthService
     Implements IAuthService
 
@@ -27,7 +27,7 @@ Public Class AuthService
     ''' <returns>Đối tượng User nếu xác thực thành công, Nothing nếu thất bại</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
     ''' <exception cref="ArgumentNullException">Ném ra nếu username hoặc password là Nothing</exception>
-    Public Function ValidateUser(ByVal username As String, ByVal password As String) As User Implements IAuthService.ValidateUser
+    Public Async Function ValidateUser(ByVal username As String, ByVal password As String) As Task(Of User) Implements IAuthService.ValidateUser
         If username Is Nothing Then
             Throw New ArgumentNullException("username", "Tên đăng nhập không được là Nothing.")
         End If
@@ -35,7 +35,7 @@ Public Class AuthService
             Throw New ArgumentNullException("password", "Mật khẩu không được là Nothing.")
         End If
 
-        Return _userRepository.ValidateUser(username, HashPassword(password))
+        Return Await _userRepository.ValidateUserAsync(username, HashPassword(password))
     End Function
 
     ''' <summary>
@@ -45,7 +45,7 @@ Public Class AuthService
     ''' <returns>OperationResult chứa trạng thái thành công và danh sách lỗi (nếu có)</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi thêm vào cơ sở dữ liệu</exception>
     ''' <exception cref="ArgumentNullException">Ném ra nếu tham số user là Nothing</exception>
-    Public Function RegisterUser(ByVal user As User) As OperationResult Implements IAuthService.RegisterUser
+    Public Async Function RegisterUser(ByVal user As User) As Task(Of OperationResult) Implements IAuthService.RegisterUser
         If user Is Nothing Then
             Throw New ArgumentNullException("user", "Đối tượng User không được là Nothing.")
         End If
@@ -66,7 +66,7 @@ Public Class AuthService
         End If
 
         user.PasswordHash = HashPassword(user.PasswordHash)
-        Dim newId As Integer = _userRepository.AddUser(user)
+        Dim newId As Integer = Await _userRepository.AddUserAsync(user)
         Return New OperationResult(newId > 0, Nothing)
     End Function
 

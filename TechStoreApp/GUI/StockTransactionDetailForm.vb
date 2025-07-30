@@ -1,5 +1,6 @@
 ﻿Imports System.Data.Common
 
+Imports System.Threading.Tasks
 Public Class StockTransactionDetailForm
     Inherits Form
 
@@ -27,9 +28,9 @@ Public Class StockTransactionDetailForm
         LoadTransactionDetails()
     End Sub
 
-    Private Sub LoadTransactionDetails()
+    Private Async Function LoadTransactionDetails() As Task
         Try
-            Dim transaction = _transactionService.GetTransactionById(_transactionId)
+            Dim transaction = Await _transactionService.GetTransactionByIdAsync(_transactionId)
             If transaction Is Nothing Then
                 MessageBox.Show("Phiếu không tồn tại.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
                 Me.Close()
@@ -56,7 +57,7 @@ Public Class StockTransactionDetailForm
             _lblApprovedAt.Text = "Ngày duyệt: " & If(transaction.ApprovedAt.HasValue AndAlso transaction.ApprovedAt.Value > DateTime.MinValue, transaction.ApprovedAt.Value.ToString("dd/MM/yyyy HH:mm"), "(Chưa duyệt)")
 
 
-            Dim details = _transactionService.GetTransactionDetails(_transactionId)
+            Dim details = Await _transactionService.GetTransactionDetailsAsync(_transactionId)
             _gridDetails.DataSource = details
 
             If _gridDetails.Columns.Count > 0 Then
@@ -76,13 +77,15 @@ Public Class StockTransactionDetailForm
             Console.WriteLine("Lỗi viewDetail: " & ex.Message)
             Me.Close()
         End Try
+    End Function
+    Private Async Sub StockTransactionListForm_Shown(sender As Object, e As EventArgs) Handles MyBase.Shown
+        Await LoadTransactionDetails()
     End Sub
-
-    Private Sub _btnApprove_Click(sender As Object, e As EventArgs) Handles _btnApprove.Click
+    Private Async Sub _btnApprove_Click(sender As Object, e As EventArgs) Handles _btnApprove.Click
         Dim confirm = MessageBox.Show("Bạn có chắc muốn duyệt phiếu này?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
         If confirm = DialogResult.Yes Then
             Dim user = SessionManager.GetCurrentUser()
-            Dim result = _transactionService.ApproveTransaction(_transactionId, user.UserId, True)
+            Dim result = Await _transactionService.ApproveTransactionAsync(_transactionId, user.UserId, True)
             If result.Success Then
                 MessageBox.Show("Phiếu đã được duyệt.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information)
                 Me.DialogResult = DialogResult.OK
@@ -94,11 +97,11 @@ Public Class StockTransactionDetailForm
         End If
     End Sub
 
-    Private Sub _btnReject_Click(sender As Object, e As EventArgs) Handles _btnReject.Click
+    Private Async Sub _btnReject_Click(sender As Object, e As EventArgs) Handles _btnReject.Click
         Dim confirm = MessageBox.Show("Bạn có chắc muốn từ chối phiếu này?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Warning)
         If confirm = DialogResult.Yes Then
             Dim user = SessionManager.GetCurrentUser()
-            Dim result = _transactionService.ApproveTransaction(_transactionId, user.UserId, False)
+            Dim result = Await _transactionService.ApproveTransactionAsync(_transactionId, user.UserId, False)
             If result.Success Then
                 MessageBox.Show("Phiếu đã bị từ chối.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information)
                 Me.DialogResult = DialogResult.OK

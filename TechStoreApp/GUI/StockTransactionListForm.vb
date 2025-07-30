@@ -1,4 +1,5 @@
 ﻿Imports System.ComponentModel
+Imports System.Threading.Tasks
 Imports ClosedXML.Excel
 
 Public Class StockTransactionListForm
@@ -11,7 +12,6 @@ Public Class StockTransactionListForm
         _myTransactionService = ServiceFactory.CreateStockTransactionService
 
         InitializeComponent()
-        InitializeBackgroundWorkers()
 
         _gridIn.AutoGenerateColumns = False
         _gridOut.AutoGenerateColumns = False
@@ -22,19 +22,9 @@ Public Class StockTransactionListForm
         _criteriaIn = New StockTransationSearchCriterialDTO With {.PageIndex = 1, .PageSize = 10}
         _criteriaOut = New StockTransationSearchCriterialDTO With {.PageIndex = 1, .PageSize = 10}
         ConfigureControls()
-        StartLoadTransactions()
-        StartLoadStatistics()
+
     End Sub
 
-    Private Sub InitializeBackgroundWorkers()
-        _backgroundWorkerLoad = New BackgroundWorker()
-        _backgroundWorkerLoad.WorkerSupportsCancellation = True
-        _backgroundWorkerLoad.WorkerReportsProgress = False
-
-        _backgroundWorkerStats = New BackgroundWorker()
-        _backgroundWorkerStats.WorkerSupportsCancellation = True
-        _backgroundWorkerStats.WorkerReportsProgress = False
-    End Sub
 
     Private Sub ConfigureControls()
         _cmbStatus.Items.AddRange({"All", "Pending", "Approved", "Rejected"})
@@ -46,15 +36,7 @@ Public Class StockTransactionListForm
         _btnApprove.Visible = (currentUser IsNot Nothing AndAlso currentUser.RoleId = 1)
     End Sub
 
-    Private Sub StartLoadTransactions()
-        If _backgroundWorkerLoad.IsBusy Then
-            _backgroundWorkerLoad.CancelAsync()
-            ' Wait for cancellation to complete
-            While _backgroundWorkerLoad.IsBusy
-                Application.DoEvents()
-            End While
-        End If
-
+    Private Async Function LoadTransactionsAsync() As Task
         Dim currentUser = SessionManager.GetCurrentUser()
         If currentUser Is Nothing Then
             MessageBox.Show("Người dùng chưa đăng nhập. Vui lòng đăng nhập để tiếp tục.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
@@ -65,117 +47,70 @@ Public Class StockTransactionListForm
         _criteriaIn.TransactionCode = If(String.IsNullOrEmpty(_txtSearch?.Text), Nothing, _txtSearch.Text.Trim())
         _criteriaIn.Status = If(_cmbStatus?.SelectedIndex > 0 AndAlso _cmbStatus.SelectedItem IsNot Nothing, _cmbStatus.SelectedItem.ToString(), Nothing)
 
-
         _criteriaOut.TransactionCode = If(String.IsNullOrEmpty(_txtSearch?.Text), Nothing, _txtSearch.Text.Trim())
         _criteriaOut.Status = If(_cmbStatus?.SelectedIndex > 0 AndAlso _cmbStatus.SelectedItem IsNot Nothing, _cmbStatus.SelectedItem.ToString(), Nothing)
 
-        Dim args As New LoadTransactionArgs With {
-            .UserId = If(currentUser.RoleId <> 1, currentUser.UserId, Nothing),
-            .CriteriaIn = _criteriaIn,
-            .CriteriaOut = _criteriaOut
-}
+        Try
+            Dim userId As Integer? = If(currentUser.RoleId <> 1, currentUser.UserId, Nothing)
+            Dim inDataTask = _myTransactionService.SearchTransactionsAsync("IN", userId, _criteriaIn)
+            Dim outDataTask = _myTransactionService.SearchTransactionsAsync("OUT", userId, _criteriaOut)
+            Dim results = Await Task.WhenAll(inDataTask, outDataTask)
 
-        _backgroundWorkerLoad.RunWorkerAsync(args)
-    End Sub
-
-    Private Sub _backgroundWorkerLoad_DoWork(sender As Object, e As DoWorkEventArgs) Handles _backgroundWorkerLoad.DoWork
-        If _backgroundWorkerLoad.CancellationPending Then
-            e.Cancel = True
-            Return
-        End If
-
-        Dim args = DirectCast(e.Argument, LoadTransactionArgs)
-        Dim inData = _myTransactionService.SearchTransactions("IN", args.UserId, args.CriteriaIn)
-        Dim outData = _myTransactionService.SearchTransactions("OUT", args.UserId, args.CriteriaOut)
-        e.Result = New TransactionData With {.InData = inData, .OutData = outData}
-    End Sub
-
-    Private Sub _backgroundWorkerLoad_RunWorkerCompleted(sender As Object, e As RunWorkerCompletedEventArgs) Handles _backgroundWorkerLoad.RunWorkerCompleted
-        If e.Cancelled Then Return
-
-        If e.Error IsNot Nothing Then
-            MessageBox.Show("Lỗi khi tải danh sách phiếu: " & e.Error.Message & vbCrLf & e.Error.StackTrace, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
-            Return
-        End If
-
-        Dim result = DirectCast(e.Result, TransactionData)
-        _gridIn.DataSource = result.InData
-        _gridOut.DataSource = result.OutData
-        _lblPagingStatusIn.Text = $"Trang {_criteriaIn.PageIndex} / {Math.Ceiling(_criteriaIn.TotalCount / _criteriaIn.PageSize)}"
-        _lblPagingStatusOut.Text = $"Trang {_criteriaOut.PageIndex} / {Math.Ceiling(_criteriaOut.TotalCount / _criteriaOut.PageSize)}"
+            _gridIn.DataSource = results(0)
+            _gridOut.DataSource = results(1)
+            _lblPagingStatusIn.Text = $"Trang {_criteriaIn.PageIndex} / {Math.Ceiling(_criteriaIn.TotalCount / _criteriaIn.PageSize)}"
+            _lblPagingStatusOut.Text = $"Trang {_criteriaOut.PageIndex} / {Math.Ceiling(_criteriaOut.TotalCount / _criteriaOut.PageSize)}"
+        Catch ex As Exception
+            MessageBox.Show("Lỗi khi tải danh sách phiếu: " & ex.Message & vbCrLf & ex.StackTrace, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+    End Function
 
 
-    End Sub
-
-    Private Sub StartLoadStatistics()
-        If _backgroundWorkerStats.IsBusy Then
-            _backgroundWorkerStats.CancelAsync()
-            While _backgroundWorkerStats.IsBusy
-                Application.DoEvents()
-            End While
-        End If
-
+    Private Async Function LoadStatisticsAsync() As Task
         Dim criteria As New StockTransationSearchCriterialDTO With {
             .TransactionCode = If(String.IsNullOrEmpty(_txtSearch?.Text), Nothing, _txtSearch.Text.Trim()),
             .Status = If(_cmbStatus?.SelectedIndex > 0 AndAlso _cmbStatus.SelectedItem IsNot Nothing, _cmbStatus.SelectedItem.ToString(), Nothing)
         }
 
-        _backgroundWorkerStats.RunWorkerAsync(criteria)
-    End Sub
+        Try
+            Dim statsData = Await _myTransactionService.GetTransactionStatisticsAsync(criteria)
+            _lblTotalIn.Text = "Tổng phiếu nhập: " & statsData.TotalInTransactions.ToString()
+            _lblTotalOut.Text = "Tổng phiếu xuất: " & statsData.TotalOutTransactions.ToString()
+            _lblTotalValue.Text = "Tổng giá trị giao dịch: " & statsData.TotalTransactionValue.ToString("C")
 
-    Private Sub _backgroundWorkerStats_DoWork(sender As Object, e As DoWorkEventArgs) Handles _backgroundWorkerStats.DoWork
-        If _backgroundWorkerStats.CancellationPending Then
-            e.Cancel = True
-            Return
-        End If
+            Dim total As Integer = statsData.StatusBreakdown.Values.Sum()
+            Dim statusText As String = "Tình trạng: "
+            If total > 0 Then
+                Dim statusList As New List(Of String)
+                For Each kvp As KeyValuePair(Of String, Integer) In statsData.StatusBreakdown
+                    Dim percentage As Double = (kvp.Value * 100.0) / total
+                    statusList.Add(kvp.Key & ": " & String.Format("{0:F1}%", percentage))
+                Next
+                statusText &= String.Join(", ", statusList.ToArray())
+            Else
+                statusText &= "Chưa có dữ liệu"
+            End If
+            _lblStatusBreakdown.Text = statusText
 
-        Dim criteria = DirectCast(e.Argument, StockTransationSearchCriterialDTO)
-        e.Result = _myTransactionService.GetTransactionStatistics(criteria)
-    End Sub
+            _gridStats.DataSource = statsData.TopProducts
+            _gridLowStock.DataSource = statsData.LowStockProducts
+        Catch ex As Exception
+            MessageBox.Show("Lỗi khi tải thống kê: " & ex.Message & vbCrLf & ex.StackTrace, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+    End Function
 
-    Private Sub _backgroundWorkerStats_RunWorkerCompleted(sender As Object, e As RunWorkerCompletedEventArgs) Handles _backgroundWorkerStats.RunWorkerCompleted
-        If e.Cancelled Then Return
-
-        If e.Error IsNot Nothing Then
-            MessageBox.Show("Lỗi khi tải thống kê: " & e.Error.Message & vbCrLf & e.Error.StackTrace, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
-            Return
-        End If
-
-        Dim statsData = DirectCast(e.Result, TransactionStatisticsDTO)
-        _lblTotalIn.Text = "Tổng phiếu nhập: " & statsData.TotalInTransactions.ToString()
-        _lblTotalOut.Text = "Tổng phiếu xuất: " & statsData.TotalOutTransactions.ToString()
-        _lblTotalValue.Text = "Tổng giá trị giao dịch: " & statsData.TotalTransactionValue.ToString("C")
-
-        Dim total As Integer = statsData.StatusBreakdown.Values.Sum()
-        Dim statusText As String = "Tình trạng: "
-        If total > 0 Then
-            Dim statusList As New List(Of String)
-            For Each kvp As KeyValuePair(Of String, Integer) In statsData.StatusBreakdown
-                Dim percentage As Double = (kvp.Value * 100.0) / total
-                statusList.Add(kvp.Key & ": " & String.Format("{0:F1}%", percentage))
-            Next
-            statusText &= String.Join(", ", statusList.ToArray())
-        Else
-            statusText &= "Chưa có dữ liệu"
-        End If
-        _lblStatusBreakdown.Text = statusText
-
-        _gridStats.DataSource = statsData.TopProducts
-        _gridLowStock.DataSource = statsData.LowStockProducts
-    End Sub
-
-    Private Sub _btnCreateIn_Click(sender As Object, e As EventArgs) Handles _btnCreateIn.Click
+    Private Async Sub _btnCreateIn_Click(sender As Object, e As EventArgs) Handles _btnCreateIn.Click
         Using selectSupplierForm As New SelectSupplierForm()
             If selectSupplierForm.ShowDialog() = DialogResult.OK Then
-                StartLoadTransactions()
+                Await LoadTransactionsAsync()
             End If
         End Using
     End Sub
 
-    Private Sub _btnCreateOut_Click(sender As Object, e As EventArgs) Handles _btnCreateOut.Click
+    Private Async Sub _btnCreateOut_Click(sender As Object, e As EventArgs) Handles _btnCreateOut.Click
         Using createForm As New StockTransactionCreateForm("OUT")
             If createForm.ShowDialog() = DialogResult.OK Then
-                StartLoadTransactions()
+                Await LoadTransactionsAsync()
             End If
         End Using
     End Sub
@@ -191,35 +126,35 @@ Public Class StockTransactionListForm
         _btnApprove.Enabled = isRowSelected AndAlso (currentUser IsNot Nothing AndAlso currentUser.RoleId = 1)
     End Sub
 
-    Private Sub _gridIn_DoubleClick(sender As Object, e As EventArgs) Handles _gridIn.DoubleClick
-        ShowTransactionDetail(_gridIn)
+    Private Async Sub _gridIn_DoubleClick(sender As Object, e As EventArgs) Handles _gridIn.DoubleClick
+        Await ShowTransactionDetail(_gridIn)
     End Sub
 
-    Private Sub _gridOut_DoubleClick(sender As Object, e As EventArgs) Handles _gridOut.DoubleClick
-        ShowTransactionDetail(_gridOut)
+    Private Async Sub _gridOut_DoubleClick(sender As Object, e As EventArgs) Handles _gridOut.DoubleClick
+        Await ShowTransactionDetail(_gridOut)
     End Sub
 
-    Private Sub ShowTransactionDetail(grid As DataGridView)
+    Private Async Function ShowTransactionDetail(grid As DataGridView) As Task
         If grid.SelectedRows.Count > 0 Then
             Dim transactionId As Integer = CInt(grid.SelectedRows(0).Cells(If(grid Is _gridIn, "TransactionId", "TransactionIdOut")).Value)
             Using detailForm As New StockTransactionDetailForm(transactionId)
                 If detailForm.ShowDialog() = DialogResult.OK Then
-                    StartLoadTransactions()
+                    Await LoadTransactionsAsync()
                 End If
             End Using
         End If
-    End Sub
+    End Function
 
-    Private Sub _btnViewDetails_Click(sender As Object, e As EventArgs) Handles _btnViewDetails.Click
+    Private Async Sub _btnViewDetails_Click(sender As Object, e As EventArgs) Handles _btnViewDetails.Click
         Dim selectedTab = _tabControl.SelectedTab
         If selectedTab?.Text = "Phiếu nhập" Then
-            ShowTransactionDetail(_gridIn)
+            Await ShowTransactionDetail(_gridIn)
         ElseIf selectedTab?.Text = "Phiếu xuất" Then
-            ShowTransactionDetail(_gridOut)
+            Await ShowTransactionDetail(_gridOut)
         End If
     End Sub
 
-    Private Sub _btnApprove_Click(sender As Object, e As EventArgs) Handles _btnApprove.Click
+    Private Async Sub _btnApprove_Click(sender As Object, e As EventArgs) Handles _btnApprove.Click
         Dim selectedGrid As DataGridView = If(_gridIn.SelectedRows.Count > 0, _gridIn, _gridOut)
         If selectedGrid.SelectedRows.Count > 0 Then
             Dim transactionId As Integer = CInt(selectedGrid.SelectedRows(0).Cells(If(selectedGrid Is _gridIn, "TransactionId", "TransactionIdOut")).Value)
@@ -229,10 +164,10 @@ Public Class StockTransactionListForm
                     MessageBox.Show("Người dùng chưa đăng nhập.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
                     Return
                 End If
-                Dim result = _myTransactionService.ApproveTransaction(transactionId, currentUser.UserId, True)
+                Dim result = Await _myTransactionService.ApproveTransactionAsync(transactionId, currentUser.UserId, True)
                 If result.Success Then
                     MessageBox.Show("Duyệt phiếu thành công.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                    StartLoadTransactions()
+                    Await LoadTransactionsAsync()
                 Else
                     MessageBox.Show(String.Join(Environment.NewLine, result.Errors.ToArray()), "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
                 End If
@@ -240,9 +175,9 @@ Public Class StockTransactionListForm
         End If
     End Sub
 
-    Private Sub _txtSearch_TextChanged(sender As Object, e As EventArgs) Handles _txtSearch.TextChanged, _cmbStatus.SelectedIndexChanged
-        StartLoadTransactions()
-        StartLoadStatistics()
+    Private Async Sub _txtSearch_TextChanged(sender As Object, e As EventArgs) Handles _txtSearch.TextChanged, _cmbStatus.SelectedIndexChanged
+        Await LoadTransactionsAsync()
+        Await LoadStatisticsAsync()
     End Sub
 
     Private Sub _btnExportExcel_Click(sender As Object, e As EventArgs) Handles _btnExportCsv.Click
@@ -323,8 +258,11 @@ Public Class StockTransactionListForm
         End Using
     End Sub
 
-
-    Private Sub StockTransactionListForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+    Private Async Sub StockTransactionListForm_Shown(sender As Object, e As EventArgs) Handles MyBase.Shown
+        Await LoadTransactionsAsync()
+        Await LoadStatisticsAsync()
+    End Sub
+    Private  Sub StockTransactionListForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ConfigureGridColumns(_gridIn, {
             New String() {"TransactionId", "Mã phiếu", "80", "TransactionId"},
             New String() {"TransactionCode", "Mã giao dịch", "120", "TransactionCode"},
@@ -359,6 +297,8 @@ Public Class StockTransactionListForm
            New String() {"LowStockStatsCurrentStock", "Số lượng hiện tại", "150", "CurrentStock"},
            New String() {"LowStockStatsMimimumStock", "Tồn tối thiểu", "100", "MinimumStock"}
        })
+
+
     End Sub
 
     Private Sub ConfigureGridColumns(grid As DataGridView, columns As String()())
@@ -377,53 +317,44 @@ Public Class StockTransactionListForm
     End Sub
 
     Private Sub StockTransactionListForm_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
-        If _backgroundWorkerLoad.IsBusy Then
-            _backgroundWorkerLoad.CancelAsync()
-            While _backgroundWorkerLoad.IsBusy
-                Application.DoEvents()
-            End While
-        End If
 
-        If _backgroundWorkerStats.IsBusy Then
-            _backgroundWorkerStats.CancelAsync()
-            While _backgroundWorkerStats.IsBusy
-                Application.DoEvents()
-            End While
-        End If
     End Sub
     ' Phân trang: Trang trước
-    Private Sub _btnPrevPageIn_Click(sender As Object, e As EventArgs) Handles _btnPrevPageIn.Click
+    Private Async Sub _btnPrevPageIn_Click(sender As Object, e As EventArgs) Handles _btnPrevPageIn.Click
         If _criteriaIn.PageIndex > 1 Then
             _criteriaIn.PageIndex -= 1
-            StartLoadTransactions()
+            Await LoadTransactionsAsync()
+
         End If
     End Sub
 
     ' Phân trang: Trang sau
-    Private Sub _btnNextPageIn_Click(sender As Object, e As EventArgs) Handles _btnNextPageIn.Click
+    Private Async Sub _btnNextPageIn_Click(sender As Object, e As EventArgs) Handles _btnNextPageIn.Click
         Dim totalPage = Math.Ceiling(_criteriaIn.TotalCount / _criteriaIn.PageSize)
         If _criteriaIn.PageIndex < totalPage Then
             _criteriaIn.PageIndex += 1
-            StartLoadTransactions()
+            Await LoadTransactionsAsync()
+
         End If
     End Sub
 
 
 
     ' Phân trang: Trang trước
-    Private Sub _btnPrevPageOut_Click(sender As Object, e As EventArgs) Handles _btnPrevPageOut.Click
+    Private Async Sub _btnPrevPageOut_Click(sender As Object, e As EventArgs) Handles _btnPrevPageOut.Click
         If _criteriaOut.PageIndex > 1 Then
             _criteriaOut.PageIndex -= 1
-            StartLoadTransactions()
+            Await LoadTransactionsAsync()
         End If
     End Sub
 
     ' Phân trang: Trang sau
-    Private Sub _btnNextPageOut_Click(sender As Object, e As EventArgs) Handles _btnNextPageOut.Click
+    Private Async Sub _btnNextPageOut_Click(sender As Object, e As EventArgs) Handles _btnNextPageOut.Click
         Dim totalPage = Math.Ceiling(_criteriaOut.TotalCount / _criteriaOut.PageSize)
         If _criteriaOut.PageIndex < totalPage Then
             _criteriaOut.PageIndex += 1
-            StartLoadTransactions()
+            Await LoadTransactionsAsync()
+
         End If
     End Sub
 

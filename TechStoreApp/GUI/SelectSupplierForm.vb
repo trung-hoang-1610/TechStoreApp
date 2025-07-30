@@ -16,9 +16,9 @@
 
 
 
-    Private Sub LoadSuppliers()
+    Private Async Sub LoadSuppliers()
         Try
-            Dim suppliers = _supplierService.GetAllSuppliers()
+            Dim suppliers = Await _supplierService.GetAllSuppliers()
             If suppliers Is Nothing OrElse Not suppliers.Any() Then
                 MessageBox.Show("Không có nhà cung cấp nào trong hệ thống.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
                 Me.Close()

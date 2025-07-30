@@ -1,11 +1,13 @@
 ﻿' BLL/Interfaces/IRoleService.vb
+Imports System.Threading.Tasks
+
 Public Interface IRoleService
     ''' <summary>
     ''' Lấy danh sách tất cả vai trò
     ''' </summary>
     ''' <returns>Danh sách các đối tượng Role</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
-    Function GetAllRoles() As List(Of Role)
+    Function GetAllRoles() As Task(Of List(Of Role))
 
     ''' <summary>
     ''' Lấy vai trò theo mã định danh
@@ -13,5 +15,5 @@ Public Interface IRoleService
     ''' <param name="id">Mã định danh của vai trò</param>
     ''' <returns>Đối tượng Role hoặc Nothing nếu không tìm thấy</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
-    Function GetRoleById(ByVal id As Integer) As Role
+    Function GetRoleById(ByVal id As Integer) As Task(Of Role)
 End Interface
