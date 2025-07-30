@@ -1,5 +1,4 @@
 ﻿' BLL/Interfaces/IProductService.vb
-Imports Model
 
 Public Interface IProductService
     ''' <summary>

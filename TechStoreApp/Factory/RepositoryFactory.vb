@@ -1,5 +1,4 @@
-﻿Imports DAL
-Imports DAL.Interfaces
+﻿
 
 ''' <summary>
 ''' Factory class để tạo các đối tượng repository cho việc truy cập dữ liệu.
