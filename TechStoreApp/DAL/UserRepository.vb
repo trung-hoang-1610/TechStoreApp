@@ -17,8 +17,8 @@ Public Class UserRepository
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
             Dim query As String = "SELECT UserId, Username, PasswordHash, Email, RoleId, CreatedAt FROM Users"
             Using command As New OdbcCommand(query, connection)
-                Try
-                    If connection.State <> ConnectionState.Open Then
+
+                If connection.State <> ConnectionState.Open Then
                         connection.Open()
                     End If
 
@@ -34,17 +34,11 @@ Public Class UserRepository
                             users.Add(user)
                         End While
                     End Using
-                Catch ex As OdbcException
-                    Debug.WriteLine($"Lỗi cơ sở dữ liệu trong GetAllUsers: {ex.Message}")
-                    Throw
-                Catch ex As Exception
-                    Debug.WriteLine($"Lỗi hệ thống trong GetAllUsers: {ex.Message}")
-                    Throw
-                Finally
-                    If connection.State = ConnectionState.Open Then
+
+                If connection.State = ConnectionState.Open Then
                         connection.Close()
                     End If
-                End Try
+
             End Using
         End Using
         Return users
@@ -121,8 +115,8 @@ Public Class UserRepository
         Dim query As String = "SELECT UserId, Username, PasswordHash, Email, RoleId, CreatedAt FROM Users WHERE Username = ?"
 
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
-            Try
-                If connection.State <> ConnectionState.Open Then
+
+            If connection.State <> ConnectionState.Open Then
                     connection.Open()
                 End If
 
@@ -152,14 +146,11 @@ Public Class UserRepository
                         End If
                     End Using
                 End Using
-            Catch ex As OdbcException
-                Debug.WriteLine("Lỗi cơ sở dữ liệu: " & ex.Message & ", Query: " & query & ", Username: " & username)
-                Throw
-            Finally
-                If connection.State = ConnectionState.Open Then
+
+            If connection.State = ConnectionState.Open Then
                     connection.Close()
                 End If
-            End Try
+
         End Using
 
         Return Nothing

@@ -134,8 +134,8 @@ Public Class StockTransactionRepository
         Dim transactions As New List(Of StockTransaction)
 
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
-            Try
-                Dim query As String = "SELECT t.TransactionId, t.TransactionCode, t.TransactionType, t.Note, t.CreatedBy, t.CreatedAt, " &
+
+            Dim query As String = "SELECT t.TransactionId, t.TransactionCode, t.TransactionType, t.Note, t.CreatedBy, t.CreatedAt, " &
                                   "t.ApprovedBy, t.ApprovedAt, t.Status, t.SupplierId, " &
                                   "u1.UserName AS CreatedByName, u2.UserName AS ApprovedByName, s.SupplierName AS SupplierName " &
                                   "FROM StockTransactions t " &
@@ -227,12 +227,8 @@ Public Class StockTransactionRepository
                     End Using
                 End Using
 
-            Catch ex As Exception
-                Console.WriteLine("ERROR: " & ex.Message & vbCrLf & ex.StackTrace)
-                Throw
-            Finally
+
                 ConnectionHelper.CloseConnection(connection)
-            End Try
         End Using
 
         Return transactions
@@ -242,8 +238,8 @@ Public Class StockTransactionRepository
     Public Function CountTransactions(transactionType As String, createdBy As Integer?, criteria As StockTransationSearchCriterialDTO) As Integer Implements IStockTransactionRepository.CountTransactions
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
             Dim count As Integer = 0
-            Try
-                Dim query As String = "SELECT COUNT(*) FROM StockTransactions t WHERE t.TransactionType = ?"
+
+            Dim query As String = "SELECT COUNT(*) FROM StockTransactions t WHERE t.TransactionType = ?"
 
                 If Not String.IsNullOrEmpty(criteria.TransactionCode) Then
                     query &= " AND t.TransactionCode LIKE ?"
@@ -298,11 +294,8 @@ Public Class StockTransactionRepository
 
                     count = Convert.ToInt32(command.ExecuteScalar())
                 End Using
-            Catch ex As Exception
-                Throw
-            Finally
-                ConnectionHelper.CloseConnection(connection)
-            End Try
+
+            ConnectionHelper.CloseConnection(connection)
             Return count
         End Using
     End Function

@@ -193,18 +193,15 @@ Public Class ProductRepository
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
             Dim query As String = "SELECT COUNT(*) FROM Products WHERE IsActive = TRUE"
 
-            Try
-                If connection.State <> ConnectionState.Open Then
+
+            If connection.State <> ConnectionState.Open Then
                     connection.Open()
                 End If
 
                 Using command As New OdbcCommand(query, connection)
                     Return Convert.ToInt32(command.ExecuteScalar())
                 End Using
-            Catch ex As OdbcException
-                Debug.WriteLine("Lỗi cơ sở dữ liệu: " & ex.Message & ", Query: " & query)
-                Throw
-            End Try
+
         End Using
     End Function
 
@@ -316,128 +313,68 @@ Public Class ProductRepository
     ''' <param name="product">Đối tượng Product để ánh xạ.</param>
     ''' <param name="reader">OdbcDataReader chứa dữ liệu.</param>
     Private Sub MapProductFields(ByVal product As Product, ByVal reader As OdbcDataReader)
-        Try
-            product.SetProductId(If(IsDBNull(reader("ProductId")), 0, Convert.ToInt32(reader("ProductId"))))
-            Debug.WriteLine("ProductId thô: " & reader.GetValue(reader.GetOrdinal("ProductId")).ToString())
 
-        Catch ex As Exception
-            Debug.WriteLine("❌ Lỗi tại ProductId: " & ex.Message)
-        End Try
-
-        Try
-            product.ProductName = If(IsDBNull(reader("ProductName")), String.Empty, reader("ProductName").ToString())
-        Catch ex As Exception
-            Debug.WriteLine("❌ Lỗi tại ProductName: " & ex.Message)
-        End Try
-
-        Try
-            product.Description = If(IsDBNull(reader("Description")), String.Empty, reader("Description").ToString())
-        Catch ex As Exception
-            Debug.WriteLine("❌ Lỗi tại Description: " & ex.Message)
-        End Try
-
-        Try
-            product.Unit = If(reader.GetSchemaTable.Columns.Contains("Unit") AndAlso Not IsDBNull(reader("Unit")), reader("Unit").ToString(), "Chiếc")
-        Catch ex As Exception
-            Debug.WriteLine("❌ Lỗi tại Unit: " & ex.Message)
-        End Try
-
-        Try
-            product.Price = If(IsDBNull(reader("Price")), 0D, Convert.ToDecimal(reader("Price")))
-        Catch ex As Exception
-            Debug.WriteLine("❌ Lỗi tại Price: " & ex.Message)
-        End Try
-
-        Try
-            product.Quantity = Convert.ToInt32(reader("Quantity"))
-        Catch ex As Exception
-            Debug.WriteLine("❌ Lỗi tại Quantity: " & ex.Message)
-        End Try
-
-        Try
-            product.MinStockLevel = Convert.ToInt32(reader("MinStockLevel"))
-        Catch ex As Exception
-            Debug.WriteLine("❌ Lỗi tại MinStockLevel: " & ex.Message)
-        End Try
-
-        Try
-            product.CategoryId = If(IsDBNull(reader("CategoryId")), 0, Convert.ToInt32(reader("CategoryId")))
-        Catch ex As Exception
-            Debug.WriteLine("❌ Lỗi tại CategoryId: " & ex.Message)
-        End Try
-        Try
-            product.SupplierId = If(IsDBNull(reader("SupplierId")), 0, Convert.ToInt32(reader("SupplierId")))
-        Catch ex As Exception
-            Debug.WriteLine("❌ Lỗi tại SupplierId: " & ex.Message)
-        End Try
-        Try
-            product.CreatedBy = Convert.ToInt32(reader("CreatedBy"))
-        Catch ex As Exception
-            Debug.WriteLine("❌ Lỗi tại CreatedBy: " & ex.Message)
-        End Try
-
-        Try
-            product.CreatedAt = Convert.ToDateTime(reader("CreatedAt"))
-        Catch ex As Exception
-            Debug.WriteLine("❌ Lỗi tại CreatedAt: " & ex.Message)
-        End Try
-
-        Try
-            product.IsActive = Convert.ToBoolean(reader("IsActive"))
-        Catch ex As Exception
-            Debug.WriteLine("❌ Lỗi tại IsActive: " & ex.Message)
-        End Try
+        product.SetProductId(If(IsDBNull(reader("ProductId")), 0, Convert.ToInt32(reader("ProductId"))))
+        product.ProductName = If(IsDBNull(reader("ProductName")), String.Empty, reader("ProductName").ToString())
+        product.Description = If(IsDBNull(reader("Description")), String.Empty, reader("Description").ToString())
+        product.Unit = If(reader.GetSchemaTable.Columns.Contains("Unit") AndAlso Not IsDBNull(reader("Unit")), reader("Unit").ToString(), "Chiếc")
+        product.Price = If(IsDBNull(reader("Price")), 0D, Convert.ToDecimal(reader("Price")))
+        product.Quantity = Convert.ToInt32(reader("Quantity"))
+        product.MinStockLevel = Convert.ToInt32(reader("MinStockLevel"))
+        product.CategoryId = If(IsDBNull(reader("CategoryId")), 0, Convert.ToInt32(reader("CategoryId")))
+        product.SupplierId = If(IsDBNull(reader("SupplierId")), 0, Convert.ToInt32(reader("SupplierId")))
+        product.CreatedBy = Convert.ToInt32(reader("CreatedBy"))
+        product.CreatedAt = Convert.ToDateTime(reader("CreatedAt"))
+        product.IsActive = Convert.ToBoolean(reader("IsActive"))
     End Sub
 
     Public Function GetProductStatistics(timeRange As String) As ProductStatisticsDTO Implements IProductRepository.GetProductStatistics
         Dim stats As New ProductStatisticsDTO
         stats.ProductsByCategory = New Dictionary(Of String, Integer)
-        Try
-            Using conn As OdbcConnection = ConnectionHelper.GetConnection()
-                Dim query As String = "SELECT COUNT(*) AS Total, " &
+
+        Using conn As OdbcConnection = ConnectionHelper.GetConnection()
+            Dim query As String = "SELECT COUNT(*) AS Total, " &
                                      "SUM(CASE WHEN IsActive = 1 THEN 1 ELSE 0 END) AS Active, " &
                                      "SUM(CASE WHEN IsActive = 0 THEN 1 ELSE 0 END) AS Inactive, " &
                                      "SUM(CASE WHEN Quantity < MinStockLevel THEN 1 ELSE 0 END) AS LowStock, " &
                                      "SUM(Price * Quantity) AS InventoryValue " &
                                      "FROM Products"
-                If timeRange = "7 ngày qua" Then
-                    query &= " WHERE CreatedAt >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)"
-                ElseIf timeRange = "30 ngày qua" Then
-                    query &= " WHERE CreatedAt >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)"
-                End If
+            If timeRange = "7 ngày qua" Then
+                query &= " WHERE CreatedAt >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)"
+            ElseIf timeRange = "30 ngày qua" Then
+                query &= " WHERE CreatedAt >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)"
+            End If
 
-                Using cmd As New OdbcCommand(query, conn)
-                    Using reader As OdbcDataReader = cmd.ExecuteReader()
-                        If reader.Read() Then
-                            stats.TotalProducts = reader.GetInt32(0)
-                            stats.ActiveProducts = reader.GetInt32(1)
-                            stats.InactiveProducts = reader.GetInt32(2)
-                            stats.LowStockProducts = reader.GetInt32(3)
-                            stats.InventoryValue = If(reader.IsDBNull(4), 0, reader.GetDecimal(4))
-                        End If
-                    End Using
-                End Using
-
-                query = "SELECT c.CategoryName, COUNT(p.ProductId) " &
-                        "FROM Products p INNER JOIN Categories c ON p.CategoryId = c.CategoryId "
-                If timeRange = "7 ngày qua" Then
-                    query &= "WHERE p.CreatedAt >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) "
-                ElseIf timeRange = "30 ngày qua" Then
-                    query &= "WHERE p.CreatedAt >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) "
-                End If
-                query &= "GROUP BY c.CategoryName"
-
-                Using cmd As New OdbcCommand(query, conn)
-                    Using reader As OdbcDataReader = cmd.ExecuteReader()
-                        While reader.Read()
-                            stats.ProductsByCategory.Add(reader.GetString(0), reader.GetInt32(1))
-                        End While
-                    End Using
+            Using cmd As New OdbcCommand(query, conn)
+                Using reader As OdbcDataReader = cmd.ExecuteReader()
+                    If reader.Read() Then
+                        stats.TotalProducts = reader.GetInt32(0)
+                        stats.ActiveProducts = reader.GetInt32(1)
+                        stats.InactiveProducts = reader.GetInt32(2)
+                        stats.LowStockProducts = reader.GetInt32(3)
+                        stats.InventoryValue = If(reader.IsDBNull(4), 0, reader.GetDecimal(4))
+                    End If
                 End Using
             End Using
-        Catch ex As OdbcException
-            Throw ex
-        End Try
+
+            query = "SELECT c.CategoryName, COUNT(p.ProductId) " &
+                        "FROM Products p INNER JOIN Categories c ON p.CategoryId = c.CategoryId "
+            If timeRange = "7 ngày qua" Then
+                query &= "WHERE p.CreatedAt >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) "
+            ElseIf timeRange = "30 ngày qua" Then
+                query &= "WHERE p.CreatedAt >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) "
+            End If
+            query &= "GROUP BY c.CategoryName"
+
+            Using cmd As New OdbcCommand(query, conn)
+                Using reader As OdbcDataReader = cmd.ExecuteReader()
+                    While reader.Read()
+                        stats.ProductsByCategory.Add(reader.GetString(0), reader.GetInt32(1))
+                    End While
+                End Using
+            End Using
+        End Using
+
         Return stats
     End Function
 

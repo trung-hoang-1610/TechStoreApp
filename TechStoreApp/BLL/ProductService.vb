@@ -235,8 +235,7 @@ Public Class ProductService
                 _userCache(p.CreatedBy) = user
             End If
         End If
-        Console.WriteLine("categoryID: " & p.CategoryId)
-        Console.WriteLine("supplierID: " & p.SupplierId)
+
         Return New ProductDTO With {
         .ProductId = p.ProductId,
         .ProductName = p.ProductName,

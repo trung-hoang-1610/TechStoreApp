@@ -81,8 +81,8 @@ Public Class StockTransactionService
             Return New OperationResult(False, Nothing, errors)
         End If
 
-        Try
-            Dim stockTransaction As New StockTransaction With {
+
+        Dim stockTransaction As New StockTransaction With {
                 .TransactionCode = transaction.TransactionCode,
                 .TransactionType = transaction.TransactionType,
                 .Note = transaction.Note,
@@ -100,10 +100,12 @@ Public Class StockTransactionService
                 })
             Next
             Dim transactionId = _transactionRepository.CreateTransactionWithDetails(stockTransaction, stockDetails)
-            Return New OperationResult(True, transactionId, Nothing)
-        Catch ex As Exception
-            Return New OperationResult(False, Nothing, New List(Of String) From {ex.Message})
-        End Try
+            If transactionId > 0 Then Return New OperationResult(True, transactionId, Nothing)
+
+        Return New OperationResult(False, Nothing, New List(Of String) From {"Không thể tạo phiếu giao dịch."})
+
+
+
     End Function
 
     ''' <summary>
@@ -130,9 +132,7 @@ Public Class StockTransactionService
         If transaction.TransactionType <> "OUT" Then
             errors.Add("Loại phiếu phải là 'OUT' cho phiếu xuất.")
         End If
-        'If transaction.SupplierId.HasValue Then
-        '    errors.Add("Phiếu xuất không được có nhà cung cấp.")
-        'End If
+
         For Each detail In details
             Dim product = _productRepository.GetProductById(detail.ProductId)
             If product Is Nothing Then
@@ -146,8 +146,8 @@ Public Class StockTransactionService
             Return New OperationResult(False, Nothing, errors)
         End If
 
-        Try
-            Dim stockTransaction As New StockTransaction With {
+
+        Dim stockTransaction As New StockTransaction With {
                 .TransactionCode = transaction.TransactionCode,
                 .TransactionType = transaction.TransactionType,
                 .Note = transaction.Note,
@@ -165,10 +165,11 @@ Public Class StockTransactionService
                 })
             Next
             Dim transactionId = _transactionRepository.CreateTransactionWithDetails(stockTransaction, stockDetails)
-            Return New OperationResult(True, transactionId, Nothing)
-        Catch ex As Exception
-            Return New OperationResult(False, Nothing, New List(Of String) From {ex.Message})
-        End Try
+        If transactionId > 0 Then Return New OperationResult(True, transactionId, Nothing)
+
+        Return New OperationResult(False, Nothing, New List(Of String) From {"Không thể tạo phiếu giao dịch."})
+
+
     End Function
 
     ''' <summary>
@@ -186,12 +187,8 @@ Public Class StockTransactionService
             Return New OperationResult(False, Nothing, New List(Of String) From {"Mã người duyệt không hợp lệ."})
         End If
 
-        Try
-            Dim success = _transactionRepository.ApproveTransaction(transactionId, approvedBy, isApproved)
-            Return New OperationResult(success, transactionId, Nothing)
-        Catch ex As Exception
-            Return New OperationResult(False, Nothing, New List(Of String) From {ex.Message})
-        End Try
+        Dim success = _transactionRepository.ApproveTransaction(transactionId, approvedBy, isApproved)
+        Return New OperationResult(success, transactionId, Nothing)
     End Function
 
     ''' <summary>
@@ -272,24 +269,8 @@ Public Class StockTransactionService
     ''' Chuyển đổi đối tượng StockTransaction sang StockTransactionDTO.
     ''' </summary>
     Private Function MapToDTO(ByVal transaction As StockTransaction) As StockTransactionDTO
-        Console.WriteLine("=== Mapping StockTransaction to DTO ===")
-        Console.WriteLine($"TransactionId: {transaction.TransactionId}")
-        Console.WriteLine($"TransactionCode: {transaction.TransactionCode}")
-        Console.WriteLine($"TransactionType: {transaction.TransactionType}")
-        Console.WriteLine($"Note: {transaction.Note}")
-        Console.WriteLine($"CreatedBy: {transaction.CreatedBy}")
-        Console.WriteLine($"CreatedAt: {transaction.CreatedAt}")
-        Console.WriteLine($"SupplierId: {transaction.SupplierId}")
-        Console.WriteLine($"Status: {transaction.Status}")
-        Console.WriteLine($"ApprovedBy: {transaction.ApprovedBy}")
-        Console.WriteLine($"ApprovedAt: {transaction.ApprovedAt}")
 
         Dim createdByUser As User = _userRepository.GetUserById(transaction.CreatedBy)
-        If createdByUser IsNot Nothing Then
-            Console.WriteLine($"CreatedByUser: ID = {createdByUser.UserId}, Username = {createdByUser.Username}")
-        Else
-            Console.WriteLine("CreatedByUser: Không tìm thấy")
-        End If
 
         Dim approvedByUser As User = Nothing
         If transaction.ApprovedBy > 0 Then
