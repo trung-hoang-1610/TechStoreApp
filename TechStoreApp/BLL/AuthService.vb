@@ -61,10 +61,6 @@ Public Class AuthService
             Return New OperationResult(False, errors)
         End If
 
-        If errors.Count > 0 Then
-            Return New OperationResult(False, errors)
-        End If
-
         user.PasswordHash = HashPassword(user.PasswordHash)
         Dim newId As Integer = Await _userRepository.AddUserAsync(user)
         Return New OperationResult(newId > 0, Nothing)
