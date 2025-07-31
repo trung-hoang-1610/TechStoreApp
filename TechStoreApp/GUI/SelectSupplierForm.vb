@@ -40,7 +40,6 @@
             Return
         End If
         SelectedSupplierId = CInt(_cmbSupplier.SelectedValue)
-
         Dim createForm As New StockTransactionCreateForm("IN", SelectedSupplierId)
         Dim result = createForm.ShowDialog()
         If result = DialogResult.OK Then

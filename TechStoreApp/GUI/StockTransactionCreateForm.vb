@@ -53,7 +53,7 @@
         If _transactionType = "IN" Then
             _cmbSupplier.Enabled = False  ' Vô hiệu hóa chọn NCC cho phiếu nhập
             If _supplierId.HasValue Then
-                Dim supplier = _supplierService.GetSupplierById(_supplierId.Value)
+                Dim supplier = Await _supplierService.GetSupplierById(_supplierId.Value)
                 If supplier IsNot Nothing Then
                     _cmbSupplier.Items.Add(supplier)
                     _cmbSupplier.DisplayMember = "SupplierName"
