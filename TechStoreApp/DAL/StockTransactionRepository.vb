@@ -30,7 +30,6 @@ Public Class StockTransactionRepository
                 Dim lastId = Await command.ExecuteScalarAsync()
                 Return If(lastId IsNot Nothing, Convert.ToInt32(lastId), 0)
             End Using
-            ConnectionHelper.CloseConnection(connection)
         End Using
     End Function
 
@@ -50,7 +49,6 @@ Public Class StockTransactionRepository
                 command.Parameters.AddWithValue("?", transaction.TransactionId)
                 Return Await command.ExecuteNonQueryAsync() > 0
             End Using
-            ConnectionHelper.CloseConnection(connection)
 
         End Using
     End Function
@@ -95,7 +93,6 @@ Public Class StockTransactionRepository
                     End While
                 End Using
             End Using
-            ConnectionHelper.CloseConnection(connection)
 
         End Using
         Return transactions
@@ -134,7 +131,6 @@ Public Class StockTransactionRepository
                     End If
                 End Using
             End Using
-            ConnectionHelper.CloseConnection(connection)
 
         End Using
         Return Nothing
@@ -241,7 +237,6 @@ Public Class StockTransactionRepository
             End Using
 
 
-            ConnectionHelper.CloseConnection(connection)
         End Using
 
         Return transactions
@@ -312,7 +307,6 @@ Public Class StockTransactionRepository
                 count = Await command.ExecuteScalarAsync()
             End Using
 
-            ConnectionHelper.CloseConnection(connection)
             Return count
         End Using
     End Function
@@ -352,7 +346,6 @@ Public Class StockTransactionRepository
                 transactionScope.Commit()
                 Return transactionId
             End Using
-            ConnectionHelper.CloseConnection(connection)
 
         End Using
     End Function
@@ -486,7 +479,6 @@ Public Class StockTransactionRepository
                 End Using
             End Using
 
-            ConnectionHelper.CloseConnection(connection)
 
         End Using
 
@@ -582,7 +574,6 @@ Public Class StockTransactionRepository
                 End Using
             End Using
 
-            ConnectionHelper.CloseConnection(conn)
         End Using
 
         Return stats
