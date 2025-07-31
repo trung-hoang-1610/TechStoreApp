@@ -46,7 +46,7 @@ Public Class ProductManagementForm
             Dim role = Await ServiceFactory.CreateRoleService().GetRoleById(user.RoleId)
             Dim roleName = role.RoleName.Trim().ToLower()
 
-            If roleName = "user" Then
+            If roleName <> "admin" Then
                 btnAdd.Visible = False
                 btnUpdate.Visible = False
                 btnDelete.Visible = False
