@@ -189,8 +189,6 @@ Public Class RegisterForm
                 Dim result = Await _authService.RegisterUser(user)
                 If result.Success Then
                     MessageBox.Show("Đăng ký thành công! Vui lòng đăng nhập.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                    Dim loginForm As New LoginForm()
-                    loginForm.Show()
                     Me.Close()
                 Else
                     DisplayServiceErrors(result.Errors, fieldErrorMap)
@@ -208,8 +206,7 @@ Public Class RegisterForm
     End Sub
 
     Private Sub btnBackToLogin_Click(ByVal sender As Object, ByVal e As EventArgs) Handles btnBackToLogin.Click
-        Dim loginForm As New LoginForm()
-        loginForm.Show()
+       
         Me.Close()
     End Sub
 
