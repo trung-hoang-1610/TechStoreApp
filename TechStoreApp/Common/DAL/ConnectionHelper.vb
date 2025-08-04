@@ -19,11 +19,8 @@ Public Class ConnectionHelper
     ''' <returns>Đối tượng OdbcConnection đã mở</returns>
     ''' <exception cref="OdbcException">Ném ra nếu không thể kết nối đến cơ sở dữ liệu</exception>
     Public Shared Function GetConnection() As OdbcConnection
-        Dim connection As New OdbcConnection(ConnectionString)
-        If connection.State = ConnectionState.Closed Then
-            connection.Open()
-        End If
-        Return connection
+        Return New OdbcConnection(ConnectionString)
+
     End Function
 
     ''' <summary>

@@ -15,6 +15,10 @@ Public Class UserRepository
     Public Async Function GetAllUsersAsync() As Task(Of List(Of User)) Implements IUserRepository.GetAllUsersAsync
         Dim users As New List(Of User)
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
+
             Dim query As String = "SELECT UserId, Username, PasswordHash, Email, RoleId, CreatedAt FROM Users"
             Using command As New OdbcCommand(query, connection)
 
@@ -51,6 +55,9 @@ Public Class UserRepository
     ''' <exception cref="OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
     Public Async Function GetUserByIdAsync(ByVal id As Integer) As Task(Of User) Implements IUserRepository.GetUserByIdAsync
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim query As String = "SELECT UserId, Username, PasswordHash, Email, RoleId, CreatedAt FROM Users WHERE UserId = ?"
             Using command As New OdbcCommand(query, connection)
                 command.Parameters.AddWithValue("id", id)
@@ -67,7 +74,6 @@ Public Class UserRepository
                     End If
                 End Using
             End Using
-            ConnectionHelper.CloseConnection(connection)
         End Using
         Return Nothing
     End Function
@@ -80,6 +86,9 @@ Public Class UserRepository
     ''' <exception cref="OdbcException">Ném ra nếu có lỗi khi thêm vào cơ sở dữ liệu</exception>
     Public Async Function AddUserAsync(ByVal user As User) As Task(Of Integer) Implements IUserRepository.AddUserAsync
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim insertQuery As String = "INSERT INTO Users (Username, PasswordHash, Email, RoleId) VALUES (?, ?, ?, ?)"
             Using command As New OdbcCommand(insertQuery, connection)
                 command.Parameters.AddWithValue("", user.Username)
@@ -147,9 +156,7 @@ Public Class UserRepository
                 End Using
             End Using
 
-            If connection.State = ConnectionState.Open Then
-                connection.Close()
-            End If
+
 
         End Using
 

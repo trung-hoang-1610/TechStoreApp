@@ -15,6 +15,9 @@ Public Class ProductRepository
     Public Async Function GetAllProductsAsync() As Task(Of List(Of Product)) Implements IProductRepository.GetAllProductsAsync
         Dim products As New List(Of Product)
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim query As String = "SELECT ProductId, ProductName, Description, Unit, Price, Quantity, MinStockLevel, CategoryId, SupplierId, CreatedBy, CreatedAt, isActive FROM Products WHERE IsActive = TRUE ORDER BY ProductId DESC"
 
             If connection.State <> ConnectionState.Open Then
@@ -41,6 +44,9 @@ Public Class ProductRepository
         End If
 
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim query As String = "SELECT ProductId, ProductName, Description, Unit, Price, Quantity, MinStockLevel, CategoryId, SupplierId, CreatedBy, CreatedAt, isActive FROM Products WHERE ProductId = ? AND IsActive = TRUE"
 
             If connection.State <> ConnectionState.Open Then
@@ -68,6 +74,9 @@ Public Class ProductRepository
         End If
 
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim query As String = "INSERT INTO Products (ProductName, Description, Unit, Price, Quantity, MinStockLevel, CategoryId, SupplierId, CreatedBy, IsActive) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
             Dim getIdQuery As String = "SELECT LAST_INSERT_ID()"
 
@@ -102,6 +111,9 @@ Public Class ProductRepository
         End If
 
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim query As String = "UPDATE Products SET ProductName = ?, Description = ?, Unit = ?, Price = ?, Quantity = ?, MinStockLevel = ?, CategoryId = ?, SupplierId = ?, IsActive = ? WHERE ProductId = ?"
 
             If connection.State <> ConnectionState.Open Then
@@ -130,6 +142,9 @@ Public Class ProductRepository
         End If
 
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim query As String = "DELETE FROM Products WHERE ProductId = ?"
 
             If connection.State <> ConnectionState.Open Then
@@ -153,6 +168,9 @@ Public Class ProductRepository
 
         Dim products As New List(Of Product)
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim offset = pageIndex * pageSize
             Dim query As String = "SELECT ProductId, ProductName, Description, Unit, Price, Quantity, MinStockLevel, CategoryId, SupplierId, CreatedBy, CreatedAt, isActive FROM Products WHERE IsActive = TRUE ORDER BY ProductId LIMIT ? OFFSET ?"
 
@@ -342,6 +360,9 @@ Public Class ProductRepository
         stats.ProductsByCategory = New Dictionary(Of String, Integer)
 
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim query As String = "SELECT COUNT(*) AS Total, " &
                                  "SUM(CASE WHEN IsActive = 1 THEN 1 ELSE 0 END) AS Active, " &
                                  "SUM(CASE WHEN IsActive = 0 THEN 1 ELSE 0 END) AS Inactive, " &
@@ -396,6 +417,9 @@ Public Class ProductRepository
     ''' </summary>
     Public Async Function UpdateProductQuantityAsync(ByVal productId As Integer, ByVal quantityChange As Integer) As Task(Of Boolean) Implements IProductRepository.UpdateProductQuantityAsync
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim query As String = "UPDATE Products SET Quantity = Quantity + ? WHERE ProductId = ?"
 
             If connection.State <> ConnectionState.Open Then
@@ -413,6 +437,9 @@ Public Class ProductRepository
     Public Async Function GetProductsBySupplierIdAsync(id As Integer) As Task(Of List(Of Product)) Implements IProductRepository.GetProductsBySupplierIdAsync
         Dim products As New List(Of Product)
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim query As String = "SELECT ProductId, ProductName, Description, Unit, Price, Quantity, MinStockLevel, CategoryId, SupplierId, CreatedBy, CreatedAt, isActive FROM Products WHERE IsActive = TRUE AND SupplierId = ? ORDER BY ProductId DESC"
 
             If connection.State <> ConnectionState.Open Then

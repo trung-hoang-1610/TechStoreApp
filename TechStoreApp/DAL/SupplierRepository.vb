@@ -1,5 +1,6 @@
 ﻿Imports System.Data.Odbc
 Imports System.Threading.Tasks
+Imports System.Data
 ''' <summary>
 ''' Triển khai chức năng truy xuất dữ liệu nhà cung cấp.
 ''' </summary>
@@ -14,6 +15,10 @@ Public Class SupplierRepository
         Dim suppliers As New List(Of Supplier)()
 
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
+
             Dim query As String = "SELECT SupplierId, SupplierName, ContactInfo FROM suppliers"
             Using command As New OdbcCommand(query, connection)
                 Using reader As OdbcDataReader = Await command.ExecuteReaderAsync()
@@ -26,7 +31,6 @@ Public Class SupplierRepository
                     End While
                 End Using
             End Using
-            ConnectionHelper.CloseConnection(connection)
         End Using
         Return suppliers
     End Function
@@ -38,6 +42,10 @@ Public Class SupplierRepository
     ''' <returns>Đối tượng Supplier nếu tồn tại, ngược lại Nothing.</returns>
     Public Async Function GetSupplierByIdAsync(supplierId As Integer) As Task(Of Supplier) Implements ISupplierRepository.GetSupplierByIdAsync
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
+
             Dim query As String = "SELECT SupplierId, SupplierName, ContactInfo FROM Suppliers WHERE SupplierId = ?"
             Using command As New OdbcCommand(query, connection)
                 command.Parameters.AddWithValue("id", supplierId)
@@ -51,7 +59,6 @@ Public Class SupplierRepository
                     End If
                 End Using
             End Using
-            ConnectionHelper.CloseConnection(connection)
         End Using
         Return Nothing
     End Function
@@ -62,6 +69,10 @@ Public Class SupplierRepository
     ''' <param name="supplier">Đối tượng Supplier chứa thông tin nhà cung cấp.</param>
     Public Async Function AddSupplierAsync(supplier As Supplier) As Task(Of Integer) Implements ISupplierRepository.AddSupplierAsync
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
+
             Dim query As String = "INSERT INTO Suppliers (SupplierName, ContactInfo) VALUES (?, ?)"
             Dim getIdQuery As String = "SELECT LAST_INSERT_ID()"
 
@@ -75,7 +86,6 @@ Public Class SupplierRepository
                 Dim lastId As Object = Await getIdCommand.ExecuteScalarAsync()
                 Return If(lastId IsNot Nothing, Convert.ToInt32(lastId), 0)
             End Using
-            ConnectionHelper.CloseConnection(connection)
         End Using
     End Function
 
@@ -85,6 +95,9 @@ Public Class SupplierRepository
     ''' <param name="supplier">Đối tượng Supplier chứa thông tin cần cập nhật.</param>
     Public Async Function UpdateSupplierAsync(supplier As Supplier) As Task(Of Boolean) Implements ISupplierRepository.UpdateSupplierAsync
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim query As String = "UPDATE Suppliers SET SupplierName = ?, ContactInfo = ? WHERE SupplierId = ?"
             Using command As New OdbcCommand(query, connection)
                 command.Parameters.AddWithValue("name", supplier.SupplierName)
@@ -92,7 +105,6 @@ Public Class SupplierRepository
                 command.Parameters.AddWithValue("id", supplier.GetType().GetField("_supplierId", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).GetValue(supplier))
                 Return Await command.ExecuteNonQueryAsync() > 0
             End Using
-            ConnectionHelper.CloseConnection(connection)
         End Using
     End Function
 
@@ -102,6 +114,9 @@ Public Class SupplierRepository
     ''' <param name="supplierId">ID của nhà cung cấp cần xóa.</param>
     Public Async Function DeleteSupplierAsync(supplierId As Integer) As Task(Of Boolean) Implements ISupplierRepository.DeleteSupplierAsync
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim query As String = "DELETE FROM Suppliers WHERE SupplierId = ?"
             Using command As New OdbcCommand(query, connection)
                 command.Parameters.AddWithValue("id", supplierId)
@@ -109,7 +124,6 @@ Public Class SupplierRepository
             End Using
 
 
-            ConnectionHelper.CloseConnection(connection)
         End Using
     End Function
 

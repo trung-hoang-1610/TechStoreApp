@@ -1,6 +1,8 @@
 ﻿' DAL/RoleRepository.vb
 Imports System.Data.Odbc
 Imports System.Threading.Tasks
+Imports System.Data
+
 Public Class RoleRepository
     Implements IRoleRepository
 
@@ -12,6 +14,9 @@ Public Class RoleRepository
     Public Async Function GetAllRolesAsync() As Task(Of List(Of Role)) Implements IRoleRepository.GetAllRolesAsync
         Dim roles As New List(Of Role)
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim query As String = "SELECT RoleId, RoleName FROM Roles"
             Using command As New OdbcCommand(query, connection)
                 Using reader As OdbcDataReader = Await command.ExecuteReaderAsync()
@@ -23,7 +28,6 @@ Public Class RoleRepository
                     End While
                 End Using
             End Using
-            ConnectionHelper.CloseConnection(connection)
         End Using
         Return roles
     End Function
@@ -36,6 +40,9 @@ Public Class RoleRepository
     ''' <exception cref="OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
     Public Async Function GetRoleByIdAsync(ByVal id As Integer) As Task(Of Role) Implements IRoleRepository.GetRoleByIdAsync
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim query As String = "SELECT RoleId, RoleName FROM Roles WHERE RoleId = ?"
             Using command As New OdbcCommand(query, connection)
                 command.Parameters.AddWithValue("id", id)
@@ -48,7 +55,6 @@ Public Class RoleRepository
                     End If
                 End Using
             End Using
-            ConnectionHelper.CloseConnection(connection)
         End Using
         Return Nothing
     End Function

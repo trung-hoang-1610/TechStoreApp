@@ -1,7 +1,7 @@
 ﻿' DAL/CategoryRepository.vb
 Imports System.Data.Odbc
 Imports System.Threading.Tasks
-
+Imports System.Data
 Public Class CategoryRepository
     Implements ICategoryRepository
 
@@ -13,6 +13,9 @@ Public Class CategoryRepository
     Public Async Function GetAllCategoriesAsync() As Task(Of List(Of Category)) Implements ICategoryRepository.GetAllCategoriesAsync
         Dim categories As New List(Of Category)
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim query As String = "SELECT CategoryId, CategoryName, Description FROM Categories"
             Using command As New OdbcCommand(query, connection)
                 Using reader As OdbcDataReader = Await command.ExecuteReaderAsync()
@@ -25,7 +28,6 @@ Public Class CategoryRepository
                     End While
                 End Using
             End Using
-            ConnectionHelper.CloseConnection(connection)
         End Using
         Return categories
     End Function
@@ -38,6 +40,9 @@ Public Class CategoryRepository
     ''' <exception cref="OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
     Public Async Function GetCategoryByIdAsync(ByVal id As Integer) As Task(Of Category) Implements ICategoryRepository.GetCategoryByIdAsync
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim query As String = "SELECT CategoryId, CategoryName, Description FROM Categories WHERE CategoryId = ?"
             Using command As New OdbcCommand(query, connection)
                 command.Parameters.AddWithValue("id", id)
@@ -51,7 +56,6 @@ Public Class CategoryRepository
                     End If
                 End Using
             End Using
-            ConnectionHelper.CloseConnection(connection)
         End Using
         Return Nothing
     End Function
@@ -64,6 +68,9 @@ Public Class CategoryRepository
     ''' <exception cref="OdbcException">Ném ra nếu có lỗi khi thêm vào cơ sở dữ liệu</exception>
     Public Async Function AddCategoryAsync(ByVal category As Category) As Task(Of Integer) Implements ICategoryRepository.AddCategoryAsync
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim insertQuery As String = "INSERT INTO Categories (CategoryName, Description) VALUES (?, ?)"
             Using insertCommand As New OdbcCommand(insertQuery, connection)
                 insertCommand.Parameters.AddWithValue("name", category.CategoryName)
@@ -77,7 +84,6 @@ Public Class CategoryRepository
                 Return Convert.ToInt32(idCommand.ExecuteScalar())
             End Using
 
-            ConnectionHelper.CloseConnection(connection)
         End Using
     End Function
 
@@ -90,6 +96,9 @@ Public Class CategoryRepository
     ''' <exception cref="OdbcException">Ném ra nếu có lỗi khi cập nhật cơ sở dữ liệu</exception>
     Public Async Function UpdateCategoryAsync(ByVal category As Category) As Task(Of Boolean) Implements ICategoryRepository.UpdateCategoryAsync
         Using connection As OdbcConnection = ConnectionHelper.GetConnection()
+            If connection.State <> ConnectionState.Open Then
+                Await connection.OpenAsync()
+            End If
             Dim query As String = "UPDATE Categories SET CategoryName = ?, Description = ? WHERE CategoryId = ?"
             Using command As New OdbcCommand(query, connection)
                 command.Parameters.AddWithValue("name", category.CategoryName)
@@ -97,7 +106,6 @@ Public Class CategoryRepository
                 command.Parameters.AddWithValue("id", category.CategoryId)
                 Return Await command.ExecuteNonQueryAsync() > 0
             End Using
-            ConnectionHelper.CloseConnection(connection)
         End Using
     End Function
 
@@ -114,7 +122,6 @@ Public Class CategoryRepository
                 command.Parameters.AddWithValue("id", id)
                 Return Await command.ExecuteNonQueryAsync() > 0
             End Using
-            ConnectionHelper.CloseConnection(connection)
         End Using
     End Function
 End Class
