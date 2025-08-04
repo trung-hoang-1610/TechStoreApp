@@ -20,8 +20,8 @@ Public Interface IProductRepository
     ''' <summary>
     ''' Lấy sản phẩm theo tên
     ''' </summary>
-    ''' <param name="name">Tên sản phẩm</param>
-    ''' <returns>Danh sách các đối tượng Product phù hợp với tên</returns>
+    ''' <param name="id">Mã sản phẩm</param>
+    ''' <returns>Danh sách các đối tượng Product phù hợp với Id</returns>
     ''' <exception cref="System.Data.Odbc.OdbcException">Ném ra nếu có lỗi khi truy vấn cơ sở dữ liệu</exception>
 
     Function GetProductsBySupplierIdAsync(ByVal id As Integer) As Task(Of List(Of Product))

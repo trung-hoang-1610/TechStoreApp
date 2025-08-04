@@ -24,8 +24,6 @@ Public Class StockTransactionDetailForm
         Me.StartPosition = FormStartPosition.CenterScreen
         _transactionId = transactionId
         _transactionService = ServiceFactory.CreateStockTransactionService()
-
-        LoadTransactionDetails()
     End Sub
 
     Private Async Function LoadTransactionDetails() As Task
@@ -85,15 +83,19 @@ Public Class StockTransactionDetailForm
         Dim confirm = MessageBox.Show("Bạn có chắc muốn duyệt phiếu này?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
         If confirm = DialogResult.Yes Then
             Dim user = SessionManager.GetCurrentUser()
-            Dim result = Await _transactionService.ApproveTransactionAsync(_transactionId, user.UserId, True)
-            If result.Success Then
-                MessageBox.Show("Phiếu đã được duyệt.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                Me.DialogResult = DialogResult.OK
-                Me.Close()
-            Else
-                MessageBox.Show(String.Join(Environment.NewLine, result.Errors.ToArray()), "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
 
-            End If
+            Try
+                Dim result = Await _transactionService.ApproveTransactionAsync(_transactionId, user.UserId, True)
+                If result.Success Then
+                    MessageBox.Show("Phiếu đã được duyệt.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                    Me.DialogResult = DialogResult.OK
+                    Me.Close()
+                Else
+                    MessageBox.Show(String.Join(Environment.NewLine, result.Errors.ToArray()), "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                End If
+            Catch ex As Exception
+                MessageBox.Show("Lỗi khi duyệt phiếu: " & ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            End Try
         End If
     End Sub
 

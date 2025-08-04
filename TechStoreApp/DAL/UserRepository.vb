@@ -1,4 +1,5 @@
 ﻿' DAL/UserRepository.vb
+Imports System.Data
 Imports System.Data.Odbc
 Imports System.Threading.Tasks
 

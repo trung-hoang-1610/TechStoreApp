@@ -245,7 +245,7 @@ Public Class ProductManagementForm
 
             Dim result = Await _productService.AddProductAsync(product)
             If result.Success Then
-                LoadProductsAsync()
+                Await LoadProductsAsync()
                 ClearInputs()
                 SetEditingMode(False, False)
                 MessageBox.Show("Thêm sản phẩm thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information)
@@ -333,7 +333,7 @@ Public Class ProductManagementForm
 
             Dim result = Await _productService.UpdateProductAsync(product)
             If result.Success Then
-                LoadProductsAsync()
+                Await LoadProductsAsync()
                 ClearInputs()
                 SetEditingMode(False, False)
                 MessageBox.Show("Cập nhật thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information)
@@ -363,7 +363,7 @@ Public Class ProductManagementForm
 
             Dim result = Await _productService.DeleteProductAsync(productId)
             If result Then
-                LoadProductsAsync()
+                Await LoadProductsAsync()
                 ClearInputs()
                 SetEditingMode(False, False)
                 MessageBox.Show("Xóa sản phẩm thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information)
@@ -406,12 +406,12 @@ Public Class ProductManagementForm
         End Try
     End Sub
 
-    Private Sub chkLowStock_CheckedChanged(sender As Object, e As EventArgs) Handles chkLowStock.CheckedChanged
+    Private Async Sub chkLowStock_CheckedChanged(sender As Object, e As EventArgs) Handles chkLowStock.CheckedChanged
         Try
             searchCriteria.LowStockOnly = chkLowStock.Checked
             Debug.WriteLine($"LowStockOnly: {searchCriteria.LowStockOnly}")
             currentPage = 0
-            LoadProductsAsync()
+            Await LoadProductsAsync()
         Catch ex As OdbcException
             lblError.Text = "Lỗi khi lọc sản phẩm tồn kho thấp: " & ex.Message
         Catch ex As Exception
@@ -419,7 +419,7 @@ Public Class ProductManagementForm
         End Try
     End Sub
 
-    Private Sub btnSearch_Click(sender As Object, e As EventArgs) Handles btnSearch.Click
+    Private Async Sub btnSearch_Click(sender As Object, e As EventArgs) Handles btnSearch.Click
         Try
             Dim nameValue = If(String.IsNullOrEmpty(txtSearchName.Text.Trim()), Nothing, txtSearchName.Text.Trim())
             Dim categoryIdValue = If(cboCategorySort.SelectedIndex >= 0 AndAlso cboCategorySort.SelectedItem IsNot Nothing, categoryLookup(cboCategorySort.SelectedItem.ToString()), Nothing)
@@ -459,7 +459,7 @@ Public Class ProductManagementForm
             }
 
             currentPage = 0
-            LoadProductsAsync()
+            Await LoadProductsAsync()
         Catch ex As OdbcException
             lblError.Text = "Lỗi khi tìm kiếm sản phẩm: " & ex.Message
         Catch ex As Exception
@@ -467,7 +467,7 @@ Public Class ProductManagementForm
         End Try
     End Sub
 
-    Private Sub btnClearSearch_Click(sender As Object, e As EventArgs) Handles btnClearSearch.Click
+    Private Async Sub btnClearSearch_Click(sender As Object, e As EventArgs) Handles btnClearSearch.Click
         Try
             txtSearchName.Text = String.Empty
             cboStatus.SelectedIndex = 0
@@ -484,7 +484,7 @@ Public Class ProductManagementForm
             }
 
             currentPage = 0
-            LoadProductsAsync()
+            Await LoadProductsAsync()
         Catch ex As OdbcException
             lblError.Text = "Lỗi khi xóa tìm kiếm: " & ex.Message
         Catch ex As Exception
@@ -492,17 +492,17 @@ Public Class ProductManagementForm
         End Try
     End Sub
 
-    Private Sub btnPrev_Click(sender As Object, e As EventArgs) Handles btnPrev.Click
+    Private Async Sub btnPrev_Click(sender As Object, e As EventArgs) Handles btnPrev.Click
         If currentPage > 0 Then
             currentPage -= 1
-            LoadProductsAsync()
+            Await LoadProductsAsync()
         End If
     End Sub
 
-    Private Sub btnNext_Click(sender As Object, e As EventArgs) Handles btnNext.Click
+    Private Async Sub btnNext_Click(sender As Object, e As EventArgs) Handles btnNext.Click
         If currentPage < totalPages - 1 Then
             currentPage += 1
-            LoadProductsAsync()
+            Await LoadProductsAsync()
         End If
     End Sub
 

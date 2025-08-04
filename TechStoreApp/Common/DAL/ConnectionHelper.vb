@@ -1,6 +1,7 @@
 ﻿' Common/DAL/ConnectionHelper.vb
 Imports System.Data.Odbc
 Imports System.Configuration
+Imports System.Data
 
 Public Class ConnectionHelper
     ''' <summary>

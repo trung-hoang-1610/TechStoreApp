@@ -3,6 +3,7 @@ Imports System.Reflection
 Imports System.Diagnostics
 Imports System.Text
 Imports System.Threading.Tasks
+Imports System.Data
 
 ''' <summary>
 ''' Repository xử lý các thao tác dữ liệu cho bảng Products.

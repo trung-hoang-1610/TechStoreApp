@@ -144,7 +144,7 @@ Public Class StockTransactionListForm
             End Using
         End If
     End Function
-
+    
     Private Async Sub _btnViewDetails_Click(sender As Object, e As EventArgs) Handles _btnViewDetails.Click
         Dim selectedTab = _tabControl.SelectedTab
         If selectedTab?.Text = "Phiếu nhập" Then
@@ -164,13 +164,17 @@ Public Class StockTransactionListForm
                     MessageBox.Show("Người dùng chưa đăng nhập.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
                     Return
                 End If
-                Dim result = Await _myTransactionService.ApproveTransactionAsync(transactionId, currentUser.UserId, True)
-                If result.Success Then
-                    MessageBox.Show("Duyệt phiếu thành công.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                    Await LoadTransactionsAsync()
-                Else
-                    MessageBox.Show(String.Join(Environment.NewLine, result.Errors.ToArray()), "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
-                End If
+                Try
+                    Dim result = Await _myTransactionService.ApproveTransactionAsync(transactionId, currentUser.UserId, True)
+                    If result.Success Then
+                        MessageBox.Show("Duyệt phiếu thành công.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                        Await LoadTransactionsAsync()
+                    Else
+                        MessageBox.Show(String.Join(Environment.NewLine, result.Errors.ToArray()), "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                    End If
+                Catch ex As Exception
+                    MessageBox.Show("Lỗi khi duyệt phiếu: " & ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                End Try
             End If
         End If
     End Sub
@@ -215,10 +219,10 @@ Public Class StockTransactionListForm
                     Dim topRow = 2
                     For Each row As DataGridViewRow In _gridStats.Rows
                         If row.IsNewRow Then Continue For
-                        wsTop.Cell(topRow, 1).Value = row.Cells("ProductId").Value
-                        wsTop.Cell(topRow, 2).Value = row.Cells("ProductName").Value
-                        wsTop.Cell(topRow, 3).Value = row.Cells("TotalQuantity").Value
-                        wsTop.Cell(topRow, 4).Value = row.Cells("TotalValue").Value
+                        wsTop.Cell(topRow, 1).Value = Convert.ToString(row.Cells("Top10ProductStatsId").Value)
+                        wsTop.Cell(topRow, 2).Value = Convert.ToString(row.Cells("Top10ProductStatsName").Value)
+                        wsTop.Cell(topRow, 3).Value = Convert.ToString(row.Cells("Top10ProductStatsTotalQuantity").Value)
+                        wsTop.Cell(topRow, 4).Value = Convert.ToString(row.Cells("Top10ProductStatsTotalValue").Value)
                         topRow += 1
                     Next
                     wsTop.Range("A1:D" & topRow - 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin
@@ -237,10 +241,11 @@ Public Class StockTransactionListForm
                     Dim lowRow = 2
                     For Each row As DataGridViewRow In _gridLowStock.Rows
                         If row.IsNewRow Then Continue For
-                        wsLow.Cell(lowRow, 1).Value = row.Cells("ProductId").Value
-                        wsLow.Cell(lowRow, 2).Value = row.Cells("ProductName").Value
-                        wsLow.Cell(lowRow, 3).Value = row.Cells("CurrentStock").Value
-                        wsLow.Cell(lowRow, 4).Value = row.Cells("MinimumStock").Value
+                        wsLow.Cell(lowRow, 1).Value = Convert.ToString(row.Cells("LowStockStatsProductId").Value)
+                        wsLow.Cell(lowRow, 2).Value = Convert.ToString(row.Cells("LowStockStatsProductName").Value)
+                        wsLow.Cell(lowRow, 3).Value = Convert.ToString(row.Cells("LowStockStatsCurrentStock").Value)
+                        wsLow.Cell(lowRow, 4).Value = Convert.ToString(row.Cells("LowStockStatsMimimumStock").Value)
+
                         lowRow += 1
                     Next
                     wsLow.Range("A1:D" & lowRow - 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin
@@ -292,7 +297,7 @@ Public Class StockTransactionListForm
        })
 
         ConfigureGridColumns(_gridLowStock, {
-           New String() {"LowStocStatsProductId", "Mã sản phẩm", "120", "ProductId"},
+           New String() {"LowStockStatsProductId", "Mã sản phẩm", "120", "ProductId"},
            New String() {"LowStockStatsProductName", "Tên sản phẩm", "150", "ProductName"},
            New String() {"LowStockStatsCurrentStock", "Số lượng hiện tại", "150", "CurrentStock"},
            New String() {"LowStockStatsMimimumStock", "Tồn tối thiểu", "100", "MinimumStock"}
